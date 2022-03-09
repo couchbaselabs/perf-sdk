@@ -1,0 +1,11 @@
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/PerformerSdkServiceGrpc.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkFactoryCreateResponseOrBuilder.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/CreateConnectionResponseOrBuilder.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/Durability.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkPerformer.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/CreateConnectionResponse.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkFactoryCreateResponse.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkFactoryCreateRequestOrBuilder.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkFactoryCreateRequest.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/CreateConnectionRequest.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/CreateConnectionRequestOrBuilder.java

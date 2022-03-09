@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+// See README.md in this directory for a description of these.
+package protocol;
+option csharp_namespace = "Couchbase.Grpc.Protocol";
+option java_package = "com.couchbase.grpc.protocol";
+option go_package = "github.com/couchbaselabs/transactions-fit-performer/protocol";
+option java_multiple_files = true;
+
+//import "google/protobuf/timestamp.proto";
+//import "google/protobuf/empty.proto";
+
+service PerformerSdkService {
+
+    // Creates a connection between performer and couchbase server
+    rpc createConnection (CreateConnectionRequest) returns (CreateConnectionResponse);
+
+    // Create a Transactions (e.g. a transactions factory), returning a transactionsFactoryRef
+    rpc sdkFactoryCreate (SdkFactoryCreateRequest) returns (SdkFactoryCreateResponse);
+}
+
+message CreateConnectionRequest {
+    string clusterHostname=1;
+    string clusterUsername=2;
+    string clusterPassword=3;
+    string bucketName=4;
+    bool useAsDefaultConnection=5;
+}
+
+// Returns the capabilities of the performer (or more specifically, the transactions-implementation-under-test by that
+// performer)
+message CreateConnectionResponse {
+    //repeated PerformerCaps performerCaps = 1;
+
+    // Human-readable string identifying the performer.  For example, "java".
+    string performerUserAgent = 1;
+
+    // Identifies the version of the library under test.  For example, "1.1.2".
+    string performerLibraryVersion = 2;
+
+    // Defined https://hackmd.io/foGjnSSIQmqfks2lXwNp8w#Protocol-Versions
+    // Must be "1.0" or "2.0", any other values will cause the driver to abort.
+    string protocolVersion = 3;
+
+    string clusterConnectionId=4;
+}
+
+enum Durability {
+    NONE = 0;
+    MAJORITY = 1;
+    MAJORITY_AND_PERSIST_TO_ACTIVE = 2;
+    PERSIST_TO_MAJORITY = 3;
+}
+
+
+message SdkFactoryCreateRequest {
+    Durability durability = 1;
+    int32 expirationMillis = 2;
+    // Any hooks can only use HookPoints before the CLEANUP_* range
+    //repeated Hook hook = 3;
+    bool cleanupLostAttempts = 3;
+    bool cleanupClientAttempts = 4;
+    int64 cleanupWindowMillis = 5;
+    //UnstagingMode unstagingMode = 7;
+    //Collection metadataCollection = 8;
+    string clusterConnectionId=6;
+}
+
+message SdkFactoryCreateResponse {
+    string SdkFactoryRef = 1;
+}

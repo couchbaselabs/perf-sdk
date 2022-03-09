@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/performers/java/lib/gRPC/gRPC.iml" filepath="$PROJECT_DIR$/performers/java/lib/gRPC/gRPC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/performers/java/java.iml" filepath="$PROJECT_DIR$/performers/java/java.iml" />
+      <module fileurl="file://$PROJECT_DIR$/performers/java/lib/lib.iml" filepath="$PROJECT_DIR$/performers/java/lib/lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/perf-sdk.iml" filepath="$PROJECT_DIR$/.idea/perf-sdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sdk-driver/sdk-driver.iml" filepath="$PROJECT_DIR$/sdk-driver/sdk-driver.iml" />
+      <module fileurl="file://$PROJECT_DIR$/performers/java/sdk-performer-java/sdk-performer-java.iml" filepath="$PROJECT_DIR$/performers/java/sdk-performer-java/sdk-performer-java.iml" />
+    </modules>
+  </component>
+</project>

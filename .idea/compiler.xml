@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="sdk-driver" />
+        <module name="sdk-performer-java" />
+        <module name="gRPC" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="gRPC" target="1.8" />
+      <module name="java" target="1.8" />
+      <module name="lib" target="1.8" />
+      <module name="sdk-driver" target="17" />
+      <module name="sdk-performer-java" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
