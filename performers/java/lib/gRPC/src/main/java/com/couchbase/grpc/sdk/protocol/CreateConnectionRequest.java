@@ -102,15 +102,15 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_CreateConnectionRequest_descriptor;
+    return SdkPerformer.internal_static_protocol_CreateConnectionRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_CreateConnectionRequest_fieldAccessorTable
+    return SdkPerformer.internal_static_protocol_CreateConnectionRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.couchbase.grpc.sdk.protocol.CreateConnectionRequest.class, com.couchbase.grpc.sdk.protocol.CreateConnectionRequest.Builder.class);
+            CreateConnectionRequest.class, CreateConnectionRequest.Builder.class);
   }
 
   public static final int CLUSTERHOSTNAME_FIELD_NUMBER = 1;
@@ -340,10 +340,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof com.couchbase.grpc.sdk.protocol.CreateConnectionRequest)) {
+    if (!(obj instanceof CreateConnectionRequest)) {
       return super.equals(obj);
     }
-    com.couchbase.grpc.sdk.protocol.CreateConnectionRequest other = (com.couchbase.grpc.sdk.protocol.CreateConnectionRequest) obj;
+    CreateConnectionRequest other = (CreateConnectionRequest) obj;
 
     if (!getClusterHostname()
         .equals(other.getClusterHostname())) return false;
@@ -382,69 +382,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(
+  public static CreateConnectionRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(
+  public static CreateConnectionRequest parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(
+  public static CreateConnectionRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(
+  public static CreateConnectionRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(byte[] data)
+  public static CreateConnectionRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(
+  public static CreateConnectionRequest parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(java.io.InputStream input)
+  public static CreateConnectionRequest parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(
+  public static CreateConnectionRequest parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseDelimitedFrom(java.io.InputStream input)
+  public static CreateConnectionRequest parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseDelimitedFrom(
+  public static CreateConnectionRequest parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(
+  public static CreateConnectionRequest parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parseFrom(
+  public static CreateConnectionRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -457,7 +457,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(com.couchbase.grpc.sdk.protocol.CreateConnectionRequest prototype) {
+  public static Builder newBuilder(CreateConnectionRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -478,18 +478,18 @@ private static final long serialVersionUID = 0L;
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:protocol.CreateConnectionRequest)
-      com.couchbase.grpc.sdk.protocol.CreateConnectionRequestOrBuilder {
+          CreateConnectionRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_CreateConnectionRequest_descriptor;
+      return SdkPerformer.internal_static_protocol_CreateConnectionRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_CreateConnectionRequest_fieldAccessorTable
+      return SdkPerformer.internal_static_protocol_CreateConnectionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.couchbase.grpc.sdk.protocol.CreateConnectionRequest.class, com.couchbase.grpc.sdk.protocol.CreateConnectionRequest.Builder.class);
+              CreateConnectionRequest.class, CreateConnectionRequest.Builder.class);
     }
 
     // Construct using com.couchbase.grpc.sdk.protocol.CreateConnectionRequest.newBuilder()
@@ -526,17 +526,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_CreateConnectionRequest_descriptor;
+      return SdkPerformer.internal_static_protocol_CreateConnectionRequest_descriptor;
     }
 
     @java.lang.Override
-    public com.couchbase.grpc.sdk.protocol.CreateConnectionRequest getDefaultInstanceForType() {
-      return com.couchbase.grpc.sdk.protocol.CreateConnectionRequest.getDefaultInstance();
+    public CreateConnectionRequest getDefaultInstanceForType() {
+      return CreateConnectionRequest.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.couchbase.grpc.sdk.protocol.CreateConnectionRequest build() {
-      com.couchbase.grpc.sdk.protocol.CreateConnectionRequest result = buildPartial();
+    public CreateConnectionRequest build() {
+      CreateConnectionRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -544,8 +544,8 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public com.couchbase.grpc.sdk.protocol.CreateConnectionRequest buildPartial() {
-      com.couchbase.grpc.sdk.protocol.CreateConnectionRequest result = new com.couchbase.grpc.sdk.protocol.CreateConnectionRequest(this);
+    public CreateConnectionRequest buildPartial() {
+      CreateConnectionRequest result = new CreateConnectionRequest(this);
       result.clusterHostname_ = clusterHostname_;
       result.clusterUsername_ = clusterUsername_;
       result.clusterPassword_ = clusterPassword_;
@@ -589,16 +589,16 @@ private static final long serialVersionUID = 0L;
     }
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.couchbase.grpc.sdk.protocol.CreateConnectionRequest) {
-        return mergeFrom((com.couchbase.grpc.sdk.protocol.CreateConnectionRequest)other);
+      if (other instanceof CreateConnectionRequest) {
+        return mergeFrom((CreateConnectionRequest)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.couchbase.grpc.sdk.protocol.CreateConnectionRequest other) {
-      if (other == com.couchbase.grpc.sdk.protocol.CreateConnectionRequest.getDefaultInstance()) return this;
+    public Builder mergeFrom(CreateConnectionRequest other) {
+      if (other == CreateConnectionRequest.getDefaultInstance()) return this;
       if (!other.getClusterHostname().isEmpty()) {
         clusterHostname_ = other.clusterHostname_;
         onChanged();
@@ -633,11 +633,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.couchbase.grpc.sdk.protocol.CreateConnectionRequest parsedMessage = null;
+      CreateConnectionRequest parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.couchbase.grpc.sdk.protocol.CreateConnectionRequest) e.getUnfinishedMessage();
+        parsedMessage = (CreateConnectionRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -998,12 +998,12 @@ private static final long serialVersionUID = 0L;
   }
 
   // @@protoc_insertion_point(class_scope:protocol.CreateConnectionRequest)
-  private static final com.couchbase.grpc.sdk.protocol.CreateConnectionRequest DEFAULT_INSTANCE;
+  private static final CreateConnectionRequest DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new com.couchbase.grpc.sdk.protocol.CreateConnectionRequest();
+    DEFAULT_INSTANCE = new CreateConnectionRequest();
   }
 
-  public static com.couchbase.grpc.sdk.protocol.CreateConnectionRequest getDefaultInstance() {
+  public static CreateConnectionRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -1028,7 +1028,7 @@ private static final long serialVersionUID = 0L;
   }
 
   @java.lang.Override
-  public com.couchbase.grpc.sdk.protocol.CreateConnectionRequest getDefaultInstanceForType() {
+  public CreateConnectionRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

@@ -7,16 +7,19 @@ option java_package = "com.couchbase.grpc.sdk.protocol";
 option go_package = "github.com/couchbaselabs/transactions-fit-performer/protocol";
 option java_multiple_files = true;
 
-//import "google/protobuf/timestamp.proto";
-//import "google/protobuf/empty.proto";
+import "sdk_commands.proto";
+import "sdk_basic.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service PerformerSdkService {
 
     // Creates a connection between performer and couchbase server
     rpc createConnection (CreateConnectionRequest) returns (CreateConnectionResponse);
 
-    // Create a Transactions (e.g. a transactions factory), returning a transactionsFactoryRef
-    rpc sdkFactoryCreate (SdkFactoryCreateRequest) returns (SdkFactoryCreateResponse);
+    rpc sdkCommand (SdkCreateRequest) returns (SdkCommandResult);
+
+    rpc perfRun (PerfRunRequest) returns (stream PerfSingleSdkOpResult);
 }
 
 message CreateConnectionRequest {
@@ -45,27 +48,56 @@ message CreateConnectionResponse {
     string clusterConnectionId=4;
 }
 
-enum Durability {
-    NONE = 0;
-    MAJORITY = 1;
-    MAJORITY_AND_PERSIST_TO_ACTIVE = 2;
-    PERSIST_TO_MAJORITY = 3;
+message SdkAttemptRequest {
+    repeated SdkCommand commands = 1;
 }
 
+message SdkCreateRequest {
+    repeated SdkAttemptRequest attempts = 1;
 
-message SdkFactoryCreateRequest {
-    Durability durability = 1;
-    int32 expirationMillis = 2;
-    // Any hooks can only use HookPoints before the CLEANUP_* range
-    //repeated Hook hook = 3;
-    bool cleanupLostAttempts = 3;
-    bool cleanupClientAttempts = 4;
-    int64 cleanupWindowMillis = 5;
-    //UnstagingMode unstagingMode = 7;
-    //Collection metadataCollection = 8;
-    string clusterConnectionId=6;
+    string name = 2;
+
+    string clusterConnectionId=3;
 }
 
-message SdkFactoryCreateResponse {
-    string SdkFactoryRef = 1;
+message SdkCommandResult {
+    SdkException exception=1;
+    ExternalException exceptionCause=2;
+    repeated string log=3;
+    string sdkId=4;
+}
+
+// "HorizontalScaling" is an abstraction over there been many forms of concurrency.  The core idea is that the driver
+// is trying to increase the parallelism, and it's up to the performer to choose a suitable platform-dependent way to
+// do this.
+// For some languages that will be threads.  For some, a larger pool of concurrent Future/Promises.  For some,
+// forking a new process.
+// Whatever is produced (thread, new process), it should run the provided transaction in a tight loop.  So essentially
+// PerfRunHorizontalScaling is the number of concurrent transactions.
+message PerfRunHorizontalScaling {
+    // Performer will run these transactions, in a loop.
+    repeated SdkCreateRequest sdkCommand = 1;
+}
+
+message PerfRunRequest {
+    // Optional, allows a custom Cluster connection to be used
+    string clusterConnectionId = 1;
+
+    string sdkOpRef = 2;
+
+    // See PerfRunHorizontalScaling for a discussion of this.  Broadly, it's the number of concurrent transactions
+    // required.
+    repeated PerfRunHorizontalScaling horizontalScaling = 3;
+
+    // Performer will run until this much time has elapsed.
+    // Counted from when it creates the factory, after waiting for the bucket to be opened.
+    int32 runForSeconds = 4;
+}
+
+message PerfSingleSdkOpResult {
+    // Implementations should not provide the logs field here, to conserve memory & bandwidth
+    SdkCommandResult results = 1;
+
+    google.protobuf.Timestamp initiated = 2;
+    google.protobuf.Timestamp finished = 3;
 }

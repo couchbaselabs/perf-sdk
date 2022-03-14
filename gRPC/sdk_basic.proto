@@ -1,0 +1,20 @@
+// Contains basic low-level primitives that have no dependencies.
+syntax = "proto3";
+// See README.md in this directory for a description of these.
+package protocol;
+option csharp_namespace = "Couchbase.Grpc.Protocol";
+option java_package = "com.couchbase.grpc.sdk.protocol";
+option go_package = "github.com/couchbaselabs/transactions-fit-performer/protocol";
+option java_multiple_files = true;
+
+
+
+message DocId {
+  string bucketName = 1;
+  string scopeName = 2;
+  string collectionName = 3;
+  // PERF_PERFORMER: this can start with "__doc_X", in which case a UUID for XXX should be generated or used automatically by
+  // the performer.  E.g. the first use of "__doc_0" in a transaction should create a new UUID for 0, and then subsequent uses
+  // of "__doc_0" in the same transaction should reuse that UUID.  X will always be an integer.
+  string docId = 4;
+}

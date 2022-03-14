@@ -168,7 +168,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.couchbase.SdkDriver</mainClass>
+                            <mainClass>com.sdk.SdkDriver</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -275,7 +275,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib</classpathPrefix>
-                            <mainClass>com.couchbase.SdkDriver</mainClass>
+                            <mainClass>com.sdk.SdkDriver</mainClass>
                             <packageName>com.couchbase</packageName>
                         </manifest>
                         <manifestEntries>

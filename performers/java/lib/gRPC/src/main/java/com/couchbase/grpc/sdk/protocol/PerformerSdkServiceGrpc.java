@@ -14,29 +14,29 @@ public final class PerformerSdkServiceGrpc {
   public static final String SERVICE_NAME = "protocol.PerformerSdkService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<com.couchbase.grpc.sdk.protocol.CreateConnectionRequest,
-      com.couchbase.grpc.sdk.protocol.CreateConnectionResponse> getCreateConnectionMethod;
+  private static volatile io.grpc.MethodDescriptor<CreateConnectionRequest,
+          CreateConnectionResponse> getCreateConnectionMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "createConnection",
-      requestType = com.couchbase.grpc.sdk.protocol.CreateConnectionRequest.class,
-      responseType = com.couchbase.grpc.sdk.protocol.CreateConnectionResponse.class,
+      requestType = CreateConnectionRequest.class,
+      responseType = CreateConnectionResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.couchbase.grpc.sdk.protocol.CreateConnectionRequest,
-      com.couchbase.grpc.sdk.protocol.CreateConnectionResponse> getCreateConnectionMethod() {
-    io.grpc.MethodDescriptor<com.couchbase.grpc.sdk.protocol.CreateConnectionRequest, com.couchbase.grpc.sdk.protocol.CreateConnectionResponse> getCreateConnectionMethod;
+  public static io.grpc.MethodDescriptor<CreateConnectionRequest,
+          CreateConnectionResponse> getCreateConnectionMethod() {
+    io.grpc.MethodDescriptor<CreateConnectionRequest, CreateConnectionResponse> getCreateConnectionMethod;
     if ((getCreateConnectionMethod = PerformerSdkServiceGrpc.getCreateConnectionMethod) == null) {
       synchronized (PerformerSdkServiceGrpc.class) {
         if ((getCreateConnectionMethod = PerformerSdkServiceGrpc.getCreateConnectionMethod) == null) {
           PerformerSdkServiceGrpc.getCreateConnectionMethod = getCreateConnectionMethod =
-              io.grpc.MethodDescriptor.<com.couchbase.grpc.sdk.protocol.CreateConnectionRequest, com.couchbase.grpc.sdk.protocol.CreateConnectionResponse>newBuilder()
+              io.grpc.MethodDescriptor.<CreateConnectionRequest, CreateConnectionResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "createConnection"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.couchbase.grpc.sdk.protocol.CreateConnectionRequest.getDefaultInstance()))
+                  CreateConnectionRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.couchbase.grpc.sdk.protocol.CreateConnectionResponse.getDefaultInstance()))
+                  CreateConnectionResponse.getDefaultInstance()))
               .setSchemaDescriptor(new PerformerSdkServiceMethodDescriptorSupplier("createConnection"))
               .build();
         }
@@ -45,35 +45,66 @@ public final class PerformerSdkServiceGrpc {
     return getCreateConnectionMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest,
-      com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse> getSdkFactoryCreateMethod;
+  private static volatile io.grpc.MethodDescriptor<SdkCreateRequest,
+          SdkCommandResult> getSdkCommandMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "sdkFactoryCreate",
-      requestType = com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest.class,
-      responseType = com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse.class,
+      fullMethodName = SERVICE_NAME + '/' + "sdkCommand",
+      requestType = SdkCreateRequest.class,
+      responseType = SdkCommandResult.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest,
-      com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse> getSdkFactoryCreateMethod() {
-    io.grpc.MethodDescriptor<com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest, com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse> getSdkFactoryCreateMethod;
-    if ((getSdkFactoryCreateMethod = PerformerSdkServiceGrpc.getSdkFactoryCreateMethod) == null) {
+  public static io.grpc.MethodDescriptor<SdkCreateRequest,
+          SdkCommandResult> getSdkCommandMethod() {
+    io.grpc.MethodDescriptor<SdkCreateRequest, SdkCommandResult> getSdkCommandMethod;
+    if ((getSdkCommandMethod = PerformerSdkServiceGrpc.getSdkCommandMethod) == null) {
       synchronized (PerformerSdkServiceGrpc.class) {
-        if ((getSdkFactoryCreateMethod = PerformerSdkServiceGrpc.getSdkFactoryCreateMethod) == null) {
-          PerformerSdkServiceGrpc.getSdkFactoryCreateMethod = getSdkFactoryCreateMethod =
-              io.grpc.MethodDescriptor.<com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest, com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse>newBuilder()
+        if ((getSdkCommandMethod = PerformerSdkServiceGrpc.getSdkCommandMethod) == null) {
+          PerformerSdkServiceGrpc.getSdkCommandMethod = getSdkCommandMethod =
+              io.grpc.MethodDescriptor.<SdkCreateRequest, SdkCommandResult>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "sdkFactoryCreate"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "sdkCommand"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest.getDefaultInstance()))
+                  SdkCreateRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new PerformerSdkServiceMethodDescriptorSupplier("sdkFactoryCreate"))
+                  SdkCommandResult.getDefaultInstance()))
+              .setSchemaDescriptor(new PerformerSdkServiceMethodDescriptorSupplier("sdkCommand"))
               .build();
         }
       }
     }
-    return getSdkFactoryCreateMethod;
+    return getSdkCommandMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<PerfRunRequest,
+          PerfSingleSdkOpResult> getPerfRunMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "perfRun",
+      requestType = PerfRunRequest.class,
+      responseType = PerfSingleSdkOpResult.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+  public static io.grpc.MethodDescriptor<PerfRunRequest,
+          PerfSingleSdkOpResult> getPerfRunMethod() {
+    io.grpc.MethodDescriptor<PerfRunRequest, PerfSingleSdkOpResult> getPerfRunMethod;
+    if ((getPerfRunMethod = PerformerSdkServiceGrpc.getPerfRunMethod) == null) {
+      synchronized (PerformerSdkServiceGrpc.class) {
+        if ((getPerfRunMethod = PerformerSdkServiceGrpc.getPerfRunMethod) == null) {
+          PerformerSdkServiceGrpc.getPerfRunMethod = getPerfRunMethod =
+              io.grpc.MethodDescriptor.<PerfRunRequest, PerfSingleSdkOpResult>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "perfRun"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  PerfRunRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  PerfSingleSdkOpResult.getDefaultInstance()))
+              .setSchemaDescriptor(new PerformerSdkServiceMethodDescriptorSupplier("perfRun"))
+              .build();
+        }
+      }
+    }
+    return getPerfRunMethod;
   }
 
   /**
@@ -129,19 +160,23 @@ public final class PerformerSdkServiceGrpc {
      * Creates a connection between performer and couchbase server
      * </pre>
      */
-    public void createConnection(com.couchbase.grpc.sdk.protocol.CreateConnectionRequest request,
-        io.grpc.stub.StreamObserver<com.couchbase.grpc.sdk.protocol.CreateConnectionResponse> responseObserver) {
+    public void createConnection(CreateConnectionRequest request,
+                                 io.grpc.stub.StreamObserver<CreateConnectionResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getCreateConnectionMethod(), responseObserver);
     }
 
     /**
-     * <pre>
-     * Create a Transactions (e.g. a transactions factory), returning a transactionsFactoryRef
-     * </pre>
      */
-    public void sdkFactoryCreate(com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest request,
-        io.grpc.stub.StreamObserver<com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSdkFactoryCreateMethod(), responseObserver);
+    public void sdkCommand(SdkCreateRequest request,
+                           io.grpc.stub.StreamObserver<SdkCommandResult> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSdkCommandMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void perfRun(PerfRunRequest request,
+                        io.grpc.stub.StreamObserver<PerfSingleSdkOpResult> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getPerfRunMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
@@ -150,16 +185,23 @@ public final class PerformerSdkServiceGrpc {
             getCreateConnectionMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                com.couchbase.grpc.sdk.protocol.CreateConnectionRequest,
-                com.couchbase.grpc.sdk.protocol.CreateConnectionResponse>(
+                      CreateConnectionRequest,
+                      CreateConnectionResponse>(
                   this, METHODID_CREATE_CONNECTION)))
           .addMethod(
-            getSdkFactoryCreateMethod(),
+            getSdkCommandMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest,
-                com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse>(
-                  this, METHODID_SDK_FACTORY_CREATE)))
+                      SdkCreateRequest,
+                      SdkCommandResult>(
+                  this, METHODID_SDK_COMMAND)))
+          .addMethod(
+            getPerfRunMethod(),
+            io.grpc.stub.ServerCalls.asyncServerStreamingCall(
+              new MethodHandlers<
+                      PerfRunRequest,
+                      PerfSingleSdkOpResult>(
+                  this, METHODID_PERF_RUN)))
           .build();
     }
   }
@@ -183,21 +225,26 @@ public final class PerformerSdkServiceGrpc {
      * Creates a connection between performer and couchbase server
      * </pre>
      */
-    public void createConnection(com.couchbase.grpc.sdk.protocol.CreateConnectionRequest request,
-        io.grpc.stub.StreamObserver<com.couchbase.grpc.sdk.protocol.CreateConnectionResponse> responseObserver) {
+    public void createConnection(CreateConnectionRequest request,
+                                 io.grpc.stub.StreamObserver<CreateConnectionResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getCreateConnectionMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
-     * <pre>
-     * Create a Transactions (e.g. a transactions factory), returning a transactionsFactoryRef
-     * </pre>
      */
-    public void sdkFactoryCreate(com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest request,
-        io.grpc.stub.StreamObserver<com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse> responseObserver) {
+    public void sdkCommand(SdkCreateRequest request,
+                           io.grpc.stub.StreamObserver<SdkCommandResult> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getSdkFactoryCreateMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getSdkCommandMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void perfRun(PerfRunRequest request,
+                        io.grpc.stub.StreamObserver<PerfSingleSdkOpResult> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncServerStreamingCall(
+          getChannel().newCall(getPerfRunMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
@@ -220,19 +267,24 @@ public final class PerformerSdkServiceGrpc {
      * Creates a connection between performer and couchbase server
      * </pre>
      */
-    public com.couchbase.grpc.sdk.protocol.CreateConnectionResponse createConnection(com.couchbase.grpc.sdk.protocol.CreateConnectionRequest request) {
+    public CreateConnectionResponse createConnection(CreateConnectionRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getCreateConnectionMethod(), getCallOptions(), request);
     }
 
     /**
-     * <pre>
-     * Create a Transactions (e.g. a transactions factory), returning a transactionsFactoryRef
-     * </pre>
      */
-    public com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse sdkFactoryCreate(com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest request) {
+    public SdkCommandResult sdkCommand(SdkCreateRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getSdkFactoryCreateMethod(), getCallOptions(), request);
+          getChannel(), getSdkCommandMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public java.util.Iterator<PerfSingleSdkOpResult> perfRun(
+        PerfRunRequest request) {
+      return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
+          getChannel(), getPerfRunMethod(), getCallOptions(), request);
     }
   }
 
@@ -255,26 +307,24 @@ public final class PerformerSdkServiceGrpc {
      * Creates a connection between performer and couchbase server
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.couchbase.grpc.sdk.protocol.CreateConnectionResponse> createConnection(
-        com.couchbase.grpc.sdk.protocol.CreateConnectionRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<CreateConnectionResponse> createConnection(
+        CreateConnectionRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getCreateConnectionMethod(), getCallOptions()), request);
     }
 
     /**
-     * <pre>
-     * Create a Transactions (e.g. a transactions factory), returning a transactionsFactoryRef
-     * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse> sdkFactoryCreate(
-        com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<SdkCommandResult> sdkCommand(
+        SdkCreateRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getSdkFactoryCreateMethod(), getCallOptions()), request);
+          getChannel().newCall(getSdkCommandMethod(), getCallOptions()), request);
     }
   }
 
   private static final int METHODID_CREATE_CONNECTION = 0;
-  private static final int METHODID_SDK_FACTORY_CREATE = 1;
+  private static final int METHODID_SDK_COMMAND = 1;
+  private static final int METHODID_PERF_RUN = 2;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -294,12 +344,16 @@ public final class PerformerSdkServiceGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_CREATE_CONNECTION:
-          serviceImpl.createConnection((com.couchbase.grpc.sdk.protocol.CreateConnectionRequest) request,
-              (io.grpc.stub.StreamObserver<com.couchbase.grpc.sdk.protocol.CreateConnectionResponse>) responseObserver);
+          serviceImpl.createConnection((CreateConnectionRequest) request,
+              (io.grpc.stub.StreamObserver<CreateConnectionResponse>) responseObserver);
           break;
-        case METHODID_SDK_FACTORY_CREATE:
-          serviceImpl.sdkFactoryCreate((com.couchbase.grpc.sdk.protocol.SdkFactoryCreateRequest) request,
-              (io.grpc.stub.StreamObserver<com.couchbase.grpc.sdk.protocol.SdkFactoryCreateResponse>) responseObserver);
+        case METHODID_SDK_COMMAND:
+          serviceImpl.sdkCommand((SdkCreateRequest) request,
+              (io.grpc.stub.StreamObserver<SdkCommandResult>) responseObserver);
+          break;
+        case METHODID_PERF_RUN:
+          serviceImpl.perfRun((PerfRunRequest) request,
+              (io.grpc.stub.StreamObserver<PerfSingleSdkOpResult>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -323,7 +377,7 @@ public final class PerformerSdkServiceGrpc {
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return com.couchbase.grpc.sdk.protocol.SdkPerformer.getDescriptor();
+      return SdkPerformer.getDescriptor();
     }
 
     @java.lang.Override
@@ -363,7 +417,8 @@ public final class PerformerSdkServiceGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new PerformerSdkServiceFileDescriptorSupplier())
               .addMethod(getCreateConnectionMethod())
-              .addMethod(getSdkFactoryCreateMethod())
+              .addMethod(getSdkCommandMethod())
+              .addMethod(getPerfRunMethod())
               .build();
         }
       }
