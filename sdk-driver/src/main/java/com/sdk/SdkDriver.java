@@ -1,5 +1,6 @@
 package com.sdk;
 
+import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
 import com.couchbase.client.java.json.JsonObject;
 import com.sdk.constants.Defaults;
 import com.sdk.constants.Strings;
@@ -31,6 +32,9 @@ record Workload(String uuid, String description, List<Operation> operations, int
     }
 }
 
+record BuiltSdkCommand(List<Op> sdkCommand, String description) {
+}
+
 interface Op {
     void applyTo(SdkAttemptRequest.Builder builder);
 }
@@ -51,9 +55,6 @@ record OpInsert(String docId, JsonObject content) implements Op {
     }
 }
 
-record BuiltSdkCommand(List<Op> sdkCommand, String description) {
-}
-
 public class SdkDriver {
     private final static ObjectMapper jsonMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -63,10 +64,11 @@ public class SdkDriver {
     //private static final Logger logger = LogUtil.getLogger(PerfRunnerTest.class);
 
     public static void main(String[] args)  throws SQLException, IOException, InterruptedException {
-//        if (args.length != 1) {
-//            //logger.info("Must provide config.yaml");
-//            System.exit(-1);
-//        }
+        //Currently doesn't take a YAML file so this isn't needed
+        //if (args.length != 1) {
+            //logger.info("Must provide config.yaml");
+            //System.exit(-1);
+        //}
         System.out.println("Runnning run baby");
         run();
     }
@@ -222,9 +224,77 @@ public class SdkDriver {
                         .collect(Collectors.toList());
 
                 long finishedAll = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
-                System.out.println(sortedResults);
+
+                var resultsToWrite = processResults(sortedResults, first.get());
+
+                System.out.println(resultsToWrite);
             }
 
         }
+    }
+
+    private static long grpcTimestampToNanos(Timestamp ts) {
+        return TimeUnit.SECONDS.toNanos(ts.getSeconds()) + ts.getNanos();
+    }
+
+    record PerfBucketResult(long timestamp,
+                            int sdkOpsTotal,
+                            int sdkOpsSuccess,
+                            int sdkOpsFailed,
+                            int sdkOpsIncomplete,
+                            int latencyMin,
+                            int latencyMax,
+                            int latencyAverage,
+                            int latencyP50,
+                            int latencyP95,
+                            int latencyP99) {
+    }
+
+    private static List<PerfBucketResult> processResults(List<PerfSingleSdkOpResult> result, Tuple2<Timestamp, Long> firstTimes) {
+        var groupedBySeconds = result.stream()
+                .collect(Collectors.groupingBy(v -> v.getInitiated().getSeconds()));
+
+        var out = new ArrayList<PerfBucketResult>();
+
+        groupedBySeconds.forEach((bySecond, results) -> {
+            var stats = new LatencyStats();
+            var success = 0;
+            var failure = 0;
+            var unstagingIncomplete = 0;
+
+            for (PerfSingleSdkOpResult r : results) {
+                long initiated = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getInitiated()));
+                long finished = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getFinished()));
+                assert(finished >= initiated);
+                stats.recordLatency(finished - initiated);
+
+                if (r.getResults().getException() == SdkException.NO_EXCEPTION_THROWN) {
+                    success += 1;
+                } else {
+                    failure += 1;
+                }
+            }
+
+            var histogram = stats.getIntervalHistogram();
+            var timeSinceFirstSecs = bySecond - firstTimes.getT1().getSeconds();
+            var timestampMs = TimeUnit.SECONDS.toMillis(timeSinceFirstSecs) + firstTimes.getT2();
+            var timestampSec = TimeUnit.MILLISECONDS.toSeconds(timestampMs);
+            out.add(new PerfBucketResult(timestampSec,
+                    (int) histogram.getTotalCount(),
+                    success,
+                    failure,
+                    unstagingIncomplete,
+                    (int) histogram.getMinValue(),
+                    (int) histogram.getMaxValue(),
+                    (int) histogram.getMean(),
+                    (int) histogram.getValueAtPercentile(0.5),
+                    (int) histogram.getValueAtPercentile(0.95),
+                    (int) histogram.getValueAtPercentile(0.99)));
+        });
+
+        return out.stream()
+                .sorted(Comparator.comparingLong(a -> a.timestamp))
+                .collect(Collectors.toList());
+
     }
 }
