@@ -73,7 +73,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
     @Override
     public void perfRun(PerfRunRequest request,
                         StreamObserver<PerfSingleSdkOpResult> responseObserver) {
-        System.out.println("Performar stuff is happening");
+        System.out.println("Performer stuff is happening");
         try{
             ClusterConnection connection = getClusterConnection(request.getClusterConnectionId());
 
