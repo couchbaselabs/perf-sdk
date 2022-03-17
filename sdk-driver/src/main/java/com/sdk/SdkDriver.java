@@ -2,6 +2,8 @@ package com.sdk;
 
 import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
 import com.couchbase.client.java.json.JsonObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sdk.constants.Defaults;
 import com.sdk.constants.Strings;
 import com.couchbase.grpc.sdk.protocol.*;
@@ -16,9 +18,11 @@ import io.grpc.stub.StreamObserver;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -26,9 +30,60 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-record Workload(String uuid, String description, List<Operation> operations, int horizontalScaling, Integer count){
-    enum Operation {
-        INSERT,
+
+record TestSuite(String runtime, String versionId, Variables variables, Connections connections, List<Run> runs) {
+    Duration runtimeAsDuration() {
+        var trimmed = runtime.trim();
+        char suffix = trimmed.charAt(trimmed.length() - 1);
+        var rawNum = Integer.parseInt(trimmed.substring(0, trimmed.length() - 1));
+        return switch (suffix) {
+            case 's' -> Duration.ofSeconds(rawNum);
+            case 'm' -> Duration.ofMinutes(rawNum);
+            case 'h' -> Duration.ofHours(rawNum);
+            default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
+        };
+    }
+
+    record Variables(List<PredefinedVariable> predefined, List<CustomVariable> custom) {
+        Integer horizontalScaling() {
+            return (Integer) predefinedVar(PredefinedVariable.PredefinedVariableName.HORIZONTAL_SCALING);
+        }
+
+        private Object predefinedVar(PredefinedVariable.PredefinedVariableName name) {
+            return predefined.stream()
+                    .filter(v -> v.name == name)
+                    .findFirst()
+                    .map(v -> v.value)
+                    .orElseThrow(() -> new IllegalArgumentException("Predefined variable " + name + " not found"));
+        }
+
+        record PredefinedVariable(PredefinedVariableName name, Object value) {
+            enum PredefinedVariableName {
+                @JsonProperty("horizontal_scaling") HORIZONTAL_SCALING,
+            }
+        }
+
+        record CustomVariable(String name, Object value) {
+        }
+    }
+
+    record Connections(Cluster cluster, List<PerformerConn> performers, Database database) {
+        record Cluster(String hostname, String username, String password) {
+        }
+
+        record PerformerConn(String hostname, int port) {
+        }
+
+        record Database(String hostname, int port, String username, String password, String dbName) {
+        }
+    }
+
+    record Run(String uuid, String description, List<Operation> operations) {
+        record Operation(Op op, int count) {
+            enum Op {
+                INSERT,
+            }
+        }
     }
 }
 
@@ -36,12 +91,12 @@ record BuiltSdkCommand(List<Op> sdkCommand, String description) {
 }
 
 interface Op {
-    void applyTo(SdkAttemptRequest.Builder builder);
+    void applyTo(SdkCreateRequest.Builder builder);
 }
 
 record OpInsert(String docId, JsonObject content) implements Op {
     @Override
-    public void applyTo(SdkAttemptRequest.Builder builder) {
+    public void applyTo(SdkCreateRequest.Builder builder) {
         builder.addCommands(SdkCommand.newBuilder()
                 .setInsert(CommandInsert.newBuilder()
                         .setDocId(DocId.newBuilder()
@@ -56,6 +111,9 @@ record OpInsert(String docId, JsonObject content) implements Op {
 }
 
 public class SdkDriver {
+
+    private final static ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private final static ObjectMapper jsonMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     //TODO add logger
@@ -64,16 +122,15 @@ public class SdkDriver {
     //private static final Logger logger = LogUtil.getLogger(PerfRunnerTest.class);
 
     public static void main(String[] args)  throws SQLException, IOException, InterruptedException {
-        //Currently doesn't take a YAML file so this isn't needed
-        //if (args.length != 1) {
+        if (args.length != 1) {
             //logger.info("Must provide config.yaml");
-            //System.exit(-1);
-        //}
+            System.exit(-1);
+        }
         System.out.println("Runnning run baby");
-        run();
+        run(args[0]);
     }
 
-    static Op addOp(Workload workload, Workload.Operation op, int repeatIdx) {
+    static Op addOp(TestSuite.Run.Operation.Op op, int repeatIdx) {
         String docId = "__doc_" + repeatIdx;
         JsonObject initial = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
         JsonObject updated = JsonObject.create().put(Strings.CONTENT_NAME, Strings.UPDATED_CONTENT_VALUE);
@@ -86,56 +143,39 @@ public class SdkDriver {
         }
     }
 
-    static BuiltSdkCommand createSdkCommand(Workload workload) {
+    static BuiltSdkCommand createSdkCommand(TestSuite.Run run) {
         //StringBuilder sb = new StringBuilder();
         var ops = new ArrayList<Op>();
 
-        workload.operations().forEach(op -> {
-            for (int i=0; i<workload.count(); i++) {
-                    ops.add(addOp(workload, op, i));
+        run.operations().forEach(op -> {
+            for (int i=0; i<op.count(); i++) {
+                    ops.add(addOp(op.op(), i));
                 }
             }
         );
         return new BuiltSdkCommand(ops, "Test");
     }
 
-    static void run() throws IOException, SQLException, InterruptedException {
-        //TODO Add YAML integration
+    static TestSuite readTestSuite(String configFilename) {
+        try {
+            return yamlMapper.readValue(new File(configFilename), TestSuite.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-        // Currently all information about a run is stored in variables as such
-        // Postgresql db connection information
-        String dbHostname = "localhost";
-        Integer dbPort = 5432;
-        String database = "perf";
-        String dbUsername = "postgres";
-        String dbPassword = "password";
+    static void run(String testSuiteFile) throws IOException, SQLException, InterruptedException {
+        var testSuite = readTestSuite(testSuiteFile);
 
-        //cb cluster connection information
-        String cbHostname = "10.112.212.101";
-        String cbUsername = "Administrator";
-        String cbPassword = "password";
-
-        //performer connection information
-        String performerHostname = "localhost";
-        Integer performerPort = 8060;
-
-        //workload
-        Workload work = new Workload("0","Just a few inserts", Arrays.asList(Workload.Operation.INSERT),1, 50);
-        ArrayList<Workload> workList = new ArrayList<>();
-        workList.add(work);
-
-        //Performance
-        int runtime = 10;
-
-        //TODO Make Driver write results to time series db
         var dbUrl = String.format("jdbc:postgresql://%s:%d/%s",
-                dbHostname,
-                dbPort,
-                database);
+                testSuite.connections().database().hostname(),
+                testSuite.connections().database().port(),
+                testSuite.connections().database().dbName());
 
         var props = new Properties();
-        props.setProperty("user", dbUsername);
-        props.setProperty("password", dbPassword);
+        props.setProperty("user", testSuite.connections().database().username());
+        props.setProperty("password", testSuite.connections().database().password());
 
         //logger.info("Connecting to database " + url);
         System.out.println("Set all wacky variablies");
@@ -145,41 +185,48 @@ public class SdkDriver {
             System.out.println("Connection Begin");
             CreateConnectionRequest createConnection =
                     CreateConnectionRequest.newBuilder()
-                            .setClusterHostname(cbHostname)
-                            .setBucketName("default")
-                            .setClusterUsername(cbUsername)
-                            .setClusterPassword(cbPassword)
-                            .setUseAsDefaultConnection(true)
+                            .setClusterHostname(testSuite.connections().cluster().hostname())
+                            .setClusterUsername(testSuite.connections().cluster().username())
+                            .setClusterPassword(testSuite.connections().cluster().password())
                             .build();
 
             //logger.info("Connecting to performer on {}:{}", perfConfig.connections().performer().hostname(), perfConfig.connections().performer().port());
             System.out.println("Connection Done");
             System.out.println("Performer Connect");
-            var performer = new Performer(0,
-                    performerHostname,
-                    performerPort,
-                    createConnection);
 
+            List<Performer> performers = new ArrayList<Performer>();
 
-            for (var workload : workList) {
+            for (int i=0; i < testSuite.connections().performers().size(); i++){
+                performers.add(new Performer(i,
+                        testSuite.connections().performers().get(i).hostname(),
+                        testSuite.connections().performers().get(i).port(),
+                        createConnection));
+            }
+
+            for (TestSuite.Run run : testSuite.runs()) {
                 //logger.info("Running workload " + workload);
                 System.out.println("Running Workload");
-                BuiltSdkCommand command = createSdkCommand(workload);
 
-                SdkAttemptRequest.Builder sdkBuilder = SdkAttemptRequest.newBuilder();
+                try (var st = conn.createStatement()) {
+                    String statement = String.format("INSERT INTO suites VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
+                            run.uuid(),
+                            "test",
+                            "test");
+                    st.executeUpdate(statement);
+                }
+
+                BuiltSdkCommand command = createSdkCommand(run);
+
+                SdkCreateRequest.Builder sdkBuilt = SdkCreateRequest.newBuilder();
 
                 command.sdkCommand().forEach(op -> {
-                    op.applyTo(sdkBuilder);
+                    op.applyTo(sdkBuilt);
                 });
 
-                SdkCreateRequest sdkBuilt = SdkCreateRequest.newBuilder()
-                        .addAttempts(sdkBuilder.build())
-                .build();
-
                 PerfRunRequest.Builder perf = PerfRunRequest.newBuilder()
-                        .setRunForSeconds(runtime);
+                        .setRunForSeconds((int) testSuite.runtimeAsDuration().toSeconds());
 
-                for (int i=0; i< workload.horizontalScaling(); i++){
+                for (int i=0; i< testSuite.variables().horizontalScaling(); i++){
                     perf.addHorizontalScaling(com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.newBuilder()
                             .addSdkCommand(sdkBuilt));
                 }
@@ -211,7 +258,9 @@ public class SdkDriver {
                     }
                 };
 
-                performer.stubBlockFuture().perfRun(perf.build(), responseObserver);
+                for (Performer performer: performers) {
+                    performer.stubBlockFuture().perfRun(perf.build(), responseObserver);
+                }
 
                 // Tests are short enough that we can just buffer everything then write it currently
                 while (!done.get()) {
@@ -227,7 +276,29 @@ public class SdkDriver {
 
                 var resultsToWrite = processResults(sortedResults, first.get());
 
-                System.out.println(resultsToWrite);
+                resultsToWrite.forEach(v -> {
+                    try (var st = conn.createStatement()) {
+
+                        st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+                                v.timestamp,
+                                testSuite.versionId(),
+                                run.uuid(),
+                                v.sdkOpsTotal,
+                                v.sdkOpsSuccess,
+                                v.sdkOpsFailed,
+                                v.sdkOpsIncomplete,
+                                v.latencyMin,
+                                v.latencyMax,
+                                v.latencyAverage,
+                                v.latencyP50,
+                                v.latencyP95,
+                                v.latencyP99
+                        ));
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
+
+                });
             }
 
         }

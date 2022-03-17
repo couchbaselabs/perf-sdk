@@ -18,9 +18,7 @@ com/couchbase/grpc/sdk/protocol/DocId$1.class
 com/couchbase/grpc/sdk/protocol/SdkCommands.class
 com/couchbase/grpc/sdk/protocol/SdkCommandOrBuilder.class
 com/couchbase/grpc/sdk/protocol/CreateConnectionRequest.class
-com/couchbase/grpc/sdk/protocol/SdkAttemptRequest$Builder.class
 com/couchbase/grpc/sdk/protocol/SdkCreateRequest.class
-com/couchbase/grpc/sdk/protocol/SdkAttemptRequestOrBuilder.class
 com/couchbase/grpc/sdk/protocol/CommandInsert$1.class
 com/couchbase/grpc/sdk/protocol/PerfSingleSdkOpResult.class
 com/couchbase/grpc/sdk/protocol/SdkCommandResultOrBuilder.class
@@ -32,12 +30,10 @@ com/couchbase/grpc/sdk/protocol/PerformerSdkServiceGrpc$3.class
 com/couchbase/grpc/sdk/protocol/SdkCommand$CommandCase.class
 com/couchbase/grpc/sdk/protocol/PerfSingleSdkOpResultOrBuilder.class
 com/couchbase/grpc/sdk/protocol/DocId$Builder.class
-com/couchbase/grpc/sdk/protocol/SdkAttemptRequest$1.class
 com/couchbase/grpc/sdk/protocol/SdkCommandResult$1.class
 com/couchbase/grpc/sdk/protocol/CommandInsertOrBuilder.class
 com/couchbase/grpc/sdk/protocol/PerfRunHorizontalScalingOrBuilder.class
 com/couchbase/grpc/sdk/protocol/SdkCommand$1.class
-com/couchbase/grpc/sdk/protocol/SdkAttemptRequest.class
 com/couchbase/grpc/sdk/protocol/SdkCommand.class
 com/couchbase/grpc/sdk/protocol/PerformerSdkServiceGrpc$PerformerSdkServiceFileDescriptorSupplier.class
 com/couchbase/grpc/sdk/protocol/CommandInsert$Builder.class

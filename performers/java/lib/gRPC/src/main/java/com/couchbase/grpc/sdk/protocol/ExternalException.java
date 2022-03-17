@@ -76,7 +76,7 @@ public enum ExternalException
   }
   public static final com.google.protobuf.Descriptors.EnumDescriptor
       getDescriptor() {
-    return SdkCommands.getDescriptor().getEnumTypes().get(1);
+    return com.couchbase.grpc.sdk.protocol.SdkCommands.getDescriptor().getEnumTypes().get(1);
   }
 
   private static final ExternalException[] VALUES = values();

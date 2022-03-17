@@ -55,10 +55,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
 
             mapIdToClusterConnection.put(clusterConnectionId,connection);
 
-            if(request.getUseAsDefaultConnection())
-            {
-                defaultConnection = connection;
-            }
+            defaultConnection = connection;
 
             response.setClusterConnectionId(clusterConnectionId);
 

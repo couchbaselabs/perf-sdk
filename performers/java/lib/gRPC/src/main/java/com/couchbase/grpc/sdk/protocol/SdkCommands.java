@@ -48,7 +48,7 @@ public final class SdkCommands {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          SdkBasic.getDescriptor(),
+          com.couchbase.grpc.sdk.protocol.SdkBasic.getDescriptor(),
         });
     internal_static_protocol_CommandInsert_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -62,7 +62,7 @@ public final class SdkCommands {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_SdkCommand_descriptor,
         new java.lang.String[] { "Insert", "Command", });
-    SdkBasic.getDescriptor();
+    com.couchbase.grpc.sdk.protocol.SdkBasic.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

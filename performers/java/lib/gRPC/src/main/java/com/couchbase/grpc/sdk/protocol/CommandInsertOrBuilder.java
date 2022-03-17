@@ -16,11 +16,11 @@ public interface CommandInsertOrBuilder extends
    * <code>.protocol.DocId docId = 1;</code>
    * @return The docId.
    */
-  DocId getDocId();
+  com.couchbase.grpc.sdk.protocol.DocId getDocId();
   /**
    * <code>.protocol.DocId docId = 1;</code>
    */
-  DocIdOrBuilder getDocIdOrBuilder();
+  com.couchbase.grpc.sdk.protocol.DocIdOrBuilder getDocIdOrBuilder();
 
   /**
    * <code>string contentJson = 2;</code>

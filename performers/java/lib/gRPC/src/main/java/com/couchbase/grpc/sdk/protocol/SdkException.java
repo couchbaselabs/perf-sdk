@@ -94,7 +94,7 @@ public enum SdkException
   }
   public static final com.google.protobuf.Descriptors.EnumDescriptor
       getDescriptor() {
-    return SdkCommands.getDescriptor().getEnumTypes().get(0);
+    return com.couchbase.grpc.sdk.protocol.SdkCommands.getDescriptor().getEnumTypes().get(0);
   }
 
   private static final SdkException[] VALUES = values();

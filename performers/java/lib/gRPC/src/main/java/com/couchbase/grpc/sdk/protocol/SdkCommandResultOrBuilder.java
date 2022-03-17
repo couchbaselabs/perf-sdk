@@ -16,7 +16,7 @@ public interface SdkCommandResultOrBuilder extends
    * <code>.protocol.SdkException exception = 1;</code>
    * @return The exception.
    */
-  SdkException getException();
+  com.couchbase.grpc.sdk.protocol.SdkException getException();
 
   /**
    * <code>.protocol.ExternalException exceptionCause = 2;</code>
@@ -27,7 +27,7 @@ public interface SdkCommandResultOrBuilder extends
    * <code>.protocol.ExternalException exceptionCause = 2;</code>
    * @return The exceptionCause.
    */
-  ExternalException getExceptionCause();
+  com.couchbase.grpc.sdk.protocol.ExternalException getExceptionCause();
 
   /**
    * <code>repeated string log = 3;</code>
@@ -53,16 +53,4 @@ public interface SdkCommandResultOrBuilder extends
    */
   com.google.protobuf.ByteString
       getLogBytes(int index);
-
-  /**
-   * <code>string sdkId = 4;</code>
-   * @return The sdkId.
-   */
-  java.lang.String getSdkId();
-  /**
-   * <code>string sdkId = 4;</code>
-   * @return The bytes for sdkId.
-   */
-  com.google.protobuf.ByteString
-      getSdkIdBytes();
 }

@@ -16,11 +16,11 @@ public interface SdkCommandOrBuilder extends
    * <code>.protocol.CommandInsert insert = 1;</code>
    * @return The insert.
    */
-  CommandInsert getInsert();
+  com.couchbase.grpc.sdk.protocol.CommandInsert getInsert();
   /**
    * <code>.protocol.CommandInsert insert = 1;</code>
    */
-  CommandInsertOrBuilder getInsertOrBuilder();
+  com.couchbase.grpc.sdk.protocol.CommandInsertOrBuilder getInsertOrBuilder();
 
-  public SdkCommand.CommandCase getCommandCase();
+  public com.couchbase.grpc.sdk.protocol.SdkCommand.CommandCase getCommandCase();
 }

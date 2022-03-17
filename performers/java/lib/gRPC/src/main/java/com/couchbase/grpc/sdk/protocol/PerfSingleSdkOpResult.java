@@ -49,11 +49,11 @@ private static final long serialVersionUID = 0L;
             done = true;
             break;
           case 10: {
-            SdkCommandResult.Builder subBuilder = null;
+            com.couchbase.grpc.sdk.protocol.SdkCommandResult.Builder subBuilder = null;
             if (results_ != null) {
               subBuilder = results_.toBuilder();
             }
-            results_ = input.readMessage(SdkCommandResult.parser(), extensionRegistry);
+            results_ = input.readMessage(com.couchbase.grpc.sdk.protocol.SdkCommandResult.parser(), extensionRegistry);
             if (subBuilder != null) {
               subBuilder.mergeFrom(results_);
               results_ = subBuilder.buildPartial();
@@ -108,19 +108,19 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_descriptor;
+    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_fieldAccessorTable
+    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            PerfSingleSdkOpResult.class, PerfSingleSdkOpResult.Builder.class);
+            com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult.class, com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult.Builder.class);
   }
 
   public static final int RESULTS_FIELD_NUMBER = 1;
-  private SdkCommandResult results_;
+  private com.couchbase.grpc.sdk.protocol.SdkCommandResult results_;
   /**
    * <pre>
    * Implementations should not provide the logs field here, to conserve memory &amp; bandwidth
@@ -142,8 +142,8 @@ private static final long serialVersionUID = 0L;
    * @return The results.
    */
   @java.lang.Override
-  public SdkCommandResult getResults() {
-    return results_ == null ? SdkCommandResult.getDefaultInstance() : results_;
+  public com.couchbase.grpc.sdk.protocol.SdkCommandResult getResults() {
+    return results_ == null ? com.couchbase.grpc.sdk.protocol.SdkCommandResult.getDefaultInstance() : results_;
   }
   /**
    * <pre>
@@ -153,7 +153,7 @@ private static final long serialVersionUID = 0L;
    * <code>.protocol.SdkCommandResult results = 1;</code>
    */
   @java.lang.Override
-  public SdkCommandResultOrBuilder getResultsOrBuilder() {
+  public com.couchbase.grpc.sdk.protocol.SdkCommandResultOrBuilder getResultsOrBuilder() {
     return getResults();
   }
 
@@ -263,10 +263,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof PerfSingleSdkOpResult)) {
+    if (!(obj instanceof com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult)) {
       return super.equals(obj);
     }
-    PerfSingleSdkOpResult other = (PerfSingleSdkOpResult) obj;
+    com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult other = (com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult) obj;
 
     if (hasResults() != other.hasResults()) return false;
     if (hasResults()) {
@@ -311,69 +311,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static PerfSingleSdkOpResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static PerfSingleSdkOpResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static PerfSingleSdkOpResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static PerfSingleSdkOpResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static PerfSingleSdkOpResult parseFrom(byte[] data)
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static PerfSingleSdkOpResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static PerfSingleSdkOpResult parseFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static PerfSingleSdkOpResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static PerfSingleSdkOpResult parseDelimitedFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static PerfSingleSdkOpResult parseDelimitedFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static PerfSingleSdkOpResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static PerfSingleSdkOpResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -386,7 +386,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(PerfSingleSdkOpResult prototype) {
+  public static Builder newBuilder(com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -407,18 +407,18 @@ private static final long serialVersionUID = 0L;
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:protocol.PerfSingleSdkOpResult)
-          PerfSingleSdkOpResultOrBuilder {
+      com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResultOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_fieldAccessorTable
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              PerfSingleSdkOpResult.class, PerfSingleSdkOpResult.Builder.class);
+              com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult.class, com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult.Builder.class);
     }
 
     // Construct using com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult.newBuilder()
@@ -463,17 +463,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfSingleSdkOpResult_descriptor;
     }
 
     @java.lang.Override
-    public PerfSingleSdkOpResult getDefaultInstanceForType() {
-      return PerfSingleSdkOpResult.getDefaultInstance();
+    public com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult getDefaultInstanceForType() {
+      return com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult.getDefaultInstance();
     }
 
     @java.lang.Override
-    public PerfSingleSdkOpResult build() {
-      PerfSingleSdkOpResult result = buildPartial();
+    public com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult build() {
+      com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -481,8 +481,8 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public PerfSingleSdkOpResult buildPartial() {
-      PerfSingleSdkOpResult result = new PerfSingleSdkOpResult(this);
+    public com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult buildPartial() {
+      com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult result = new com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult(this);
       if (resultsBuilder_ == null) {
         result.results_ = results_;
       } else {
@@ -536,16 +536,16 @@ private static final long serialVersionUID = 0L;
     }
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof PerfSingleSdkOpResult) {
-        return mergeFrom((PerfSingleSdkOpResult)other);
+      if (other instanceof com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult) {
+        return mergeFrom((com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(PerfSingleSdkOpResult other) {
-      if (other == PerfSingleSdkOpResult.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult other) {
+      if (other == com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult.getDefaultInstance()) return this;
       if (other.hasResults()) {
         mergeResults(other.getResults());
       }
@@ -570,11 +570,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      PerfSingleSdkOpResult parsedMessage = null;
+      com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (PerfSingleSdkOpResult) e.getUnfinishedMessage();
+        parsedMessage = (com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -584,9 +584,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private SdkCommandResult results_;
+    private com.couchbase.grpc.sdk.protocol.SdkCommandResult results_;
     private com.google.protobuf.SingleFieldBuilderV3<
-            SdkCommandResult, SdkCommandResult.Builder, SdkCommandResultOrBuilder> resultsBuilder_;
+        com.couchbase.grpc.sdk.protocol.SdkCommandResult, com.couchbase.grpc.sdk.protocol.SdkCommandResult.Builder, com.couchbase.grpc.sdk.protocol.SdkCommandResultOrBuilder> resultsBuilder_;
     /**
      * <pre>
      * Implementations should not provide the logs field here, to conserve memory &amp; bandwidth
@@ -606,9 +606,9 @@ private static final long serialVersionUID = 0L;
      * <code>.protocol.SdkCommandResult results = 1;</code>
      * @return The results.
      */
-    public SdkCommandResult getResults() {
+    public com.couchbase.grpc.sdk.protocol.SdkCommandResult getResults() {
       if (resultsBuilder_ == null) {
-        return results_ == null ? SdkCommandResult.getDefaultInstance() : results_;
+        return results_ == null ? com.couchbase.grpc.sdk.protocol.SdkCommandResult.getDefaultInstance() : results_;
       } else {
         return resultsBuilder_.getMessage();
       }
@@ -620,7 +620,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>.protocol.SdkCommandResult results = 1;</code>
      */
-    public Builder setResults(SdkCommandResult value) {
+    public Builder setResults(com.couchbase.grpc.sdk.protocol.SdkCommandResult value) {
       if (resultsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -641,7 +641,7 @@ private static final long serialVersionUID = 0L;
      * <code>.protocol.SdkCommandResult results = 1;</code>
      */
     public Builder setResults(
-        SdkCommandResult.Builder builderForValue) {
+        com.couchbase.grpc.sdk.protocol.SdkCommandResult.Builder builderForValue) {
       if (resultsBuilder_ == null) {
         results_ = builderForValue.build();
         onChanged();
@@ -658,11 +658,11 @@ private static final long serialVersionUID = 0L;
      *
      * <code>.protocol.SdkCommandResult results = 1;</code>
      */
-    public Builder mergeResults(SdkCommandResult value) {
+    public Builder mergeResults(com.couchbase.grpc.sdk.protocol.SdkCommandResult value) {
       if (resultsBuilder_ == null) {
         if (results_ != null) {
           results_ =
-            SdkCommandResult.newBuilder(results_).mergeFrom(value).buildPartial();
+            com.couchbase.grpc.sdk.protocol.SdkCommandResult.newBuilder(results_).mergeFrom(value).buildPartial();
         } else {
           results_ = value;
         }
@@ -698,7 +698,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>.protocol.SdkCommandResult results = 1;</code>
      */
-    public SdkCommandResult.Builder getResultsBuilder() {
+    public com.couchbase.grpc.sdk.protocol.SdkCommandResult.Builder getResultsBuilder() {
       
       onChanged();
       return getResultsFieldBuilder().getBuilder();
@@ -710,12 +710,12 @@ private static final long serialVersionUID = 0L;
      *
      * <code>.protocol.SdkCommandResult results = 1;</code>
      */
-    public SdkCommandResultOrBuilder getResultsOrBuilder() {
+    public com.couchbase.grpc.sdk.protocol.SdkCommandResultOrBuilder getResultsOrBuilder() {
       if (resultsBuilder_ != null) {
         return resultsBuilder_.getMessageOrBuilder();
       } else {
         return results_ == null ?
-            SdkCommandResult.getDefaultInstance() : results_;
+            com.couchbase.grpc.sdk.protocol.SdkCommandResult.getDefaultInstance() : results_;
       }
     }
     /**
@@ -726,11 +726,11 @@ private static final long serialVersionUID = 0L;
      * <code>.protocol.SdkCommandResult results = 1;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-            SdkCommandResult, SdkCommandResult.Builder, SdkCommandResultOrBuilder>
+        com.couchbase.grpc.sdk.protocol.SdkCommandResult, com.couchbase.grpc.sdk.protocol.SdkCommandResult.Builder, com.couchbase.grpc.sdk.protocol.SdkCommandResultOrBuilder> 
         getResultsFieldBuilder() {
       if (resultsBuilder_ == null) {
         resultsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                SdkCommandResult, SdkCommandResult.Builder, SdkCommandResultOrBuilder>(
+            com.couchbase.grpc.sdk.protocol.SdkCommandResult, com.couchbase.grpc.sdk.protocol.SdkCommandResult.Builder, com.couchbase.grpc.sdk.protocol.SdkCommandResultOrBuilder>(
                 getResults(),
                 getParentForChildren(),
                 isClean());
@@ -993,12 +993,12 @@ private static final long serialVersionUID = 0L;
   }
 
   // @@protoc_insertion_point(class_scope:protocol.PerfSingleSdkOpResult)
-  private static final PerfSingleSdkOpResult DEFAULT_INSTANCE;
+  private static final com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new PerfSingleSdkOpResult();
+    DEFAULT_INSTANCE = new com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult();
   }
 
-  public static PerfSingleSdkOpResult getDefaultInstance() {
+  public static com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -1023,7 +1023,7 @@ private static final long serialVersionUID = 0L;
   }
 
   @java.lang.Override
-  public PerfSingleSdkOpResult getDefaultInstanceForType() {
+  public com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 
