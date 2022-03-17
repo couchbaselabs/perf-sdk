@@ -24,7 +24,7 @@ public interface PerfSingleSdkOpResultOrBuilder extends
    * <code>.protocol.SdkCommandResult results = 1;</code>
    * @return The results.
    */
-  SdkCommandResult getResults();
+  com.couchbase.grpc.sdk.protocol.SdkCommandResult getResults();
   /**
    * <pre>
    * Implementations should not provide the logs field here, to conserve memory &amp; bandwidth
@@ -32,7 +32,7 @@ public interface PerfSingleSdkOpResultOrBuilder extends
    *
    * <code>.protocol.SdkCommandResult results = 1;</code>
    */
-  SdkCommandResultOrBuilder getResultsOrBuilder();
+  com.couchbase.grpc.sdk.protocol.SdkCommandResultOrBuilder getResultsOrBuilder();
 
   /**
    * <code>.google.protobuf.Timestamp initiated = 2;</code>

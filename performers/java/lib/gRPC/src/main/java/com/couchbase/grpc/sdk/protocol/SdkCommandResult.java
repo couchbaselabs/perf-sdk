@@ -19,7 +19,6 @@ private static final long serialVersionUID = 0L;
     exception_ = 0;
     exceptionCause_ = 0;
     log_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-    sdkId_ = "";
   }
 
   @java.lang.Override
@@ -74,12 +73,6 @@ private static final long serialVersionUID = 0L;
             log_.add(s);
             break;
           }
-          case 34: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            sdkId_ = s;
-            break;
-          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -104,15 +97,15 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return SdkPerformer.internal_static_protocol_SdkCommandResult_descriptor;
+    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCommandResult_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return SdkPerformer.internal_static_protocol_SdkCommandResult_fieldAccessorTable
+    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCommandResult_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            SdkCommandResult.class, SdkCommandResult.Builder.class);
+            com.couchbase.grpc.sdk.protocol.SdkCommandResult.class, com.couchbase.grpc.sdk.protocol.SdkCommandResult.Builder.class);
   }
 
   public static final int EXCEPTION_FIELD_NUMBER = 1;
@@ -128,10 +121,10 @@ private static final long serialVersionUID = 0L;
    * <code>.protocol.SdkException exception = 1;</code>
    * @return The exception.
    */
-  @java.lang.Override public SdkException getException() {
+  @java.lang.Override public com.couchbase.grpc.sdk.protocol.SdkException getException() {
     @SuppressWarnings("deprecation")
-    SdkException result = SdkException.valueOf(exception_);
-    return result == null ? SdkException.UNRECOGNIZED : result;
+    com.couchbase.grpc.sdk.protocol.SdkException result = com.couchbase.grpc.sdk.protocol.SdkException.valueOf(exception_);
+    return result == null ? com.couchbase.grpc.sdk.protocol.SdkException.UNRECOGNIZED : result;
   }
 
   public static final int EXCEPTIONCAUSE_FIELD_NUMBER = 2;
@@ -147,10 +140,10 @@ private static final long serialVersionUID = 0L;
    * <code>.protocol.ExternalException exceptionCause = 2;</code>
    * @return The exceptionCause.
    */
-  @java.lang.Override public ExternalException getExceptionCause() {
+  @java.lang.Override public com.couchbase.grpc.sdk.protocol.ExternalException getExceptionCause() {
     @SuppressWarnings("deprecation")
-    ExternalException result = ExternalException.valueOf(exceptionCause_);
-    return result == null ? ExternalException.UNRECOGNIZED : result;
+    com.couchbase.grpc.sdk.protocol.ExternalException result = com.couchbase.grpc.sdk.protocol.ExternalException.valueOf(exceptionCause_);
+    return result == null ? com.couchbase.grpc.sdk.protocol.ExternalException.UNRECOGNIZED : result;
   }
 
   public static final int LOG_FIELD_NUMBER = 3;
@@ -188,44 +181,6 @@ private static final long serialVersionUID = 0L;
     return log_.getByteString(index);
   }
 
-  public static final int SDKID_FIELD_NUMBER = 4;
-  private volatile java.lang.Object sdkId_;
-  /**
-   * <code>string sdkId = 4;</code>
-   * @return The sdkId.
-   */
-  @java.lang.Override
-  public java.lang.String getSdkId() {
-    java.lang.Object ref = sdkId_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      sdkId_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string sdkId = 4;</code>
-   * @return The bytes for sdkId.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getSdkIdBytes() {
-    java.lang.Object ref = sdkId_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      sdkId_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -240,17 +195,14 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (exception_ != SdkException.NO_EXCEPTION_THROWN.getNumber()) {
+    if (exception_ != com.couchbase.grpc.sdk.protocol.SdkException.NO_EXCEPTION_THROWN.getNumber()) {
       output.writeEnum(1, exception_);
     }
-    if (exceptionCause_ != ExternalException.Unknown.getNumber()) {
+    if (exceptionCause_ != com.couchbase.grpc.sdk.protocol.ExternalException.Unknown.getNumber()) {
       output.writeEnum(2, exceptionCause_);
     }
     for (int i = 0; i < log_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, log_.getRaw(i));
-    }
-    if (!getSdkIdBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, sdkId_);
     }
     unknownFields.writeTo(output);
   }
@@ -261,11 +213,11 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (exception_ != SdkException.NO_EXCEPTION_THROWN.getNumber()) {
+    if (exception_ != com.couchbase.grpc.sdk.protocol.SdkException.NO_EXCEPTION_THROWN.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(1, exception_);
     }
-    if (exceptionCause_ != ExternalException.Unknown.getNumber()) {
+    if (exceptionCause_ != com.couchbase.grpc.sdk.protocol.ExternalException.Unknown.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(2, exceptionCause_);
     }
@@ -277,9 +229,6 @@ private static final long serialVersionUID = 0L;
       size += dataSize;
       size += 1 * getLogList().size();
     }
-    if (!getSdkIdBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, sdkId_);
-    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -290,17 +239,15 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof SdkCommandResult)) {
+    if (!(obj instanceof com.couchbase.grpc.sdk.protocol.SdkCommandResult)) {
       return super.equals(obj);
     }
-    SdkCommandResult other = (SdkCommandResult) obj;
+    com.couchbase.grpc.sdk.protocol.SdkCommandResult other = (com.couchbase.grpc.sdk.protocol.SdkCommandResult) obj;
 
     if (exception_ != other.exception_) return false;
     if (exceptionCause_ != other.exceptionCause_) return false;
     if (!getLogList()
         .equals(other.getLogList())) return false;
-    if (!getSdkId()
-        .equals(other.getSdkId())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -320,76 +267,74 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + LOG_FIELD_NUMBER;
       hash = (53 * hash) + getLogList().hashCode();
     }
-    hash = (37 * hash) + SDKID_FIELD_NUMBER;
-    hash = (53 * hash) + getSdkId().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static SdkCommandResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SdkCommandResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SdkCommandResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SdkCommandResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SdkCommandResult parseFrom(byte[] data)
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SdkCommandResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SdkCommandResult parseFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static SdkCommandResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static SdkCommandResult parseDelimitedFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static SdkCommandResult parseDelimitedFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static SdkCommandResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static SdkCommandResult parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -402,7 +347,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(SdkCommandResult prototype) {
+  public static Builder newBuilder(com.couchbase.grpc.sdk.protocol.SdkCommandResult prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -423,18 +368,18 @@ private static final long serialVersionUID = 0L;
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:protocol.SdkCommandResult)
-          SdkCommandResultOrBuilder {
+      com.couchbase.grpc.sdk.protocol.SdkCommandResultOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SdkPerformer.internal_static_protocol_SdkCommandResult_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCommandResult_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SdkPerformer.internal_static_protocol_SdkCommandResult_fieldAccessorTable
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCommandResult_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              SdkCommandResult.class, SdkCommandResult.Builder.class);
+              com.couchbase.grpc.sdk.protocol.SdkCommandResult.class, com.couchbase.grpc.sdk.protocol.SdkCommandResult.Builder.class);
     }
 
     // Construct using com.couchbase.grpc.sdk.protocol.SdkCommandResult.newBuilder()
@@ -461,25 +406,23 @@ private static final long serialVersionUID = 0L;
 
       log_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000001);
-      sdkId_ = "";
-
       return this;
     }
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return SdkPerformer.internal_static_protocol_SdkCommandResult_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCommandResult_descriptor;
     }
 
     @java.lang.Override
-    public SdkCommandResult getDefaultInstanceForType() {
-      return SdkCommandResult.getDefaultInstance();
+    public com.couchbase.grpc.sdk.protocol.SdkCommandResult getDefaultInstanceForType() {
+      return com.couchbase.grpc.sdk.protocol.SdkCommandResult.getDefaultInstance();
     }
 
     @java.lang.Override
-    public SdkCommandResult build() {
-      SdkCommandResult result = buildPartial();
+    public com.couchbase.grpc.sdk.protocol.SdkCommandResult build() {
+      com.couchbase.grpc.sdk.protocol.SdkCommandResult result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -487,8 +430,8 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public SdkCommandResult buildPartial() {
-      SdkCommandResult result = new SdkCommandResult(this);
+    public com.couchbase.grpc.sdk.protocol.SdkCommandResult buildPartial() {
+      com.couchbase.grpc.sdk.protocol.SdkCommandResult result = new com.couchbase.grpc.sdk.protocol.SdkCommandResult(this);
       int from_bitField0_ = bitField0_;
       result.exception_ = exception_;
       result.exceptionCause_ = exceptionCause_;
@@ -497,7 +440,6 @@ private static final long serialVersionUID = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
       }
       result.log_ = log_;
-      result.sdkId_ = sdkId_;
       onBuilt();
       return result;
     }
@@ -536,16 +478,16 @@ private static final long serialVersionUID = 0L;
     }
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof SdkCommandResult) {
-        return mergeFrom((SdkCommandResult)other);
+      if (other instanceof com.couchbase.grpc.sdk.protocol.SdkCommandResult) {
+        return mergeFrom((com.couchbase.grpc.sdk.protocol.SdkCommandResult)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(SdkCommandResult other) {
-      if (other == SdkCommandResult.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.couchbase.grpc.sdk.protocol.SdkCommandResult other) {
+      if (other == com.couchbase.grpc.sdk.protocol.SdkCommandResult.getDefaultInstance()) return this;
       if (other.exception_ != 0) {
         setExceptionValue(other.getExceptionValue());
       }
@@ -560,10 +502,6 @@ private static final long serialVersionUID = 0L;
           ensureLogIsMutable();
           log_.addAll(other.log_);
         }
-        onChanged();
-      }
-      if (!other.getSdkId().isEmpty()) {
-        sdkId_ = other.sdkId_;
         onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
@@ -581,11 +519,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      SdkCommandResult parsedMessage = null;
+      com.couchbase.grpc.sdk.protocol.SdkCommandResult parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (SdkCommandResult) e.getUnfinishedMessage();
+        parsedMessage = (com.couchbase.grpc.sdk.protocol.SdkCommandResult) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -620,17 +558,17 @@ private static final long serialVersionUID = 0L;
      * @return The exception.
      */
     @java.lang.Override
-    public SdkException getException() {
+    public com.couchbase.grpc.sdk.protocol.SdkException getException() {
       @SuppressWarnings("deprecation")
-      SdkException result = SdkException.valueOf(exception_);
-      return result == null ? SdkException.UNRECOGNIZED : result;
+      com.couchbase.grpc.sdk.protocol.SdkException result = com.couchbase.grpc.sdk.protocol.SdkException.valueOf(exception_);
+      return result == null ? com.couchbase.grpc.sdk.protocol.SdkException.UNRECOGNIZED : result;
     }
     /**
      * <code>.protocol.SdkException exception = 1;</code>
      * @param value The exception to set.
      * @return This builder for chaining.
      */
-    public Builder setException(SdkException value) {
+    public Builder setException(com.couchbase.grpc.sdk.protocol.SdkException value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -674,17 +612,17 @@ private static final long serialVersionUID = 0L;
      * @return The exceptionCause.
      */
     @java.lang.Override
-    public ExternalException getExceptionCause() {
+    public com.couchbase.grpc.sdk.protocol.ExternalException getExceptionCause() {
       @SuppressWarnings("deprecation")
-      ExternalException result = ExternalException.valueOf(exceptionCause_);
-      return result == null ? ExternalException.UNRECOGNIZED : result;
+      com.couchbase.grpc.sdk.protocol.ExternalException result = com.couchbase.grpc.sdk.protocol.ExternalException.valueOf(exceptionCause_);
+      return result == null ? com.couchbase.grpc.sdk.protocol.ExternalException.UNRECOGNIZED : result;
     }
     /**
      * <code>.protocol.ExternalException exceptionCause = 2;</code>
      * @param value The exceptionCause to set.
      * @return This builder for chaining.
      */
-    public Builder setExceptionCause(ExternalException value) {
+    public Builder setExceptionCause(com.couchbase.grpc.sdk.protocol.ExternalException value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -813,82 +751,6 @@ private static final long serialVersionUID = 0L;
       onChanged();
       return this;
     }
-
-    private java.lang.Object sdkId_ = "";
-    /**
-     * <code>string sdkId = 4;</code>
-     * @return The sdkId.
-     */
-    public java.lang.String getSdkId() {
-      java.lang.Object ref = sdkId_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        sdkId_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string sdkId = 4;</code>
-     * @return The bytes for sdkId.
-     */
-    public com.google.protobuf.ByteString
-        getSdkIdBytes() {
-      java.lang.Object ref = sdkId_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        sdkId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string sdkId = 4;</code>
-     * @param value The sdkId to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSdkId(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      sdkId_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string sdkId = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearSdkId() {
-      
-      sdkId_ = getDefaultInstance().getSdkId();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string sdkId = 4;</code>
-     * @param value The bytes for sdkId to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSdkIdBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      sdkId_ = value;
-      onChanged();
-      return this;
-    }
     @java.lang.Override
     public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -906,12 +768,12 @@ private static final long serialVersionUID = 0L;
   }
 
   // @@protoc_insertion_point(class_scope:protocol.SdkCommandResult)
-  private static final SdkCommandResult DEFAULT_INSTANCE;
+  private static final com.couchbase.grpc.sdk.protocol.SdkCommandResult DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new SdkCommandResult();
+    DEFAULT_INSTANCE = new com.couchbase.grpc.sdk.protocol.SdkCommandResult();
   }
 
-  public static SdkCommandResult getDefaultInstance() {
+  public static com.couchbase.grpc.sdk.protocol.SdkCommandResult getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -936,7 +798,7 @@ private static final long serialVersionUID = 0L;
   }
 
   @java.lang.Override
-  public SdkCommandResult getDefaultInstanceForType() {
+  public com.couchbase.grpc.sdk.protocol.SdkCommandResult getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

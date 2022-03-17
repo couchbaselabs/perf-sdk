@@ -97,15 +97,15 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return SdkBasic.internal_static_protocol_DocId_descriptor;
+    return com.couchbase.grpc.sdk.protocol.SdkBasic.internal_static_protocol_DocId_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return SdkBasic.internal_static_protocol_DocId_fieldAccessorTable
+    return com.couchbase.grpc.sdk.protocol.SdkBasic.internal_static_protocol_DocId_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            DocId.class, DocId.Builder.class);
+            com.couchbase.grpc.sdk.protocol.DocId.class, com.couchbase.grpc.sdk.protocol.DocId.Builder.class);
   }
 
   public static final int BUCKETNAME_FIELD_NUMBER = 1;
@@ -329,10 +329,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof DocId)) {
+    if (!(obj instanceof com.couchbase.grpc.sdk.protocol.DocId)) {
       return super.equals(obj);
     }
-    DocId other = (DocId) obj;
+    com.couchbase.grpc.sdk.protocol.DocId other = (com.couchbase.grpc.sdk.protocol.DocId) obj;
 
     if (!getBucketName()
         .equals(other.getBucketName())) return false;
@@ -366,69 +366,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static DocId parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static DocId parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static DocId parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static DocId parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static DocId parseFrom(byte[] data)
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static DocId parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static DocId parseFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static DocId parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static DocId parseDelimitedFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.DocId parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static DocId parseDelimitedFrom(
+  public static com.couchbase.grpc.sdk.protocol.DocId parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static DocId parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static DocId parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.DocId parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -441,7 +441,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(DocId prototype) {
+  public static Builder newBuilder(com.couchbase.grpc.sdk.protocol.DocId prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -462,18 +462,18 @@ private static final long serialVersionUID = 0L;
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:protocol.DocId)
-          DocIdOrBuilder {
+      com.couchbase.grpc.sdk.protocol.DocIdOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SdkBasic.internal_static_protocol_DocId_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkBasic.internal_static_protocol_DocId_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SdkBasic.internal_static_protocol_DocId_fieldAccessorTable
+      return com.couchbase.grpc.sdk.protocol.SdkBasic.internal_static_protocol_DocId_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              DocId.class, DocId.Builder.class);
+              com.couchbase.grpc.sdk.protocol.DocId.class, com.couchbase.grpc.sdk.protocol.DocId.Builder.class);
     }
 
     // Construct using com.couchbase.grpc.sdk.protocol.DocId.newBuilder()
@@ -508,17 +508,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return SdkBasic.internal_static_protocol_DocId_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkBasic.internal_static_protocol_DocId_descriptor;
     }
 
     @java.lang.Override
-    public DocId getDefaultInstanceForType() {
-      return DocId.getDefaultInstance();
+    public com.couchbase.grpc.sdk.protocol.DocId getDefaultInstanceForType() {
+      return com.couchbase.grpc.sdk.protocol.DocId.getDefaultInstance();
     }
 
     @java.lang.Override
-    public DocId build() {
-      DocId result = buildPartial();
+    public com.couchbase.grpc.sdk.protocol.DocId build() {
+      com.couchbase.grpc.sdk.protocol.DocId result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -526,8 +526,8 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public DocId buildPartial() {
-      DocId result = new DocId(this);
+    public com.couchbase.grpc.sdk.protocol.DocId buildPartial() {
+      com.couchbase.grpc.sdk.protocol.DocId result = new com.couchbase.grpc.sdk.protocol.DocId(this);
       result.bucketName_ = bucketName_;
       result.scopeName_ = scopeName_;
       result.collectionName_ = collectionName_;
@@ -570,16 +570,16 @@ private static final long serialVersionUID = 0L;
     }
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof DocId) {
-        return mergeFrom((DocId)other);
+      if (other instanceof com.couchbase.grpc.sdk.protocol.DocId) {
+        return mergeFrom((com.couchbase.grpc.sdk.protocol.DocId)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(DocId other) {
-      if (other == DocId.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.couchbase.grpc.sdk.protocol.DocId other) {
+      if (other == com.couchbase.grpc.sdk.protocol.DocId.getDefaultInstance()) return this;
       if (!other.getBucketName().isEmpty()) {
         bucketName_ = other.bucketName_;
         onChanged();
@@ -611,11 +611,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      DocId parsedMessage = null;
+      com.couchbase.grpc.sdk.protocol.DocId parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (DocId) e.getUnfinishedMessage();
+        parsedMessage = (com.couchbase.grpc.sdk.protocol.DocId) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -975,12 +975,12 @@ private static final long serialVersionUID = 0L;
   }
 
   // @@protoc_insertion_point(class_scope:protocol.DocId)
-  private static final DocId DEFAULT_INSTANCE;
+  private static final com.couchbase.grpc.sdk.protocol.DocId DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new DocId();
+    DEFAULT_INSTANCE = new com.couchbase.grpc.sdk.protocol.DocId();
   }
 
-  public static DocId getDefaultInstance() {
+  public static com.couchbase.grpc.sdk.protocol.DocId getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -1005,7 +1005,7 @@ private static final long serialVersionUID = 0L;
   }
 
   @java.lang.Override
-  public DocId getDefaultInstanceForType() {
+  public com.couchbase.grpc.sdk.protocol.DocId getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

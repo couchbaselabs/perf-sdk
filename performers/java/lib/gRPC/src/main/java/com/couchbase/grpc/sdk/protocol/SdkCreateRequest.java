@@ -16,7 +16,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private SdkCreateRequest() {
-    attempts_ = java.util.Collections.emptyList();
+    commands_ = java.util.Collections.emptyList();
     name_ = "";
     clusterConnectionId_ = "";
   }
@@ -54,11 +54,11 @@ private static final long serialVersionUID = 0L;
             break;
           case 10: {
             if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              attempts_ = new java.util.ArrayList<SdkAttemptRequest>();
+              commands_ = new java.util.ArrayList<com.couchbase.grpc.sdk.protocol.SdkCommand>();
               mutable_bitField0_ |= 0x00000001;
             }
-            attempts_.add(
-                input.readMessage(SdkAttemptRequest.parser(), extensionRegistry));
+            commands_.add(
+                input.readMessage(com.couchbase.grpc.sdk.protocol.SdkCommand.parser(), extensionRegistry));
             break;
           }
           case 18: {
@@ -89,7 +89,7 @@ private static final long serialVersionUID = 0L;
           e).setUnfinishedMessage(this);
     } finally {
       if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        attempts_ = java.util.Collections.unmodifiableList(attempts_);
+        commands_ = java.util.Collections.unmodifiableList(commands_);
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -97,55 +97,55 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return SdkPerformer.internal_static_protocol_SdkCreateRequest_descriptor;
+    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCreateRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return SdkPerformer.internal_static_protocol_SdkCreateRequest_fieldAccessorTable
+    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCreateRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            SdkCreateRequest.class, SdkCreateRequest.Builder.class);
+            com.couchbase.grpc.sdk.protocol.SdkCreateRequest.class, com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder.class);
   }
 
-  public static final int ATTEMPTS_FIELD_NUMBER = 1;
-  private java.util.List<SdkAttemptRequest> attempts_;
+  public static final int COMMANDS_FIELD_NUMBER = 1;
+  private java.util.List<com.couchbase.grpc.sdk.protocol.SdkCommand> commands_;
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
   @java.lang.Override
-  public java.util.List<SdkAttemptRequest> getAttemptsList() {
-    return attempts_;
+  public java.util.List<com.couchbase.grpc.sdk.protocol.SdkCommand> getCommandsList() {
+    return commands_;
   }
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends SdkAttemptRequestOrBuilder>
-      getAttemptsOrBuilderList() {
-    return attempts_;
+  public java.util.List<? extends com.couchbase.grpc.sdk.protocol.SdkCommandOrBuilder> 
+      getCommandsOrBuilderList() {
+    return commands_;
   }
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
   @java.lang.Override
-  public int getAttemptsCount() {
-    return attempts_.size();
+  public int getCommandsCount() {
+    return commands_.size();
   }
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
   @java.lang.Override
-  public SdkAttemptRequest getAttempts(int index) {
-    return attempts_.get(index);
+  public com.couchbase.grpc.sdk.protocol.SdkCommand getCommands(int index) {
+    return commands_.get(index);
   }
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
   @java.lang.Override
-  public SdkAttemptRequestOrBuilder getAttemptsOrBuilder(
+  public com.couchbase.grpc.sdk.protocol.SdkCommandOrBuilder getCommandsOrBuilder(
       int index) {
-    return attempts_.get(index);
+    return commands_.get(index);
   }
 
   public static final int NAME_FIELD_NUMBER = 2;
@@ -238,8 +238,8 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    for (int i = 0; i < attempts_.size(); i++) {
-      output.writeMessage(1, attempts_.get(i));
+    for (int i = 0; i < commands_.size(); i++) {
+      output.writeMessage(1, commands_.get(i));
     }
     if (!getNameBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, name_);
@@ -256,9 +256,9 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    for (int i = 0; i < attempts_.size(); i++) {
+    for (int i = 0; i < commands_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(1, attempts_.get(i));
+        .computeMessageSize(1, commands_.get(i));
     }
     if (!getNameBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, name_);
@@ -276,13 +276,13 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof SdkCreateRequest)) {
+    if (!(obj instanceof com.couchbase.grpc.sdk.protocol.SdkCreateRequest)) {
       return super.equals(obj);
     }
-    SdkCreateRequest other = (SdkCreateRequest) obj;
+    com.couchbase.grpc.sdk.protocol.SdkCreateRequest other = (com.couchbase.grpc.sdk.protocol.SdkCreateRequest) obj;
 
-    if (!getAttemptsList()
-        .equals(other.getAttemptsList())) return false;
+    if (!getCommandsList()
+        .equals(other.getCommandsList())) return false;
     if (!getName()
         .equals(other.getName())) return false;
     if (!getClusterConnectionId()
@@ -298,9 +298,9 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (getAttemptsCount() > 0) {
-      hash = (37 * hash) + ATTEMPTS_FIELD_NUMBER;
-      hash = (53 * hash) + getAttemptsList().hashCode();
+    if (getCommandsCount() > 0) {
+      hash = (37 * hash) + COMMANDS_FIELD_NUMBER;
+      hash = (53 * hash) + getCommandsList().hashCode();
     }
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
@@ -311,69 +311,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static SdkCreateRequest parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SdkCreateRequest parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SdkCreateRequest parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SdkCreateRequest parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SdkCreateRequest parseFrom(byte[] data)
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SdkCreateRequest parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SdkCreateRequest parseFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static SdkCreateRequest parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static SdkCreateRequest parseDelimitedFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static SdkCreateRequest parseDelimitedFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static SdkCreateRequest parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static SdkCreateRequest parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -386,7 +386,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(SdkCreateRequest prototype) {
+  public static Builder newBuilder(com.couchbase.grpc.sdk.protocol.SdkCreateRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -407,18 +407,18 @@ private static final long serialVersionUID = 0L;
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:protocol.SdkCreateRequest)
-          SdkCreateRequestOrBuilder {
+      com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SdkPerformer.internal_static_protocol_SdkCreateRequest_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCreateRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SdkPerformer.internal_static_protocol_SdkCreateRequest_fieldAccessorTable
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCreateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              SdkCreateRequest.class, SdkCreateRequest.Builder.class);
+              com.couchbase.grpc.sdk.protocol.SdkCreateRequest.class, com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder.class);
     }
 
     // Construct using com.couchbase.grpc.sdk.protocol.SdkCreateRequest.newBuilder()
@@ -434,17 +434,17 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
-        getAttemptsFieldBuilder();
+        getCommandsFieldBuilder();
       }
     }
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (attemptsBuilder_ == null) {
-        attempts_ = java.util.Collections.emptyList();
+      if (commandsBuilder_ == null) {
+        commands_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
       } else {
-        attemptsBuilder_.clear();
+        commandsBuilder_.clear();
       }
       name_ = "";
 
@@ -456,17 +456,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return SdkPerformer.internal_static_protocol_SdkCreateRequest_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_SdkCreateRequest_descriptor;
     }
 
     @java.lang.Override
-    public SdkCreateRequest getDefaultInstanceForType() {
-      return SdkCreateRequest.getDefaultInstance();
+    public com.couchbase.grpc.sdk.protocol.SdkCreateRequest getDefaultInstanceForType() {
+      return com.couchbase.grpc.sdk.protocol.SdkCreateRequest.getDefaultInstance();
     }
 
     @java.lang.Override
-    public SdkCreateRequest build() {
-      SdkCreateRequest result = buildPartial();
+    public com.couchbase.grpc.sdk.protocol.SdkCreateRequest build() {
+      com.couchbase.grpc.sdk.protocol.SdkCreateRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -474,17 +474,17 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public SdkCreateRequest buildPartial() {
-      SdkCreateRequest result = new SdkCreateRequest(this);
+    public com.couchbase.grpc.sdk.protocol.SdkCreateRequest buildPartial() {
+      com.couchbase.grpc.sdk.protocol.SdkCreateRequest result = new com.couchbase.grpc.sdk.protocol.SdkCreateRequest(this);
       int from_bitField0_ = bitField0_;
-      if (attemptsBuilder_ == null) {
+      if (commandsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
-          attempts_ = java.util.Collections.unmodifiableList(attempts_);
+          commands_ = java.util.Collections.unmodifiableList(commands_);
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.attempts_ = attempts_;
+        result.commands_ = commands_;
       } else {
-        result.attempts_ = attemptsBuilder_.build();
+        result.commands_ = commandsBuilder_.build();
       }
       result.name_ = name_;
       result.clusterConnectionId_ = clusterConnectionId_;
@@ -526,39 +526,39 @@ private static final long serialVersionUID = 0L;
     }
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof SdkCreateRequest) {
-        return mergeFrom((SdkCreateRequest)other);
+      if (other instanceof com.couchbase.grpc.sdk.protocol.SdkCreateRequest) {
+        return mergeFrom((com.couchbase.grpc.sdk.protocol.SdkCreateRequest)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(SdkCreateRequest other) {
-      if (other == SdkCreateRequest.getDefaultInstance()) return this;
-      if (attemptsBuilder_ == null) {
-        if (!other.attempts_.isEmpty()) {
-          if (attempts_.isEmpty()) {
-            attempts_ = other.attempts_;
+    public Builder mergeFrom(com.couchbase.grpc.sdk.protocol.SdkCreateRequest other) {
+      if (other == com.couchbase.grpc.sdk.protocol.SdkCreateRequest.getDefaultInstance()) return this;
+      if (commandsBuilder_ == null) {
+        if (!other.commands_.isEmpty()) {
+          if (commands_.isEmpty()) {
+            commands_ = other.commands_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureAttemptsIsMutable();
-            attempts_.addAll(other.attempts_);
+            ensureCommandsIsMutable();
+            commands_.addAll(other.commands_);
           }
           onChanged();
         }
       } else {
-        if (!other.attempts_.isEmpty()) {
-          if (attemptsBuilder_.isEmpty()) {
-            attemptsBuilder_.dispose();
-            attemptsBuilder_ = null;
-            attempts_ = other.attempts_;
+        if (!other.commands_.isEmpty()) {
+          if (commandsBuilder_.isEmpty()) {
+            commandsBuilder_.dispose();
+            commandsBuilder_ = null;
+            commands_ = other.commands_;
             bitField0_ = (bitField0_ & ~0x00000001);
-            attemptsBuilder_ = 
+            commandsBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getAttemptsFieldBuilder() : null;
+                 getCommandsFieldBuilder() : null;
           } else {
-            attemptsBuilder_.addAllMessages(other.attempts_);
+            commandsBuilder_.addAllMessages(other.commands_);
           }
         }
       }
@@ -585,11 +585,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      SdkCreateRequest parsedMessage = null;
+      com.couchbase.grpc.sdk.protocol.SdkCreateRequest parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (SdkCreateRequest) e.getUnfinishedMessage();
+        parsedMessage = (com.couchbase.grpc.sdk.protocol.SdkCreateRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -600,244 +600,244 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private java.util.List<SdkAttemptRequest> attempts_ =
+    private java.util.List<com.couchbase.grpc.sdk.protocol.SdkCommand> commands_ =
       java.util.Collections.emptyList();
-    private void ensureAttemptsIsMutable() {
+    private void ensureCommandsIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        attempts_ = new java.util.ArrayList<SdkAttemptRequest>(attempts_);
+        commands_ = new java.util.ArrayList<com.couchbase.grpc.sdk.protocol.SdkCommand>(commands_);
         bitField0_ |= 0x00000001;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            SdkAttemptRequest, SdkAttemptRequest.Builder, SdkAttemptRequestOrBuilder> attemptsBuilder_;
+        com.couchbase.grpc.sdk.protocol.SdkCommand, com.couchbase.grpc.sdk.protocol.SdkCommand.Builder, com.couchbase.grpc.sdk.protocol.SdkCommandOrBuilder> commandsBuilder_;
 
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public java.util.List<SdkAttemptRequest> getAttemptsList() {
-      if (attemptsBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(attempts_);
+    public java.util.List<com.couchbase.grpc.sdk.protocol.SdkCommand> getCommandsList() {
+      if (commandsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(commands_);
       } else {
-        return attemptsBuilder_.getMessageList();
+        return commandsBuilder_.getMessageList();
       }
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public int getAttemptsCount() {
-      if (attemptsBuilder_ == null) {
-        return attempts_.size();
+    public int getCommandsCount() {
+      if (commandsBuilder_ == null) {
+        return commands_.size();
       } else {
-        return attemptsBuilder_.getCount();
+        return commandsBuilder_.getCount();
       }
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public SdkAttemptRequest getAttempts(int index) {
-      if (attemptsBuilder_ == null) {
-        return attempts_.get(index);
+    public com.couchbase.grpc.sdk.protocol.SdkCommand getCommands(int index) {
+      if (commandsBuilder_ == null) {
+        return commands_.get(index);
       } else {
-        return attemptsBuilder_.getMessage(index);
+        return commandsBuilder_.getMessage(index);
       }
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public Builder setAttempts(
-        int index, SdkAttemptRequest value) {
-      if (attemptsBuilder_ == null) {
+    public Builder setCommands(
+        int index, com.couchbase.grpc.sdk.protocol.SdkCommand value) {
+      if (commandsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureAttemptsIsMutable();
-        attempts_.set(index, value);
+        ensureCommandsIsMutable();
+        commands_.set(index, value);
         onChanged();
       } else {
-        attemptsBuilder_.setMessage(index, value);
+        commandsBuilder_.setMessage(index, value);
       }
       return this;
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public Builder setAttempts(
-        int index, SdkAttemptRequest.Builder builderForValue) {
-      if (attemptsBuilder_ == null) {
-        ensureAttemptsIsMutable();
-        attempts_.set(index, builderForValue.build());
+    public Builder setCommands(
+        int index, com.couchbase.grpc.sdk.protocol.SdkCommand.Builder builderForValue) {
+      if (commandsBuilder_ == null) {
+        ensureCommandsIsMutable();
+        commands_.set(index, builderForValue.build());
         onChanged();
       } else {
-        attemptsBuilder_.setMessage(index, builderForValue.build());
+        commandsBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public Builder addAttempts(SdkAttemptRequest value) {
-      if (attemptsBuilder_ == null) {
+    public Builder addCommands(com.couchbase.grpc.sdk.protocol.SdkCommand value) {
+      if (commandsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureAttemptsIsMutable();
-        attempts_.add(value);
+        ensureCommandsIsMutable();
+        commands_.add(value);
         onChanged();
       } else {
-        attemptsBuilder_.addMessage(value);
+        commandsBuilder_.addMessage(value);
       }
       return this;
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public Builder addAttempts(
-        int index, SdkAttemptRequest value) {
-      if (attemptsBuilder_ == null) {
+    public Builder addCommands(
+        int index, com.couchbase.grpc.sdk.protocol.SdkCommand value) {
+      if (commandsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureAttemptsIsMutable();
-        attempts_.add(index, value);
+        ensureCommandsIsMutable();
+        commands_.add(index, value);
         onChanged();
       } else {
-        attemptsBuilder_.addMessage(index, value);
+        commandsBuilder_.addMessage(index, value);
       }
       return this;
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public Builder addAttempts(
-        SdkAttemptRequest.Builder builderForValue) {
-      if (attemptsBuilder_ == null) {
-        ensureAttemptsIsMutable();
-        attempts_.add(builderForValue.build());
+    public Builder addCommands(
+        com.couchbase.grpc.sdk.protocol.SdkCommand.Builder builderForValue) {
+      if (commandsBuilder_ == null) {
+        ensureCommandsIsMutable();
+        commands_.add(builderForValue.build());
         onChanged();
       } else {
-        attemptsBuilder_.addMessage(builderForValue.build());
+        commandsBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public Builder addAttempts(
-        int index, SdkAttemptRequest.Builder builderForValue) {
-      if (attemptsBuilder_ == null) {
-        ensureAttemptsIsMutable();
-        attempts_.add(index, builderForValue.build());
+    public Builder addCommands(
+        int index, com.couchbase.grpc.sdk.protocol.SdkCommand.Builder builderForValue) {
+      if (commandsBuilder_ == null) {
+        ensureCommandsIsMutable();
+        commands_.add(index, builderForValue.build());
         onChanged();
       } else {
-        attemptsBuilder_.addMessage(index, builderForValue.build());
+        commandsBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public Builder addAllAttempts(
-        java.lang.Iterable<? extends SdkAttemptRequest> values) {
-      if (attemptsBuilder_ == null) {
-        ensureAttemptsIsMutable();
-        addAll(
-            values, attempts_);
+    public Builder addAllCommands(
+        java.lang.Iterable<? extends com.couchbase.grpc.sdk.protocol.SdkCommand> values) {
+      if (commandsBuilder_ == null) {
+        ensureCommandsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, commands_);
         onChanged();
       } else {
-        attemptsBuilder_.addAllMessages(values);
+        commandsBuilder_.addAllMessages(values);
       }
       return this;
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public Builder clearAttempts() {
-      if (attemptsBuilder_ == null) {
-        attempts_ = java.util.Collections.emptyList();
+    public Builder clearCommands() {
+      if (commandsBuilder_ == null) {
+        commands_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
       } else {
-        attemptsBuilder_.clear();
+        commandsBuilder_.clear();
       }
       return this;
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public Builder removeAttempts(int index) {
-      if (attemptsBuilder_ == null) {
-        ensureAttemptsIsMutable();
-        attempts_.remove(index);
+    public Builder removeCommands(int index) {
+      if (commandsBuilder_ == null) {
+        ensureCommandsIsMutable();
+        commands_.remove(index);
         onChanged();
       } else {
-        attemptsBuilder_.remove(index);
+        commandsBuilder_.remove(index);
       }
       return this;
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public SdkAttemptRequest.Builder getAttemptsBuilder(
+    public com.couchbase.grpc.sdk.protocol.SdkCommand.Builder getCommandsBuilder(
         int index) {
-      return getAttemptsFieldBuilder().getBuilder(index);
+      return getCommandsFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public SdkAttemptRequestOrBuilder getAttemptsOrBuilder(
+    public com.couchbase.grpc.sdk.protocol.SdkCommandOrBuilder getCommandsOrBuilder(
         int index) {
-      if (attemptsBuilder_ == null) {
-        return attempts_.get(index);  } else {
-        return attemptsBuilder_.getMessageOrBuilder(index);
+      if (commandsBuilder_ == null) {
+        return commands_.get(index);  } else {
+        return commandsBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public java.util.List<? extends SdkAttemptRequestOrBuilder>
-         getAttemptsOrBuilderList() {
-      if (attemptsBuilder_ != null) {
-        return attemptsBuilder_.getMessageOrBuilderList();
+    public java.util.List<? extends com.couchbase.grpc.sdk.protocol.SdkCommandOrBuilder> 
+         getCommandsOrBuilderList() {
+      if (commandsBuilder_ != null) {
+        return commandsBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(attempts_);
+        return java.util.Collections.unmodifiableList(commands_);
       }
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public SdkAttemptRequest.Builder addAttemptsBuilder() {
-      return getAttemptsFieldBuilder().addBuilder(
-          SdkAttemptRequest.getDefaultInstance());
+    public com.couchbase.grpc.sdk.protocol.SdkCommand.Builder addCommandsBuilder() {
+      return getCommandsFieldBuilder().addBuilder(
+          com.couchbase.grpc.sdk.protocol.SdkCommand.getDefaultInstance());
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public SdkAttemptRequest.Builder addAttemptsBuilder(
+    public com.couchbase.grpc.sdk.protocol.SdkCommand.Builder addCommandsBuilder(
         int index) {
-      return getAttemptsFieldBuilder().addBuilder(
-          index, SdkAttemptRequest.getDefaultInstance());
+      return getCommandsFieldBuilder().addBuilder(
+          index, com.couchbase.grpc.sdk.protocol.SdkCommand.getDefaultInstance());
     }
     /**
-     * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+     * <code>repeated .protocol.SdkCommand commands = 1;</code>
      */
-    public java.util.List<SdkAttemptRequest.Builder>
-         getAttemptsBuilderList() {
-      return getAttemptsFieldBuilder().getBuilderList();
+    public java.util.List<com.couchbase.grpc.sdk.protocol.SdkCommand.Builder> 
+         getCommandsBuilderList() {
+      return getCommandsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            SdkAttemptRequest, SdkAttemptRequest.Builder, SdkAttemptRequestOrBuilder>
-        getAttemptsFieldBuilder() {
-      if (attemptsBuilder_ == null) {
-        attemptsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                SdkAttemptRequest, SdkAttemptRequest.Builder, SdkAttemptRequestOrBuilder>(
-                attempts_,
+        com.couchbase.grpc.sdk.protocol.SdkCommand, com.couchbase.grpc.sdk.protocol.SdkCommand.Builder, com.couchbase.grpc.sdk.protocol.SdkCommandOrBuilder> 
+        getCommandsFieldBuilder() {
+      if (commandsBuilder_ == null) {
+        commandsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            com.couchbase.grpc.sdk.protocol.SdkCommand, com.couchbase.grpc.sdk.protocol.SdkCommand.Builder, com.couchbase.grpc.sdk.protocol.SdkCommandOrBuilder>(
+                commands_,
                 ((bitField0_ & 0x00000001) != 0),
                 getParentForChildren(),
                 isClean());
-        attempts_ = null;
+        commands_ = null;
       }
-      return attemptsBuilder_;
+      return commandsBuilder_;
     }
 
     private java.lang.Object name_ = "";
@@ -1008,12 +1008,12 @@ private static final long serialVersionUID = 0L;
   }
 
   // @@protoc_insertion_point(class_scope:protocol.SdkCreateRequest)
-  private static final SdkCreateRequest DEFAULT_INSTANCE;
+  private static final com.couchbase.grpc.sdk.protocol.SdkCreateRequest DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new SdkCreateRequest();
+    DEFAULT_INSTANCE = new com.couchbase.grpc.sdk.protocol.SdkCreateRequest();
   }
 
-  public static SdkCreateRequest getDefaultInstance() {
+  public static com.couchbase.grpc.sdk.protocol.SdkCreateRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -1038,7 +1038,7 @@ private static final long serialVersionUID = 0L;
   }
 
   @java.lang.Override
-  public SdkCreateRequest getDefaultInstanceForType() {
+  public com.couchbase.grpc.sdk.protocol.SdkCreateRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

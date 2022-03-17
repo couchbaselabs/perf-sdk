@@ -26,8 +26,6 @@ message CreateConnectionRequest {
     string clusterHostname=1;
     string clusterUsername=2;
     string clusterPassword=3;
-    string bucketName=4;
-    bool useAsDefaultConnection=5;
 }
 
 // Returns the capabilities of the performer (or more specifically, the transactions-implementation-under-test by that
@@ -48,12 +46,8 @@ message CreateConnectionResponse {
     string clusterConnectionId=4;
 }
 
-message SdkAttemptRequest {
-    repeated SdkCommand commands = 1;
-}
-
 message SdkCreateRequest {
-    repeated SdkAttemptRequest attempts = 1;
+    repeated SdkCommand commands = 1;
 
     string name = 2;
 
@@ -64,7 +58,6 @@ message SdkCommandResult {
     SdkException exception=1;
     ExternalException exceptionCause=2;
     repeated string log=3;
-    string sdkId=4;
 }
 
 // "HorizontalScaling" is an abstraction over there been many forms of concurrency.  The core idea is that the driver
@@ -83,15 +76,13 @@ message PerfRunRequest {
     // Optional, allows a custom Cluster connection to be used
     string clusterConnectionId = 1;
 
-    string sdkOpRef = 2;
-
     // See PerfRunHorizontalScaling for a discussion of this.  Broadly, it's the number of concurrent transactions
     // required.
-    repeated PerfRunHorizontalScaling horizontalScaling = 3;
+    repeated PerfRunHorizontalScaling horizontalScaling = 2;
 
     // Performer will run until this much time has elapsed.
     // Counted from when it creates the factory, after waiting for the bucket to be opened.
-    int32 runForSeconds = 4;
+    int32 runForSeconds = 3;
 }
 
 message PerfSingleSdkOpResult {

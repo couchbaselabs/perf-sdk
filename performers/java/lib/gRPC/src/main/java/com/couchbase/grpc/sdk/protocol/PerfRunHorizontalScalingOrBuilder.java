@@ -14,7 +14,7 @@ public interface PerfRunHorizontalScalingOrBuilder extends
    *
    * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
    */
-  java.util.List<SdkCreateRequest>
+  java.util.List<com.couchbase.grpc.sdk.protocol.SdkCreateRequest> 
       getSdkCommandList();
   /**
    * <pre>
@@ -23,7 +23,7 @@ public interface PerfRunHorizontalScalingOrBuilder extends
    *
    * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
    */
-  SdkCreateRequest getSdkCommand(int index);
+  com.couchbase.grpc.sdk.protocol.SdkCreateRequest getSdkCommand(int index);
   /**
    * <pre>
    * Performer will run these transactions, in a loop.
@@ -39,7 +39,7 @@ public interface PerfRunHorizontalScalingOrBuilder extends
    *
    * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
    */
-  java.util.List<? extends SdkCreateRequestOrBuilder>
+  java.util.List<? extends com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder> 
       getSdkCommandOrBuilderList();
   /**
    * <pre>
@@ -48,6 +48,6 @@ public interface PerfRunHorizontalScalingOrBuilder extends
    *
    * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
    */
-  SdkCreateRequestOrBuilder getSdkCommandOrBuilder(
+  com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder getSdkCommandOrBuilder(
       int index);
 }

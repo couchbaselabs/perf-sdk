@@ -3,7 +3,6 @@
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkException.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/PerfRunHorizontalScaling.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/CreateConnectionResponse.java
-/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkAttemptRequest.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkCreateRequestOrBuilder.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/DocIdOrBuilder.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/CommandInsertOrBuilder.java
@@ -17,7 +16,6 @@
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/CreateConnectionRequestOrBuilder.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/PerformerSdkServiceGrpc.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkCommandResult.java
-/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkAttemptRequestOrBuilder.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/ExternalException.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkBasic.java
 /Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/lib/gRPC/src/main/java/com/couchbase/grpc/sdk/protocol/SdkCommandOrBuilder.java

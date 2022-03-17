@@ -22,12 +22,7 @@ public class SdkOperation {
     ) {
         this.name = req.getName();
 
-        AtomicInteger attemptCount = new AtomicInteger(-1);
-        final int count = attemptCount.incrementAndGet();
-        int attemptToUse = Math.min(count, req.getAttemptsCount() - 1);
-        SdkAttemptRequest attempt = req.getAttempts(attemptToUse);
-
-        for (SdkCommand command : attempt.getCommandsList()) {
+        for (SdkCommand command : req.getCommandsList()) {
             performOperation(connection, command);
         }
         SdkCommandResult.Builder response = SdkCommandResult.getDefaultInstance().newBuilderForType();

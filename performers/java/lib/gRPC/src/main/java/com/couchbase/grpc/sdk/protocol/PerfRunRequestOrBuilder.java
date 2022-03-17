@@ -35,7 +35,7 @@ public interface PerfRunRequestOrBuilder extends
    *
    * <code>repeated .protocol.PerfRunHorizontalScaling horizontalScaling = 2;</code>
    */
-  java.util.List<PerfRunHorizontalScaling>
+  java.util.List<com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling> 
       getHorizontalScalingList();
   /**
    * <pre>
@@ -45,7 +45,7 @@ public interface PerfRunRequestOrBuilder extends
    *
    * <code>repeated .protocol.PerfRunHorizontalScaling horizontalScaling = 2;</code>
    */
-  PerfRunHorizontalScaling getHorizontalScaling(int index);
+  com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling getHorizontalScaling(int index);
   /**
    * <pre>
    * See PerfRunHorizontalScaling for a discussion of this.  Broadly, it's the number of concurrent transactions
@@ -63,7 +63,7 @@ public interface PerfRunRequestOrBuilder extends
    *
    * <code>repeated .protocol.PerfRunHorizontalScaling horizontalScaling = 2;</code>
    */
-  java.util.List<? extends PerfRunHorizontalScalingOrBuilder>
+  java.util.List<? extends com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScalingOrBuilder> 
       getHorizontalScalingOrBuilderList();
   /**
    * <pre>
@@ -73,7 +73,7 @@ public interface PerfRunRequestOrBuilder extends
    *
    * <code>repeated .protocol.PerfRunHorizontalScaling horizontalScaling = 2;</code>
    */
-  PerfRunHorizontalScalingOrBuilder getHorizontalScalingOrBuilder(
+  com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScalingOrBuilder getHorizontalScalingOrBuilder(
       int index);
 
   /**
@@ -82,7 +82,7 @@ public interface PerfRunRequestOrBuilder extends
    * Counted from when it creates the factory, after waiting for the bucket to be opened.
    * </pre>
    *
-   * <code>int32 runForSeconds = 4;</code>
+   * <code>int32 runForSeconds = 3;</code>
    * @return The runForSeconds.
    */
   int getRunForSeconds();

@@ -22,6 +22,7 @@ public class Performer {
     private int protocolMajorVersion;
     private String performerUserAgent;
     private Version performerLibraryVersion;
+    private String clusterConnectionId;
 
     public Performer(int performerIdx, String hostname, int port, CreateConnectionRequest createConnection) {
         try {
@@ -63,6 +64,10 @@ public class Performer {
 
     public CreateConnectionResponse connectToPerformer(com.couchbase.grpc.sdk.protocol.CreateConnectionRequest createConnectionRequest){
         return stubBlock.createConnection(createConnectionRequest);
+    }
+
+    public String getClusterConnectionId() {
+        return clusterConnectionId;
     }
 }
 

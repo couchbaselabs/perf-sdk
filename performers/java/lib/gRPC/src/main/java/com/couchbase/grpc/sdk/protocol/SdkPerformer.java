@@ -25,11 +25,6 @@ public final class SdkPerformer {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protocol_CreateConnectionResponse_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protocol_SdkAttemptRequest_descriptor;
-  static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_protocol_SdkAttemptRequest_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_protocol_SdkCreateRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -66,47 +61,44 @@ public final class SdkPerformer {
       "\n\023sdk_performer.proto\022\010protocol\032\022sdk_com" +
       "mands.proto\032\017sdk_basic.proto\032\037google/pro" +
       "tobuf/timestamp.proto\032\033google/protobuf/e" +
-      "mpty.proto\"\230\001\n\027CreateConnectionRequest\022\027" +
-      "\n\017clusterHostname\030\001 \001(\t\022\027\n\017clusterUserna" +
-      "me\030\002 \001(\t\022\027\n\017clusterPassword\030\003 \001(\t\022\022\n\nbuc" +
-      "ketName\030\004 \001(\t\022\036\n\026useAsDefaultConnection\030" +
-      "\005 \001(\010\"\215\001\n\030CreateConnectionResponse\022\032\n\022pe" +
-      "rformerUserAgent\030\001 \001(\t\022\037\n\027performerLibra" +
-      "ryVersion\030\002 \001(\t\022\027\n\017protocolVersion\030\003 \001(\t" +
-      "\022\033\n\023clusterConnectionId\030\004 \001(\t\";\n\021SdkAtte" +
-      "mptRequest\022&\n\010commands\030\001 \003(\0132\024.protocol." +
-      "SdkCommand\"l\n\020SdkCreateRequest\022-\n\010attemp" +
-      "ts\030\001 \003(\0132\033.protocol.SdkAttemptRequest\022\014\n" +
-      "\004name\030\002 \001(\t\022\033\n\023clusterConnectionId\030\003 \001(\t" +
-      "\"\216\001\n\020SdkCommandResult\022)\n\texception\030\001 \001(\016" +
-      "2\026.protocol.SdkException\0223\n\016exceptionCau" +
-      "se\030\002 \001(\0162\033.protocol.ExternalException\022\013\n" +
-      "\003log\030\003 \003(\t\022\r\n\005sdkId\030\004 \001(\t\"J\n\030PerfRunHori" +
-      "zontalScaling\022.\n\nsdkCommand\030\001 \003(\0132\032.prot" +
-      "ocol.SdkCreateRequest\"\203\001\n\016PerfRunRequest" +
-      "\022\033\n\023clusterConnectionId\030\001 \001(\t\022=\n\021horizon" +
-      "talScaling\030\002 \003(\0132\".protocol.PerfRunHoriz" +
-      "ontalScaling\022\025\n\rrunForSeconds\030\004 \001(\005\"\241\001\n\025" +
-      "PerfSingleSdkOpResult\022+\n\007results\030\001 \001(\0132\032" +
-      ".protocol.SdkCommandResult\022-\n\tinitiated\030" +
-      "\002 \001(\0132\032.google.protobuf.Timestamp\022,\n\010fin" +
-      "ished\030\003 \001(\0132\032.google.protobuf.Timestamp2" +
-      "\376\001\n\023PerformerSdkService\022Y\n\020createConnect" +
-      "ion\022!.protocol.CreateConnectionRequest\032\"" +
-      ".protocol.CreateConnectionResponse\022D\n\nsd" +
-      "kCommand\022\032.protocol.SdkCreateRequest\032\032.p" +
-      "rotocol.SdkCommandResult\022F\n\007perfRun\022\030.pr" +
-      "otocol.PerfRunRequest\032\037.protocol.PerfSin" +
-      "gleSdkOpResult0\001B{\n\037com.couchbase.grpc.s" +
-      "dk.protocolP\001Z<github.com/couchbaselabs/" +
-      "transactions-fit-performer/protocol\252\002\027Co" +
-      "uchbase.Grpc.Protocolb\006proto3"
+      "mpty.proto\"d\n\027CreateConnectionRequest\022\027\n" +
+      "\017clusterHostname\030\001 \001(\t\022\027\n\017clusterUsernam" +
+      "e\030\002 \001(\t\022\027\n\017clusterPassword\030\003 \001(\t\"\215\001\n\030Cre" +
+      "ateConnectionResponse\022\032\n\022performerUserAg" +
+      "ent\030\001 \001(\t\022\037\n\027performerLibraryVersion\030\002 \001" +
+      "(\t\022\027\n\017protocolVersion\030\003 \001(\t\022\033\n\023clusterCo" +
+      "nnectionId\030\004 \001(\t\"e\n\020SdkCreateRequest\022&\n\010" +
+      "commands\030\001 \003(\0132\024.protocol.SdkCommand\022\014\n\004" +
+      "name\030\002 \001(\t\022\033\n\023clusterConnectionId\030\003 \001(\t\"" +
+      "\177\n\020SdkCommandResult\022)\n\texception\030\001 \001(\0162\026" +
+      ".protocol.SdkException\0223\n\016exceptionCause" +
+      "\030\002 \001(\0162\033.protocol.ExternalException\022\013\n\003l" +
+      "og\030\003 \003(\t\"J\n\030PerfRunHorizontalScaling\022.\n\n" +
+      "sdkCommand\030\001 \003(\0132\032.protocol.SdkCreateReq" +
+      "uest\"\203\001\n\016PerfRunRequest\022\033\n\023clusterConnec" +
+      "tionId\030\001 \001(\t\022=\n\021horizontalScaling\030\002 \003(\0132" +
+      "\".protocol.PerfRunHorizontalScaling\022\025\n\rr" +
+      "unForSeconds\030\003 \001(\005\"\241\001\n\025PerfSingleSdkOpRe" +
+      "sult\022+\n\007results\030\001 \001(\0132\032.protocol.SdkComm" +
+      "andResult\022-\n\tinitiated\030\002 \001(\0132\032.google.pr" +
+      "otobuf.Timestamp\022,\n\010finished\030\003 \001(\0132\032.goo" +
+      "gle.protobuf.Timestamp2\376\001\n\023PerformerSdkS" +
+      "ervice\022Y\n\020createConnection\022!.protocol.Cr" +
+      "eateConnectionRequest\032\".protocol.CreateC" +
+      "onnectionResponse\022D\n\nsdkCommand\022\032.protoc" +
+      "ol.SdkCreateRequest\032\032.protocol.SdkComman" +
+      "dResult\022F\n\007perfRun\022\030.protocol.PerfRunReq" +
+      "uest\032\037.protocol.PerfSingleSdkOpResult0\001B" +
+      "{\n\037com.couchbase.grpc.sdk.protocolP\001Z<gi" +
+      "thub.com/couchbaselabs/transactions-fit-" +
+      "performer/protocol\252\002\027Couchbase.Grpc.Prot" +
+      "ocolb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          SdkCommands.getDescriptor(),
-          SdkBasic.getDescriptor(),
+          com.couchbase.grpc.sdk.protocol.SdkCommands.getDescriptor(),
+          com.couchbase.grpc.sdk.protocol.SdkBasic.getDescriptor(),
           com.google.protobuf.TimestampProto.getDescriptor(),
           com.google.protobuf.EmptyProto.getDescriptor(),
         });
@@ -115,51 +107,45 @@ public final class SdkPerformer {
     internal_static_protocol_CreateConnectionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_CreateConnectionRequest_descriptor,
-        new java.lang.String[] { "ClusterHostname", "ClusterUsername", "ClusterPassword", "BucketName", "UseAsDefaultConnection", });
+        new java.lang.String[] { "ClusterHostname", "ClusterUsername", "ClusterPassword", });
     internal_static_protocol_CreateConnectionResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_protocol_CreateConnectionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_CreateConnectionResponse_descriptor,
         new java.lang.String[] { "PerformerUserAgent", "PerformerLibraryVersion", "ProtocolVersion", "ClusterConnectionId", });
-    internal_static_protocol_SdkAttemptRequest_descriptor =
-      getDescriptor().getMessageTypes().get(2);
-    internal_static_protocol_SdkAttemptRequest_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_protocol_SdkAttemptRequest_descriptor,
-        new java.lang.String[] { "Commands", });
     internal_static_protocol_SdkCreateRequest_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(2);
     internal_static_protocol_SdkCreateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_SdkCreateRequest_descriptor,
-        new java.lang.String[] { "Attempts", "Name", "ClusterConnectionId", });
+        new java.lang.String[] { "Commands", "Name", "ClusterConnectionId", });
     internal_static_protocol_SdkCommandResult_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_protocol_SdkCommandResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_SdkCommandResult_descriptor,
-        new java.lang.String[] { "Exception", "ExceptionCause", "Log", "SdkId", });
+        new java.lang.String[] { "Exception", "ExceptionCause", "Log", });
     internal_static_protocol_PerfRunHorizontalScaling_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_protocol_PerfRunHorizontalScaling_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_PerfRunHorizontalScaling_descriptor,
         new java.lang.String[] { "SdkCommand", });
     internal_static_protocol_PerfRunRequest_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_protocol_PerfRunRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_PerfRunRequest_descriptor,
         new java.lang.String[] { "ClusterConnectionId", "HorizontalScaling", "RunForSeconds", });
     internal_static_protocol_PerfSingleSdkOpResult_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_protocol_PerfSingleSdkOpResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_PerfSingleSdkOpResult_descriptor,
         new java.lang.String[] { "Results", "Initiated", "Finished", });
-    SdkCommands.getDescriptor();
-    SdkBasic.getDescriptor();
+    com.couchbase.grpc.sdk.protocol.SdkCommands.getDescriptor();
+    com.couchbase.grpc.sdk.protocol.SdkBasic.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();
     com.google.protobuf.EmptyProto.getDescriptor();
   }

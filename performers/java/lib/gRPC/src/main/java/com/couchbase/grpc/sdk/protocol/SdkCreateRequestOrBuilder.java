@@ -8,27 +8,27 @@ public interface SdkCreateRequestOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
-  java.util.List<SdkAttemptRequest>
-      getAttemptsList();
+  java.util.List<com.couchbase.grpc.sdk.protocol.SdkCommand> 
+      getCommandsList();
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
-  SdkAttemptRequest getAttempts(int index);
+  com.couchbase.grpc.sdk.protocol.SdkCommand getCommands(int index);
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
-  int getAttemptsCount();
+  int getCommandsCount();
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
-  java.util.List<? extends SdkAttemptRequestOrBuilder>
-      getAttemptsOrBuilderList();
+  java.util.List<? extends com.couchbase.grpc.sdk.protocol.SdkCommandOrBuilder> 
+      getCommandsOrBuilderList();
   /**
-   * <code>repeated .protocol.SdkAttemptRequest attempts = 1;</code>
+   * <code>repeated .protocol.SdkCommand commands = 1;</code>
    */
-  SdkAttemptRequestOrBuilder getAttemptsOrBuilder(
+  com.couchbase.grpc.sdk.protocol.SdkCommandOrBuilder getCommandsOrBuilder(
       int index);
 
   /**

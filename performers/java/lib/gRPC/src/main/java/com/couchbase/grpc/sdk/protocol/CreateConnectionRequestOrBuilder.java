@@ -42,22 +42,4 @@ public interface CreateConnectionRequestOrBuilder extends
    */
   com.google.protobuf.ByteString
       getClusterPasswordBytes();
-
-  /**
-   * <code>string bucketName = 4;</code>
-   * @return The bucketName.
-   */
-  java.lang.String getBucketName();
-  /**
-   * <code>string bucketName = 4;</code>
-   * @return The bytes for bucketName.
-   */
-  com.google.protobuf.ByteString
-      getBucketNameBytes();
-
-  /**
-   * <code>bool useAsDefaultConnection = 5;</code>
-   * @return The useAsDefaultConnection.
-   */
-  boolean getUseAsDefaultConnection();
 }

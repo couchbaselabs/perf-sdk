@@ -62,11 +62,11 @@ private static final long serialVersionUID = 0L;
             break;
           case 10: {
             if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              sdkCommand_ = new java.util.ArrayList<SdkCreateRequest>();
+              sdkCommand_ = new java.util.ArrayList<com.couchbase.grpc.sdk.protocol.SdkCreateRequest>();
               mutable_bitField0_ |= 0x00000001;
             }
             sdkCommand_.add(
-                input.readMessage(SdkCreateRequest.parser(), extensionRegistry));
+                input.readMessage(com.couchbase.grpc.sdk.protocol.SdkCreateRequest.parser(), extensionRegistry));
             break;
           }
           default: {
@@ -93,19 +93,19 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_descriptor;
+    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_fieldAccessorTable
+    return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            PerfRunHorizontalScaling.class, PerfRunHorizontalScaling.Builder.class);
+            com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.class, com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.Builder.class);
   }
 
   public static final int SDKCOMMAND_FIELD_NUMBER = 1;
-  private java.util.List<SdkCreateRequest> sdkCommand_;
+  private java.util.List<com.couchbase.grpc.sdk.protocol.SdkCreateRequest> sdkCommand_;
   /**
    * <pre>
    * Performer will run these transactions, in a loop.
@@ -114,7 +114,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
    */
   @java.lang.Override
-  public java.util.List<SdkCreateRequest> getSdkCommandList() {
+  public java.util.List<com.couchbase.grpc.sdk.protocol.SdkCreateRequest> getSdkCommandList() {
     return sdkCommand_;
   }
   /**
@@ -125,7 +125,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends SdkCreateRequestOrBuilder>
+  public java.util.List<? extends com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder> 
       getSdkCommandOrBuilderList() {
     return sdkCommand_;
   }
@@ -148,7 +148,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
    */
   @java.lang.Override
-  public SdkCreateRequest getSdkCommand(int index) {
+  public com.couchbase.grpc.sdk.protocol.SdkCreateRequest getSdkCommand(int index) {
     return sdkCommand_.get(index);
   }
   /**
@@ -159,7 +159,7 @@ private static final long serialVersionUID = 0L;
    * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
    */
   @java.lang.Override
-  public SdkCreateRequestOrBuilder getSdkCommandOrBuilder(
+  public com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder getSdkCommandOrBuilder(
       int index) {
     return sdkCommand_.get(index);
   }
@@ -204,10 +204,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof PerfRunHorizontalScaling)) {
+    if (!(obj instanceof com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling)) {
       return super.equals(obj);
     }
-    PerfRunHorizontalScaling other = (PerfRunHorizontalScaling) obj;
+    com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling other = (com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling) obj;
 
     if (!getSdkCommandList()
         .equals(other.getSdkCommandList())) return false;
@@ -231,69 +231,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static PerfRunHorizontalScaling parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static PerfRunHorizontalScaling parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static PerfRunHorizontalScaling parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static PerfRunHorizontalScaling parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static PerfRunHorizontalScaling parseFrom(byte[] data)
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static PerfRunHorizontalScaling parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static PerfRunHorizontalScaling parseFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static PerfRunHorizontalScaling parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static PerfRunHorizontalScaling parseDelimitedFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static PerfRunHorizontalScaling parseDelimitedFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static PerfRunHorizontalScaling parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static PerfRunHorizontalScaling parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -306,7 +306,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(PerfRunHorizontalScaling prototype) {
+  public static Builder newBuilder(com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -337,18 +337,18 @@ private static final long serialVersionUID = 0L;
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:protocol.PerfRunHorizontalScaling)
-          PerfRunHorizontalScalingOrBuilder {
+      com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScalingOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_fieldAccessorTable
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              PerfRunHorizontalScaling.class, PerfRunHorizontalScaling.Builder.class);
+              com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.class, com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.Builder.class);
     }
 
     // Construct using com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.newBuilder()
@@ -382,17 +382,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkPerformer.internal_static_protocol_PerfRunHorizontalScaling_descriptor;
     }
 
     @java.lang.Override
-    public PerfRunHorizontalScaling getDefaultInstanceForType() {
-      return PerfRunHorizontalScaling.getDefaultInstance();
+    public com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling getDefaultInstanceForType() {
+      return com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.getDefaultInstance();
     }
 
     @java.lang.Override
-    public PerfRunHorizontalScaling build() {
-      PerfRunHorizontalScaling result = buildPartial();
+    public com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling build() {
+      com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -400,8 +400,8 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public PerfRunHorizontalScaling buildPartial() {
-      PerfRunHorizontalScaling result = new PerfRunHorizontalScaling(this);
+    public com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling buildPartial() {
+      com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling result = new com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling(this);
       int from_bitField0_ = bitField0_;
       if (sdkCommandBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
@@ -450,16 +450,16 @@ private static final long serialVersionUID = 0L;
     }
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof PerfRunHorizontalScaling) {
-        return mergeFrom((PerfRunHorizontalScaling)other);
+      if (other instanceof com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling) {
+        return mergeFrom((com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(PerfRunHorizontalScaling other) {
-      if (other == PerfRunHorizontalScaling.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling other) {
+      if (other == com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.getDefaultInstance()) return this;
       if (sdkCommandBuilder_ == null) {
         if (!other.sdkCommand_.isEmpty()) {
           if (sdkCommand_.isEmpty()) {
@@ -501,11 +501,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      PerfRunHorizontalScaling parsedMessage = null;
+      com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (PerfRunHorizontalScaling) e.getUnfinishedMessage();
+        parsedMessage = (com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -516,17 +516,17 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private java.util.List<SdkCreateRequest> sdkCommand_ =
+    private java.util.List<com.couchbase.grpc.sdk.protocol.SdkCreateRequest> sdkCommand_ =
       java.util.Collections.emptyList();
     private void ensureSdkCommandIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        sdkCommand_ = new java.util.ArrayList<SdkCreateRequest>(sdkCommand_);
+        sdkCommand_ = new java.util.ArrayList<com.couchbase.grpc.sdk.protocol.SdkCreateRequest>(sdkCommand_);
         bitField0_ |= 0x00000001;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            SdkCreateRequest, SdkCreateRequest.Builder, SdkCreateRequestOrBuilder> sdkCommandBuilder_;
+        com.couchbase.grpc.sdk.protocol.SdkCreateRequest, com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder, com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder> sdkCommandBuilder_;
 
     /**
      * <pre>
@@ -535,7 +535,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
-    public java.util.List<SdkCreateRequest> getSdkCommandList() {
+    public java.util.List<com.couchbase.grpc.sdk.protocol.SdkCreateRequest> getSdkCommandList() {
       if (sdkCommandBuilder_ == null) {
         return java.util.Collections.unmodifiableList(sdkCommand_);
       } else {
@@ -563,7 +563,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
-    public SdkCreateRequest getSdkCommand(int index) {
+    public com.couchbase.grpc.sdk.protocol.SdkCreateRequest getSdkCommand(int index) {
       if (sdkCommandBuilder_ == null) {
         return sdkCommand_.get(index);
       } else {
@@ -578,7 +578,7 @@ private static final long serialVersionUID = 0L;
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
     public Builder setSdkCommand(
-        int index, SdkCreateRequest value) {
+        int index, com.couchbase.grpc.sdk.protocol.SdkCreateRequest value) {
       if (sdkCommandBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -599,7 +599,7 @@ private static final long serialVersionUID = 0L;
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
     public Builder setSdkCommand(
-        int index, SdkCreateRequest.Builder builderForValue) {
+        int index, com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder builderForValue) {
       if (sdkCommandBuilder_ == null) {
         ensureSdkCommandIsMutable();
         sdkCommand_.set(index, builderForValue.build());
@@ -616,7 +616,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
-    public Builder addSdkCommand(SdkCreateRequest value) {
+    public Builder addSdkCommand(com.couchbase.grpc.sdk.protocol.SdkCreateRequest value) {
       if (sdkCommandBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -637,7 +637,7 @@ private static final long serialVersionUID = 0L;
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
     public Builder addSdkCommand(
-        int index, SdkCreateRequest value) {
+        int index, com.couchbase.grpc.sdk.protocol.SdkCreateRequest value) {
       if (sdkCommandBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -658,7 +658,7 @@ private static final long serialVersionUID = 0L;
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
     public Builder addSdkCommand(
-        SdkCreateRequest.Builder builderForValue) {
+        com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder builderForValue) {
       if (sdkCommandBuilder_ == null) {
         ensureSdkCommandIsMutable();
         sdkCommand_.add(builderForValue.build());
@@ -676,7 +676,7 @@ private static final long serialVersionUID = 0L;
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
     public Builder addSdkCommand(
-        int index, SdkCreateRequest.Builder builderForValue) {
+        int index, com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder builderForValue) {
       if (sdkCommandBuilder_ == null) {
         ensureSdkCommandIsMutable();
         sdkCommand_.add(index, builderForValue.build());
@@ -694,10 +694,10 @@ private static final long serialVersionUID = 0L;
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
     public Builder addAllSdkCommand(
-        java.lang.Iterable<? extends SdkCreateRequest> values) {
+        java.lang.Iterable<? extends com.couchbase.grpc.sdk.protocol.SdkCreateRequest> values) {
       if (sdkCommandBuilder_ == null) {
         ensureSdkCommandIsMutable();
-        addAll(
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, sdkCommand_);
         onChanged();
       } else {
@@ -746,7 +746,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
-    public SdkCreateRequest.Builder getSdkCommandBuilder(
+    public com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder getSdkCommandBuilder(
         int index) {
       return getSdkCommandFieldBuilder().getBuilder(index);
     }
@@ -757,7 +757,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
-    public SdkCreateRequestOrBuilder getSdkCommandOrBuilder(
+    public com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder getSdkCommandOrBuilder(
         int index) {
       if (sdkCommandBuilder_ == null) {
         return sdkCommand_.get(index);  } else {
@@ -771,7 +771,7 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
-    public java.util.List<? extends SdkCreateRequestOrBuilder>
+    public java.util.List<? extends com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder> 
          getSdkCommandOrBuilderList() {
       if (sdkCommandBuilder_ != null) {
         return sdkCommandBuilder_.getMessageOrBuilderList();
@@ -786,9 +786,9 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
-    public SdkCreateRequest.Builder addSdkCommandBuilder() {
+    public com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder addSdkCommandBuilder() {
       return getSdkCommandFieldBuilder().addBuilder(
-          SdkCreateRequest.getDefaultInstance());
+          com.couchbase.grpc.sdk.protocol.SdkCreateRequest.getDefaultInstance());
     }
     /**
      * <pre>
@@ -797,10 +797,10 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
-    public SdkCreateRequest.Builder addSdkCommandBuilder(
+    public com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder addSdkCommandBuilder(
         int index) {
       return getSdkCommandFieldBuilder().addBuilder(
-          index, SdkCreateRequest.getDefaultInstance());
+          index, com.couchbase.grpc.sdk.protocol.SdkCreateRequest.getDefaultInstance());
     }
     /**
      * <pre>
@@ -809,16 +809,16 @@ private static final long serialVersionUID = 0L;
      *
      * <code>repeated .protocol.SdkCreateRequest sdkCommand = 1;</code>
      */
-    public java.util.List<SdkCreateRequest.Builder>
+    public java.util.List<com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder> 
          getSdkCommandBuilderList() {
       return getSdkCommandFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            SdkCreateRequest, SdkCreateRequest.Builder, SdkCreateRequestOrBuilder>
+        com.couchbase.grpc.sdk.protocol.SdkCreateRequest, com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder, com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder> 
         getSdkCommandFieldBuilder() {
       if (sdkCommandBuilder_ == null) {
         sdkCommandBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                SdkCreateRequest, SdkCreateRequest.Builder, SdkCreateRequestOrBuilder>(
+            com.couchbase.grpc.sdk.protocol.SdkCreateRequest, com.couchbase.grpc.sdk.protocol.SdkCreateRequest.Builder, com.couchbase.grpc.sdk.protocol.SdkCreateRequestOrBuilder>(
                 sdkCommand_,
                 ((bitField0_ & 0x00000001) != 0),
                 getParentForChildren(),
@@ -844,12 +844,12 @@ private static final long serialVersionUID = 0L;
   }
 
   // @@protoc_insertion_point(class_scope:protocol.PerfRunHorizontalScaling)
-  private static final PerfRunHorizontalScaling DEFAULT_INSTANCE;
+  private static final com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new PerfRunHorizontalScaling();
+    DEFAULT_INSTANCE = new com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling();
   }
 
-  public static PerfRunHorizontalScaling getDefaultInstance() {
+  public static com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -874,7 +874,7 @@ private static final long serialVersionUID = 0L;
   }
 
   @java.lang.Override
-  public PerfRunHorizontalScaling getDefaultInstanceForType() {
+  public com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 
