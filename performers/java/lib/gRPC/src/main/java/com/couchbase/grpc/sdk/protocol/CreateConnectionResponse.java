@@ -7,6 +7,7 @@ package com.couchbase.grpc.sdk.protocol;
  * <pre>
  * Returns the capabilities of the performer (or more specifically, the transactions-implementation-under-test by that
  * performer)
+ *TODO: FIT equivalent is splitting this into two files, wait for that patchset to come through
  * </pre>
  *
  * Protobuf type {@code protocol.CreateConnectionResponse}
@@ -479,6 +480,7 @@ private static final long serialVersionUID = 0L;
    * <pre>
    * Returns the capabilities of the performer (or more specifically, the transactions-implementation-under-test by that
    * performer)
+   *TODO: FIT equivalent is splitting this into two files, wait for that patchset to come through
    * </pre>
    *
    * Protobuf type {@code protocol.CreateConnectionResponse}

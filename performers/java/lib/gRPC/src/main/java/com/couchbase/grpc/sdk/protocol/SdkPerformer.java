@@ -78,21 +78,21 @@ public final class SdkPerformer {
       "uest\"\203\001\n\016PerfRunRequest\022\033\n\023clusterConnec" +
       "tionId\030\001 \001(\t\022=\n\021horizontalScaling\030\002 \003(\0132" +
       "\".protocol.PerfRunHorizontalScaling\022\025\n\rr" +
-      "unForSeconds\030\003 \001(\005\"\241\001\n\025PerfSingleSdkOpRe" +
+      "unForSeconds\030\003 \001(\005\"\264\001\n\025PerfSingleSdkOpRe" +
       "sult\022+\n\007results\030\001 \001(\0132\032.protocol.SdkComm" +
-      "andResult\022-\n\tinitiated\030\002 \001(\0132\032.google.pr" +
-      "otobuf.Timestamp\022,\n\010finished\030\003 \001(\0132\032.goo" +
-      "gle.protobuf.Timestamp2\376\001\n\023PerformerSdkS" +
-      "ervice\022Y\n\020createConnection\022!.protocol.Cr" +
-      "eateConnectionRequest\032\".protocol.CreateC" +
-      "onnectionResponse\022D\n\nsdkCommand\022\032.protoc" +
-      "ol.SdkCreateRequest\032\032.protocol.SdkComman" +
-      "dResult\022F\n\007perfRun\022\030.protocol.PerfRunReq" +
-      "uest\032\037.protocol.PerfSingleSdkOpResult0\001B" +
-      "{\n\037com.couchbase.grpc.sdk.protocolP\001Z<gi" +
-      "thub.com/couchbaselabs/transactions-fit-" +
-      "performer/protocol\252\002\027Couchbase.Grpc.Prot" +
-      "ocolb\006proto3"
+      "andResult\022\021\n\tversionId\030\002 \001(\t\022-\n\tinitiate" +
+      "d\030\003 \001(\0132\032.google.protobuf.Timestamp\022,\n\010f" +
+      "inished\030\004 \001(\0132\032.google.protobuf.Timestam" +
+      "p2\376\001\n\023PerformerSdkService\022Y\n\020createConne" +
+      "ction\022!.protocol.CreateConnectionRequest" +
+      "\032\".protocol.CreateConnectionResponse\022D\n\n" +
+      "sdkCommand\022\032.protocol.SdkCreateRequest\032\032" +
+      ".protocol.SdkCommandResult\022F\n\007perfRun\022\030." +
+      "protocol.PerfRunRequest\032\037.protocol.PerfS" +
+      "ingleSdkOpResult0\001B{\n\037com.couchbase.grpc" +
+      ".sdk.protocolP\001Z<github.com/couchbaselab" +
+      "s/transactions-fit-performer/protocol\252\002\027" +
+      "Couchbase.Grpc.Protocolb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -143,7 +143,7 @@ public final class SdkPerformer {
     internal_static_protocol_PerfSingleSdkOpResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_PerfSingleSdkOpResult_descriptor,
-        new java.lang.String[] { "Results", "Initiated", "Finished", });
+        new java.lang.String[] { "Results", "VersionId", "Initiated", "Finished", });
     com.couchbase.grpc.sdk.protocol.SdkCommands.getDescriptor();
     com.couchbase.grpc.sdk.protocol.SdkBasic.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();

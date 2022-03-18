@@ -4,26 +4,26 @@
 package com.couchbase.grpc.sdk.protocol;
 
 /**
- * Protobuf type {@code protocol.CommandInsert}
+ * Protobuf type {@code protocol.CommandGet}
  */
-public final class CommandInsert extends
+public final class CommandGet extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:protocol.CommandInsert)
-    CommandInsertOrBuilder {
+    // @@protoc_insertion_point(message_implements:protocol.CommandGet)
+    CommandGetOrBuilder {
 private static final long serialVersionUID = 0L;
-  // Use CommandInsert.newBuilder() to construct.
-  private CommandInsert(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use CommandGet.newBuilder() to construct.
+  private CommandGet(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  private CommandInsert() {
-    contentJson_ = "";
+  private CommandGet() {
+    docId_ = "";
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(
       UnusedPrivateParameter unused) {
-    return new CommandInsert();
+    return new CommandGet();
   }
 
   @java.lang.Override
@@ -31,7 +31,7 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private CommandInsert(
+  private CommandGet(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -49,7 +49,13 @@ private static final long serialVersionUID = 0L;
           case 0:
             done = true;
             break;
-          case 26: {
+          case 10: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            docId_ = s;
+            break;
+          }
+          case 18: {
             com.couchbase.grpc.sdk.protocol.BucketInfo.Builder subBuilder = null;
             if (bucketInfo_ != null) {
               subBuilder = bucketInfo_.toBuilder();
@@ -60,12 +66,6 @@ private static final long serialVersionUID = 0L;
               bucketInfo_ = subBuilder.buildPartial();
             }
 
-            break;
-          }
-          case 34: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            contentJson_ = s;
             break;
           }
           default: {
@@ -89,21 +89,71 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandInsert_descriptor;
+    return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandGet_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandInsert_fieldAccessorTable
+    return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandGet_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.couchbase.grpc.sdk.protocol.CommandInsert.class, com.couchbase.grpc.sdk.protocol.CommandInsert.Builder.class);
+            com.couchbase.grpc.sdk.protocol.CommandGet.class, com.couchbase.grpc.sdk.protocol.CommandGet.Builder.class);
   }
 
-  public static final int BUCKETINFO_FIELD_NUMBER = 3;
+  public static final int DOCID_FIELD_NUMBER = 1;
+  private volatile java.lang.Object docId_;
+  /**
+   * <pre>
+   * PERF_PERFORMER: this can start with "__doc_X", in which case a UUID for XXX should be generated or used automatically by
+   * the performer.  E.g. the first use of "__doc_0" in a transaction should create a new UUID for 0, and then subsequent uses
+   * of "__doc_0" in the same transaction should reuse that UUID.  X will always be an integer.
+   * </pre>
+   *
+   * <code>string docId = 1;</code>
+   * @return The docId.
+   */
+  @java.lang.Override
+  public java.lang.String getDocId() {
+    java.lang.Object ref = docId_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      docId_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * PERF_PERFORMER: this can start with "__doc_X", in which case a UUID for XXX should be generated or used automatically by
+   * the performer.  E.g. the first use of "__doc_0" in a transaction should create a new UUID for 0, and then subsequent uses
+   * of "__doc_0" in the same transaction should reuse that UUID.  X will always be an integer.
+   * </pre>
+   *
+   * <code>string docId = 1;</code>
+   * @return The bytes for docId.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getDocIdBytes() {
+    java.lang.Object ref = docId_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      docId_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int BUCKETINFO_FIELD_NUMBER = 2;
   private com.couchbase.grpc.sdk.protocol.BucketInfo bucketInfo_;
   /**
-   * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+   * <code>.protocol.BucketInfo bucketInfo = 2;</code>
    * @return Whether the bucketInfo field is set.
    */
   @java.lang.Override
@@ -111,7 +161,7 @@ private static final long serialVersionUID = 0L;
     return bucketInfo_ != null;
   }
   /**
-   * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+   * <code>.protocol.BucketInfo bucketInfo = 2;</code>
    * @return The bucketInfo.
    */
   @java.lang.Override
@@ -119,49 +169,11 @@ private static final long serialVersionUID = 0L;
     return bucketInfo_ == null ? com.couchbase.grpc.sdk.protocol.BucketInfo.getDefaultInstance() : bucketInfo_;
   }
   /**
-   * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+   * <code>.protocol.BucketInfo bucketInfo = 2;</code>
    */
   @java.lang.Override
   public com.couchbase.grpc.sdk.protocol.BucketInfoOrBuilder getBucketInfoOrBuilder() {
     return getBucketInfo();
-  }
-
-  public static final int CONTENTJSON_FIELD_NUMBER = 4;
-  private volatile java.lang.Object contentJson_;
-  /**
-   * <code>string contentJson = 4;</code>
-   * @return The contentJson.
-   */
-  @java.lang.Override
-  public java.lang.String getContentJson() {
-    java.lang.Object ref = contentJson_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      contentJson_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string contentJson = 4;</code>
-   * @return The bytes for contentJson.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getContentJsonBytes() {
-    java.lang.Object ref = contentJson_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      contentJson_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
   }
 
   private byte memoizedIsInitialized = -1;
@@ -178,11 +190,11 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (bucketInfo_ != null) {
-      output.writeMessage(3, getBucketInfo());
+    if (!getDocIdBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, docId_);
     }
-    if (!getContentJsonBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, contentJson_);
+    if (bucketInfo_ != null) {
+      output.writeMessage(2, getBucketInfo());
     }
     unknownFields.writeTo(output);
   }
@@ -193,12 +205,12 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
+    if (!getDocIdBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, docId_);
+    }
     if (bucketInfo_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, getBucketInfo());
-    }
-    if (!getContentJsonBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, contentJson_);
+        .computeMessageSize(2, getBucketInfo());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -210,18 +222,18 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof com.couchbase.grpc.sdk.protocol.CommandInsert)) {
+    if (!(obj instanceof com.couchbase.grpc.sdk.protocol.CommandGet)) {
       return super.equals(obj);
     }
-    com.couchbase.grpc.sdk.protocol.CommandInsert other = (com.couchbase.grpc.sdk.protocol.CommandInsert) obj;
+    com.couchbase.grpc.sdk.protocol.CommandGet other = (com.couchbase.grpc.sdk.protocol.CommandGet) obj;
 
+    if (!getDocId()
+        .equals(other.getDocId())) return false;
     if (hasBucketInfo() != other.hasBucketInfo()) return false;
     if (hasBucketInfo()) {
       if (!getBucketInfo()
           .equals(other.getBucketInfo())) return false;
     }
-    if (!getContentJson()
-        .equals(other.getContentJson())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -233,80 +245,80 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
+    hash = (37 * hash) + DOCID_FIELD_NUMBER;
+    hash = (53 * hash) + getDocId().hashCode();
     if (hasBucketInfo()) {
       hash = (37 * hash) + BUCKETINFO_FIELD_NUMBER;
       hash = (53 * hash) + getBucketInfo().hashCode();
     }
-    hash = (37 * hash) + CONTENTJSON_FIELD_NUMBER;
-    hash = (53 * hash) + getContentJson().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(byte[] data)
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseDelimitedFrom(java.io.InputStream input)
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseDelimitedFrom(
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert parseFrom(
+  public static com.couchbase.grpc.sdk.protocol.CommandGet parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -319,7 +331,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(com.couchbase.grpc.sdk.protocol.CommandInsert prototype) {
+  public static Builder newBuilder(com.couchbase.grpc.sdk.protocol.CommandGet prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -335,26 +347,26 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code protocol.CommandInsert}
+   * Protobuf type {@code protocol.CommandGet}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:protocol.CommandInsert)
-      com.couchbase.grpc.sdk.protocol.CommandInsertOrBuilder {
+      // @@protoc_insertion_point(builder_implements:protocol.CommandGet)
+      com.couchbase.grpc.sdk.protocol.CommandGetOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandInsert_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandGet_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandInsert_fieldAccessorTable
+      return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandGet_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.couchbase.grpc.sdk.protocol.CommandInsert.class, com.couchbase.grpc.sdk.protocol.CommandInsert.Builder.class);
+              com.couchbase.grpc.sdk.protocol.CommandGet.class, com.couchbase.grpc.sdk.protocol.CommandGet.Builder.class);
     }
 
-    // Construct using com.couchbase.grpc.sdk.protocol.CommandInsert.newBuilder()
+    // Construct using com.couchbase.grpc.sdk.protocol.CommandGet.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -372,31 +384,31 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      docId_ = "";
+
       if (bucketInfoBuilder_ == null) {
         bucketInfo_ = null;
       } else {
         bucketInfo_ = null;
         bucketInfoBuilder_ = null;
       }
-      contentJson_ = "";
-
       return this;
     }
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandInsert_descriptor;
+      return com.couchbase.grpc.sdk.protocol.SdkCommands.internal_static_protocol_CommandGet_descriptor;
     }
 
     @java.lang.Override
-    public com.couchbase.grpc.sdk.protocol.CommandInsert getDefaultInstanceForType() {
-      return com.couchbase.grpc.sdk.protocol.CommandInsert.getDefaultInstance();
+    public com.couchbase.grpc.sdk.protocol.CommandGet getDefaultInstanceForType() {
+      return com.couchbase.grpc.sdk.protocol.CommandGet.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.couchbase.grpc.sdk.protocol.CommandInsert build() {
-      com.couchbase.grpc.sdk.protocol.CommandInsert result = buildPartial();
+    public com.couchbase.grpc.sdk.protocol.CommandGet build() {
+      com.couchbase.grpc.sdk.protocol.CommandGet result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -404,14 +416,14 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public com.couchbase.grpc.sdk.protocol.CommandInsert buildPartial() {
-      com.couchbase.grpc.sdk.protocol.CommandInsert result = new com.couchbase.grpc.sdk.protocol.CommandInsert(this);
+    public com.couchbase.grpc.sdk.protocol.CommandGet buildPartial() {
+      com.couchbase.grpc.sdk.protocol.CommandGet result = new com.couchbase.grpc.sdk.protocol.CommandGet(this);
+      result.docId_ = docId_;
       if (bucketInfoBuilder_ == null) {
         result.bucketInfo_ = bucketInfo_;
       } else {
         result.bucketInfo_ = bucketInfoBuilder_.build();
       }
-      result.contentJson_ = contentJson_;
       onBuilt();
       return result;
     }
@@ -450,22 +462,22 @@ private static final long serialVersionUID = 0L;
     }
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.couchbase.grpc.sdk.protocol.CommandInsert) {
-        return mergeFrom((com.couchbase.grpc.sdk.protocol.CommandInsert)other);
+      if (other instanceof com.couchbase.grpc.sdk.protocol.CommandGet) {
+        return mergeFrom((com.couchbase.grpc.sdk.protocol.CommandGet)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.couchbase.grpc.sdk.protocol.CommandInsert other) {
-      if (other == com.couchbase.grpc.sdk.protocol.CommandInsert.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.couchbase.grpc.sdk.protocol.CommandGet other) {
+      if (other == com.couchbase.grpc.sdk.protocol.CommandGet.getDefaultInstance()) return this;
+      if (!other.getDocId().isEmpty()) {
+        docId_ = other.docId_;
+        onChanged();
+      }
       if (other.hasBucketInfo()) {
         mergeBucketInfo(other.getBucketInfo());
-      }
-      if (!other.getContentJson().isEmpty()) {
-        contentJson_ = other.contentJson_;
-        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -482,11 +494,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.couchbase.grpc.sdk.protocol.CommandInsert parsedMessage = null;
+      com.couchbase.grpc.sdk.protocol.CommandGet parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.couchbase.grpc.sdk.protocol.CommandInsert) e.getUnfinishedMessage();
+        parsedMessage = (com.couchbase.grpc.sdk.protocol.CommandGet) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -496,18 +508,124 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private java.lang.Object docId_ = "";
+    /**
+     * <pre>
+     * PERF_PERFORMER: this can start with "__doc_X", in which case a UUID for XXX should be generated or used automatically by
+     * the performer.  E.g. the first use of "__doc_0" in a transaction should create a new UUID for 0, and then subsequent uses
+     * of "__doc_0" in the same transaction should reuse that UUID.  X will always be an integer.
+     * </pre>
+     *
+     * <code>string docId = 1;</code>
+     * @return The docId.
+     */
+    public java.lang.String getDocId() {
+      java.lang.Object ref = docId_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        docId_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * PERF_PERFORMER: this can start with "__doc_X", in which case a UUID for XXX should be generated or used automatically by
+     * the performer.  E.g. the first use of "__doc_0" in a transaction should create a new UUID for 0, and then subsequent uses
+     * of "__doc_0" in the same transaction should reuse that UUID.  X will always be an integer.
+     * </pre>
+     *
+     * <code>string docId = 1;</code>
+     * @return The bytes for docId.
+     */
+    public com.google.protobuf.ByteString
+        getDocIdBytes() {
+      java.lang.Object ref = docId_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        docId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * PERF_PERFORMER: this can start with "__doc_X", in which case a UUID for XXX should be generated or used automatically by
+     * the performer.  E.g. the first use of "__doc_0" in a transaction should create a new UUID for 0, and then subsequent uses
+     * of "__doc_0" in the same transaction should reuse that UUID.  X will always be an integer.
+     * </pre>
+     *
+     * <code>string docId = 1;</code>
+     * @param value The docId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDocId(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      docId_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * PERF_PERFORMER: this can start with "__doc_X", in which case a UUID for XXX should be generated or used automatically by
+     * the performer.  E.g. the first use of "__doc_0" in a transaction should create a new UUID for 0, and then subsequent uses
+     * of "__doc_0" in the same transaction should reuse that UUID.  X will always be an integer.
+     * </pre>
+     *
+     * <code>string docId = 1;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDocId() {
+      
+      docId_ = getDefaultInstance().getDocId();
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * PERF_PERFORMER: this can start with "__doc_X", in which case a UUID for XXX should be generated or used automatically by
+     * the performer.  E.g. the first use of "__doc_0" in a transaction should create a new UUID for 0, and then subsequent uses
+     * of "__doc_0" in the same transaction should reuse that UUID.  X will always be an integer.
+     * </pre>
+     *
+     * <code>string docId = 1;</code>
+     * @param value The bytes for docId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDocIdBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      docId_ = value;
+      onChanged();
+      return this;
+    }
+
     private com.couchbase.grpc.sdk.protocol.BucketInfo bucketInfo_;
     private com.google.protobuf.SingleFieldBuilderV3<
         com.couchbase.grpc.sdk.protocol.BucketInfo, com.couchbase.grpc.sdk.protocol.BucketInfo.Builder, com.couchbase.grpc.sdk.protocol.BucketInfoOrBuilder> bucketInfoBuilder_;
     /**
-     * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+     * <code>.protocol.BucketInfo bucketInfo = 2;</code>
      * @return Whether the bucketInfo field is set.
      */
     public boolean hasBucketInfo() {
       return bucketInfoBuilder_ != null || bucketInfo_ != null;
     }
     /**
-     * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+     * <code>.protocol.BucketInfo bucketInfo = 2;</code>
      * @return The bucketInfo.
      */
     public com.couchbase.grpc.sdk.protocol.BucketInfo getBucketInfo() {
@@ -518,7 +636,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+     * <code>.protocol.BucketInfo bucketInfo = 2;</code>
      */
     public Builder setBucketInfo(com.couchbase.grpc.sdk.protocol.BucketInfo value) {
       if (bucketInfoBuilder_ == null) {
@@ -534,7 +652,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+     * <code>.protocol.BucketInfo bucketInfo = 2;</code>
      */
     public Builder setBucketInfo(
         com.couchbase.grpc.sdk.protocol.BucketInfo.Builder builderForValue) {
@@ -548,7 +666,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+     * <code>.protocol.BucketInfo bucketInfo = 2;</code>
      */
     public Builder mergeBucketInfo(com.couchbase.grpc.sdk.protocol.BucketInfo value) {
       if (bucketInfoBuilder_ == null) {
@@ -566,7 +684,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+     * <code>.protocol.BucketInfo bucketInfo = 2;</code>
      */
     public Builder clearBucketInfo() {
       if (bucketInfoBuilder_ == null) {
@@ -580,7 +698,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+     * <code>.protocol.BucketInfo bucketInfo = 2;</code>
      */
     public com.couchbase.grpc.sdk.protocol.BucketInfo.Builder getBucketInfoBuilder() {
       
@@ -588,7 +706,7 @@ private static final long serialVersionUID = 0L;
       return getBucketInfoFieldBuilder().getBuilder();
     }
     /**
-     * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+     * <code>.protocol.BucketInfo bucketInfo = 2;</code>
      */
     public com.couchbase.grpc.sdk.protocol.BucketInfoOrBuilder getBucketInfoOrBuilder() {
       if (bucketInfoBuilder_ != null) {
@@ -599,7 +717,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+     * <code>.protocol.BucketInfo bucketInfo = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         com.couchbase.grpc.sdk.protocol.BucketInfo, com.couchbase.grpc.sdk.protocol.BucketInfo.Builder, com.couchbase.grpc.sdk.protocol.BucketInfoOrBuilder> 
@@ -614,82 +732,6 @@ private static final long serialVersionUID = 0L;
       }
       return bucketInfoBuilder_;
     }
-
-    private java.lang.Object contentJson_ = "";
-    /**
-     * <code>string contentJson = 4;</code>
-     * @return The contentJson.
-     */
-    public java.lang.String getContentJson() {
-      java.lang.Object ref = contentJson_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        contentJson_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string contentJson = 4;</code>
-     * @return The bytes for contentJson.
-     */
-    public com.google.protobuf.ByteString
-        getContentJsonBytes() {
-      java.lang.Object ref = contentJson_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        contentJson_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string contentJson = 4;</code>
-     * @param value The contentJson to set.
-     * @return This builder for chaining.
-     */
-    public Builder setContentJson(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      contentJson_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string contentJson = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearContentJson() {
-      
-      contentJson_ = getDefaultInstance().getContentJson();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string contentJson = 4;</code>
-     * @param value The bytes for contentJson to set.
-     * @return This builder for chaining.
-     */
-    public Builder setContentJsonBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      contentJson_ = value;
-      onChanged();
-      return this;
-    }
     @java.lang.Override
     public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -703,41 +745,41 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:protocol.CommandInsert)
+    // @@protoc_insertion_point(builder_scope:protocol.CommandGet)
   }
 
-  // @@protoc_insertion_point(class_scope:protocol.CommandInsert)
-  private static final com.couchbase.grpc.sdk.protocol.CommandInsert DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:protocol.CommandGet)
+  private static final com.couchbase.grpc.sdk.protocol.CommandGet DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new com.couchbase.grpc.sdk.protocol.CommandInsert();
+    DEFAULT_INSTANCE = new com.couchbase.grpc.sdk.protocol.CommandGet();
   }
 
-  public static com.couchbase.grpc.sdk.protocol.CommandInsert getDefaultInstance() {
+  public static com.couchbase.grpc.sdk.protocol.CommandGet getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<CommandInsert>
-      PARSER = new com.google.protobuf.AbstractParser<CommandInsert>() {
+  private static final com.google.protobuf.Parser<CommandGet>
+      PARSER = new com.google.protobuf.AbstractParser<CommandGet>() {
     @java.lang.Override
-    public CommandInsert parsePartialFrom(
+    public CommandGet parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new CommandInsert(input, extensionRegistry);
+      return new CommandGet(input, extensionRegistry);
     }
   };
 
-  public static com.google.protobuf.Parser<CommandInsert> parser() {
+  public static com.google.protobuf.Parser<CommandGet> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<CommandInsert> getParserForType() {
+  public com.google.protobuf.Parser<CommandGet> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.couchbase.grpc.sdk.protocol.CommandInsert getDefaultInstanceForType() {
+  public com.couchbase.grpc.sdk.protocol.CommandGet getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

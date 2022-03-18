@@ -22,5 +22,20 @@ public interface SdkCommandOrBuilder extends
    */
   com.couchbase.grpc.sdk.protocol.CommandInsertOrBuilder getInsertOrBuilder();
 
+  /**
+   * <code>.protocol.CommandGet get = 2;</code>
+   * @return Whether the get field is set.
+   */
+  boolean hasGet();
+  /**
+   * <code>.protocol.CommandGet get = 2;</code>
+   * @return The get.
+   */
+  com.couchbase.grpc.sdk.protocol.CommandGet getGet();
+  /**
+   * <code>.protocol.CommandGet get = 2;</code>
+   */
+  com.couchbase.grpc.sdk.protocol.CommandGetOrBuilder getGetOrBuilder();
+
   public com.couchbase.grpc.sdk.protocol.SdkCommand.CommandCase getCommandCase();
 }

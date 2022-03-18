@@ -87,6 +87,8 @@ class PerfRunnerThread extends Thread {
 
                 singleResult.setFinished(getTimeNow());
                 singleResult.setResults(result.toBuilder());
+                //TODO send back version data
+                singleResult.setVersionId("Java:3.1.4");
 
                 responseObserver.onNext(singleResult.build());
 

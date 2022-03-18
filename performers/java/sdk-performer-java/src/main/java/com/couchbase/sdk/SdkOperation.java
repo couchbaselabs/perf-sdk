@@ -29,31 +29,36 @@ public class SdkOperation {
         return response.build();
     }
 
-    private String convertDocId(DocId docId) {
-        if (docId.getDocId().startsWith("__doc_")) {
-            Integer docOrdinal = Integer.parseInt(docId.getDocId().split("__doc_")[1]);
-            if (docIds == null) {
-                docIds = new HashMap<>();
-            }
-            String cached = docIds.get(docOrdinal);
-            if (cached == null) {
-                cached = UUID.randomUUID().toString();
-                docIds.put(docOrdinal, cached);
-            }
-            return cached;
-        }
-        else {
-            return docId.getDocId();
-        }
-    }
+//    private String convertDocId(DocId docId) {
+//        if (docId.getDocId().startsWith("__doc_")) {
+//            Integer docOrdinal = Integer.parseInt(docId.getDocId().split("__doc_")[1]);
+//            if (docIds == null) {
+//                docIds = new HashMap<>();
+//            }
+//            String cached = docIds.get(docOrdinal);
+//            if (cached == null) {
+//                cached = UUID.randomUUID().toString();
+//                docIds.put(docOrdinal, cached);
+//            }
+//            return cached;
+//        }
+//        else {
+//            return docId.getDocId();
+//        }
+//    }
 
     private void performOperation(ClusterConnection connection,
                                   SdkCommand op) {
         if (op.hasInsert()){
             final CommandInsert request = op.getInsert();
-            final Collection collection = connection.getBucket().scope(request.getDocId().getScopeName()).collection(request.getDocId().getCollectionName());
+            final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
             JsonObject content = JsonObject.fromJson(request.getContentJson());
-            collection.insert(convertDocId(request.getDocId()), content);
+            collection.insert(UUID.randomUUID().toString(), content);
+        }else if(op.hasGet()) {
+            final CommandGet request = op.getGet();
+            final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
+            //FIXME should take a docID
+            collection.get(request.getDocId());
         }else {
         throw new InternalPerformerFailure(new IllegalArgumentException("Unknown operation"));
     }

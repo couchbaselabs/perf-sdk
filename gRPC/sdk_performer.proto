@@ -30,6 +30,7 @@ message CreateConnectionRequest {
 
 // Returns the capabilities of the performer (or more specifically, the transactions-implementation-under-test by that
 // performer)
+//TODO: FIT equivalent is splitting this into two files, wait for that patchset to come through
 message CreateConnectionResponse {
     //repeated PerformerCaps performerCaps = 1;
 
@@ -88,7 +89,8 @@ message PerfRunRequest {
 message PerfSingleSdkOpResult {
     // Implementations should not provide the logs field here, to conserve memory & bandwidth
     SdkCommandResult results = 1;
+    string versionId=2;
 
-    google.protobuf.Timestamp initiated = 2;
-    google.protobuf.Timestamp finished = 3;
+    google.protobuf.Timestamp initiated = 3;
+    google.protobuf.Timestamp finished = 4;
 }

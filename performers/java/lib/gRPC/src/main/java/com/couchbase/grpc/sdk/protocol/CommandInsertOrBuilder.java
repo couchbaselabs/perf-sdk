@@ -8,27 +8,27 @@ public interface CommandInsertOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.protocol.DocId docId = 1;</code>
-   * @return Whether the docId field is set.
+   * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+   * @return Whether the bucketInfo field is set.
    */
-  boolean hasDocId();
+  boolean hasBucketInfo();
   /**
-   * <code>.protocol.DocId docId = 1;</code>
-   * @return The docId.
+   * <code>.protocol.BucketInfo bucketInfo = 3;</code>
+   * @return The bucketInfo.
    */
-  com.couchbase.grpc.sdk.protocol.DocId getDocId();
+  com.couchbase.grpc.sdk.protocol.BucketInfo getBucketInfo();
   /**
-   * <code>.protocol.DocId docId = 1;</code>
+   * <code>.protocol.BucketInfo bucketInfo = 3;</code>
    */
-  com.couchbase.grpc.sdk.protocol.DocIdOrBuilder getDocIdOrBuilder();
+  com.couchbase.grpc.sdk.protocol.BucketInfoOrBuilder getBucketInfoOrBuilder();
 
   /**
-   * <code>string contentJson = 2;</code>
+   * <code>string contentJson = 4;</code>
    * @return The contentJson.
    */
   java.lang.String getContentJson();
   /**
-   * <code>string contentJson = 2;</code>
+   * <code>string contentJson = 4;</code>
    * @return The bytes for contentJson.
    */
   com.google.protobuf.ByteString

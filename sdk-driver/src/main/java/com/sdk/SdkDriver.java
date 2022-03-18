@@ -9,7 +9,6 @@ import com.sdk.constants.Strings;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.grpc.sdk.protocol.CommandInsert;
 import com.couchbase.grpc.sdk.protocol.CreateConnectionRequest;
-import com.couchbase.grpc.sdk.protocol.DocId;
 import com.sdk.sdk.util.Performer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
-record TestSuite(String runtime, String versionId, Variables variables, Connections connections, List<Run> runs) {
+record TestSuite(String runtime, Variables variables, Connections connections, List<Run> runs) {
     Duration runtimeAsDuration() {
         var trimmed = runtime.trim();
         char suffix = trimmed.charAt(trimmed.length() - 1);
@@ -49,6 +48,10 @@ record TestSuite(String runtime, String versionId, Variables variables, Connecti
             return (Integer) predefinedVar(PredefinedVariable.PredefinedVariableName.HORIZONTAL_SCALING);
         }
 
+        String doc_id() {
+            return (String) predefinedVar(PredefinedVariable.PredefinedVariableName.DOC_ID);
+        }
+
         private Object predefinedVar(PredefinedVariable.PredefinedVariableName name) {
             return predefined.stream()
                     .filter(v -> v.name == name)
@@ -60,6 +63,7 @@ record TestSuite(String runtime, String versionId, Variables variables, Connecti
         record PredefinedVariable(PredefinedVariableName name, Object value) {
             enum PredefinedVariableName {
                 @JsonProperty("horizontal_scaling") HORIZONTAL_SCALING,
+                @JsonProperty("doc_id") DOC_ID
             }
         }
 
@@ -79,9 +83,18 @@ record TestSuite(String runtime, String versionId, Variables variables, Connecti
     }
 
     record Run(String uuid, String description, List<Operation> operations) {
-        record Operation(Op op, int count) {
+        record Operation(Op op, int count, Object opConfig) {
             enum Op {
                 INSERT,
+                GET
+            }
+
+            int opConfigAsInt(){
+                return (int) opConfig();
+            }
+
+            String opConfigAsString(){
+                return (String) opConfig();
             }
         }
     }
@@ -94,18 +107,32 @@ interface Op {
     void applyTo(SdkCreateRequest.Builder builder);
 }
 
-record OpInsert(String docId, JsonObject content) implements Op {
+record OpInsert(JsonObject content) implements Op {
     @Override
     public void applyTo(SdkCreateRequest.Builder builder) {
         builder.addCommands(SdkCommand.newBuilder()
                 .setInsert(CommandInsert.newBuilder()
-                        .setDocId(DocId.newBuilder()
+                        .setContentJson(content.toString())
+                        .setBucketInfo(BucketInfo.newBuilder()
                                 .setBucketName(Defaults.DEFAULT_BUCKET)
                                 .setScopeName(Defaults.DEFAULT_SCOPE)
                                 .setCollectionName(Defaults.DEFAULT_COLLECTION)
-                                .setDocId(docId)
                                 .build())
-                        .setContentJson(content.toString())
+                        .build()));
+    }
+}
+
+record OpGet(String docId) implements Op {
+    @Override
+    public void applyTo(SdkCreateRequest.Builder builder) {
+        builder.addCommands(SdkCommand.newBuilder()
+                .setGet(CommandGet.newBuilder()
+                        .setDocId(docId)
+                        .setBucketInfo(BucketInfo.newBuilder()
+                                .setBucketName(Defaults.DEFAULT_BUCKET)
+                                .setScopeName(Defaults.DEFAULT_SCOPE)
+                                .setCollectionName(Defaults.DEFAULT_COLLECTION)
+                                .build())
                         .build()));
     }
 }
@@ -116,7 +143,7 @@ public class SdkDriver {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private final static ObjectMapper jsonMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    //TODO add logger
+    //TODO: add logger
 
     //private static final Logger logger = LogUtil.getLogger(PerfRunnerTest.class);
     //private static final Logger logger = LogUtil.getLogger(PerfRunnerTest.class);
@@ -130,14 +157,16 @@ public class SdkDriver {
         run(args[0]);
     }
 
-    static Op addOp(TestSuite.Run.Operation.Op op, int repeatIdx) {
-        String docId = "__doc_" + repeatIdx;
+    static Op addOp(TestSuite.Run.Operation op) {
         JsonObject initial = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
         JsonObject updated = JsonObject.create().put(Strings.CONTENT_NAME, Strings.UPDATED_CONTENT_VALUE);
 
-        switch (op) {
+        switch (op.op()) {
             case INSERT:
-                return new OpInsert(docId, initial);
+                return new OpInsert(initial);
+            case GET:
+                //FIXME should take a docID, need to figure out how
+                return new OpGet(op.opConfigAsString());
             default:
                 throw new IllegalArgumentException("Unknown op " + op);
         }
@@ -148,11 +177,9 @@ public class SdkDriver {
         var ops = new ArrayList<Op>();
 
         run.operations().forEach(op -> {
-            for (int i=0; i<op.count(); i++) {
-                    ops.add(addOp(op.op(), i));
-                }
-            }
-        );
+            for (int i=0; i<op.count(); i++)
+                ops.add(addOp(op));
+        });
         return new BuiltSdkCommand(ops, "Test");
     }
 
@@ -181,7 +208,7 @@ public class SdkDriver {
         System.out.println("Set all wacky variablies");
         try (var conn = DriverManager.getConnection(dbUrl, props)) {
 
-            // Make sure that the timescaledb database is created
+            // Make sure that the timescaledb database has been created
             System.out.println("Connection Begin");
             CreateConnectionRequest createConnection =
                     CreateConnectionRequest.newBuilder()
@@ -281,7 +308,8 @@ public class SdkDriver {
 
                         st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
                                 v.timestamp,
-                                testSuite.versionId(),
+                                //TODO need to generate a versionId somewhere
+                                sortedResults.get(0).getVersionId(),
                                 run.uuid(),
                                 v.sdkOpsTotal,
                                 v.sdkOpsSuccess,

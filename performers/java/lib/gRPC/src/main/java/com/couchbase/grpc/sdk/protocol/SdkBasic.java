@@ -15,10 +15,10 @@ public final class SdkBasic {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_protocol_DocId_descriptor;
+    internal_static_protocol_BucketInfo_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_protocol_DocId_fieldAccessorTable;
+      internal_static_protocol_BucketInfo_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -28,24 +28,23 @@ public final class SdkBasic {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\017sdk_basic.proto\022\010protocol\"U\n\005DocId\022\022\n\n" +
-      "bucketName\030\001 \001(\t\022\021\n\tscopeName\030\002 \001(\t\022\026\n\016c" +
-      "ollectionName\030\003 \001(\t\022\r\n\005docId\030\004 \001(\tB{\n\037co" +
-      "m.couchbase.grpc.sdk.protocolP\001Z<github." +
-      "com/couchbaselabs/transactions-fit-perfo" +
-      "rmer/protocol\252\002\027Couchbase.Grpc.Protocolb" +
-      "\006proto3"
+      "\n\017sdk_basic.proto\022\010protocol\"K\n\nBucketInf" +
+      "o\022\022\n\nbucketName\030\001 \001(\t\022\021\n\tscopeName\030\002 \001(\t" +
+      "\022\026\n\016collectionName\030\003 \001(\tB{\n\037com.couchbas" +
+      "e.grpc.sdk.protocolP\001Z<github.com/couchb" +
+      "aselabs/transactions-fit-performer/proto" +
+      "col\252\002\027Couchbase.Grpc.Protocolb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         });
-    internal_static_protocol_DocId_descriptor =
+    internal_static_protocol_BucketInfo_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_protocol_DocId_fieldAccessorTable = new
+    internal_static_protocol_BucketInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_protocol_DocId_descriptor,
-        new java.lang.String[] { "BucketName", "ScopeName", "CollectionName", "DocId", });
+        internal_static_protocol_BucketInfo_descriptor,
+        new java.lang.String[] { "BucketName", "ScopeName", "CollectionName", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
