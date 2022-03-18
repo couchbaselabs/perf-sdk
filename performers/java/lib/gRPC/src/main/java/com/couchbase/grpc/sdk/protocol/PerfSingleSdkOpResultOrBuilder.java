@@ -35,32 +35,44 @@ public interface PerfSingleSdkOpResultOrBuilder extends
   com.couchbase.grpc.sdk.protocol.SdkCommandResultOrBuilder getResultsOrBuilder();
 
   /**
-   * <code>.google.protobuf.Timestamp initiated = 2;</code>
+   * <code>string versionId = 2;</code>
+   * @return The versionId.
+   */
+  java.lang.String getVersionId();
+  /**
+   * <code>string versionId = 2;</code>
+   * @return The bytes for versionId.
+   */
+  com.google.protobuf.ByteString
+      getVersionIdBytes();
+
+  /**
+   * <code>.google.protobuf.Timestamp initiated = 3;</code>
    * @return Whether the initiated field is set.
    */
   boolean hasInitiated();
   /**
-   * <code>.google.protobuf.Timestamp initiated = 2;</code>
+   * <code>.google.protobuf.Timestamp initiated = 3;</code>
    * @return The initiated.
    */
   com.google.protobuf.Timestamp getInitiated();
   /**
-   * <code>.google.protobuf.Timestamp initiated = 2;</code>
+   * <code>.google.protobuf.Timestamp initiated = 3;</code>
    */
   com.google.protobuf.TimestampOrBuilder getInitiatedOrBuilder();
 
   /**
-   * <code>.google.protobuf.Timestamp finished = 3;</code>
+   * <code>.google.protobuf.Timestamp finished = 4;</code>
    * @return Whether the finished field is set.
    */
   boolean hasFinished();
   /**
-   * <code>.google.protobuf.Timestamp finished = 3;</code>
+   * <code>.google.protobuf.Timestamp finished = 4;</code>
    * @return The finished.
    */
   com.google.protobuf.Timestamp getFinished();
   /**
-   * <code>.google.protobuf.Timestamp finished = 3;</code>
+   * <code>.google.protobuf.Timestamp finished = 4;</code>
    */
   com.google.protobuf.TimestampOrBuilder getFinishedOrBuilder();
 }

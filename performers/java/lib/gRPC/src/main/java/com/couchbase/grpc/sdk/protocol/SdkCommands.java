@@ -20,6 +20,11 @@ public final class SdkCommands {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_protocol_CommandInsert_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_protocol_CommandGet_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_protocol_CommandGet_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_protocol_SdkCommand_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -34,16 +39,19 @@ public final class SdkCommands {
   static {
     java.lang.String[] descriptorData = {
       "\n\022sdk_commands.proto\022\010protocol\032\017sdk_basi" +
-      "c.proto\"D\n\rCommandInsert\022\036\n\005docId\030\001 \001(\0132" +
-      "\017.protocol.DocId\022\023\n\013contentJson\030\002 \001(\t\"B\n" +
-      "\nSdkCommand\022)\n\006insert\030\001 \001(\0132\027.protocol.C" +
-      "ommandInsertH\000B\t\n\007command*M\n\014SdkExceptio" +
-      "n\022\027\n\023NO_EXCEPTION_THROWN\020\000\022\r\n\tEXCEPTION\020" +
-      "\001\022\025\n\021EXCEPTION_UNKNOWN\020\002* \n\021ExternalExce" +
-      "ption\022\013\n\007Unknown\020\000B{\n\037com.couchbase.grpc" +
-      ".sdk.protocolP\001Z<github.com/couchbaselab" +
-      "s/transactions-fit-performer/protocol\252\002\027" +
-      "Couchbase.Grpc.Protocolb\006proto3"
+      "c.proto\"N\n\rCommandInsert\022(\n\nbucketInfo\030\003" +
+      " \001(\0132\024.protocol.BucketInfo\022\023\n\013contentJso" +
+      "n\030\004 \001(\t\"E\n\nCommandGet\022\r\n\005docId\030\001 \001(\t\022(\n\n" +
+      "bucketInfo\030\002 \001(\0132\024.protocol.BucketInfo\"g" +
+      "\n\nSdkCommand\022)\n\006insert\030\001 \001(\0132\027.protocol." +
+      "CommandInsertH\000\022#\n\003get\030\002 \001(\0132\024.protocol." +
+      "CommandGetH\000B\t\n\007command*M\n\014SdkException\022" +
+      "\027\n\023NO_EXCEPTION_THROWN\020\000\022\r\n\tEXCEPTION\020\001\022" +
+      "\025\n\021EXCEPTION_UNKNOWN\020\002* \n\021ExternalExcept" +
+      "ion\022\013\n\007Unknown\020\000B{\n\037com.couchbase.grpc.s" +
+      "dk.protocolP\001Z<github.com/couchbaselabs/" +
+      "transactions-fit-performer/protocol\252\002\027Co" +
+      "uchbase.Grpc.Protocolb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -55,13 +63,19 @@ public final class SdkCommands {
     internal_static_protocol_CommandInsert_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_CommandInsert_descriptor,
-        new java.lang.String[] { "DocId", "ContentJson", });
-    internal_static_protocol_SdkCommand_descriptor =
+        new java.lang.String[] { "BucketInfo", "ContentJson", });
+    internal_static_protocol_CommandGet_descriptor =
       getDescriptor().getMessageTypes().get(1);
+    internal_static_protocol_CommandGet_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_protocol_CommandGet_descriptor,
+        new java.lang.String[] { "DocId", "BucketInfo", });
+    internal_static_protocol_SdkCommand_descriptor =
+      getDescriptor().getMessageTypes().get(2);
     internal_static_protocol_SdkCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_protocol_SdkCommand_descriptor,
-        new java.lang.String[] { "Insert", "Command", });
+        new java.lang.String[] { "Insert", "Get", "Command", });
     com.couchbase.grpc.sdk.protocol.SdkBasic.getDescriptor();
   }
 

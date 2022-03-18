@@ -62,6 +62,20 @@ private static final long serialVersionUID = 0L;
             commandCase_ = 1;
             break;
           }
+          case 18: {
+            com.couchbase.grpc.sdk.protocol.CommandGet.Builder subBuilder = null;
+            if (commandCase_ == 2) {
+              subBuilder = ((com.couchbase.grpc.sdk.protocol.CommandGet) command_).toBuilder();
+            }
+            command_ =
+                input.readMessage(com.couchbase.grpc.sdk.protocol.CommandGet.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom((com.couchbase.grpc.sdk.protocol.CommandGet) command_);
+              command_ = subBuilder.buildPartial();
+            }
+            commandCase_ = 2;
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -100,6 +114,7 @@ private static final long serialVersionUID = 0L;
       implements com.google.protobuf.Internal.EnumLite,
           com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     INSERT(1),
+    GET(2),
     COMMAND_NOT_SET(0);
     private final int value;
     private CommandCase(int value) {
@@ -118,6 +133,7 @@ private static final long serialVersionUID = 0L;
     public static CommandCase forNumber(int value) {
       switch (value) {
         case 1: return INSERT;
+        case 2: return GET;
         case 0: return COMMAND_NOT_SET;
         default: return null;
       }
@@ -164,6 +180,37 @@ private static final long serialVersionUID = 0L;
     return com.couchbase.grpc.sdk.protocol.CommandInsert.getDefaultInstance();
   }
 
+  public static final int GET_FIELD_NUMBER = 2;
+  /**
+   * <code>.protocol.CommandGet get = 2;</code>
+   * @return Whether the get field is set.
+   */
+  @java.lang.Override
+  public boolean hasGet() {
+    return commandCase_ == 2;
+  }
+  /**
+   * <code>.protocol.CommandGet get = 2;</code>
+   * @return The get.
+   */
+  @java.lang.Override
+  public com.couchbase.grpc.sdk.protocol.CommandGet getGet() {
+    if (commandCase_ == 2) {
+       return (com.couchbase.grpc.sdk.protocol.CommandGet) command_;
+    }
+    return com.couchbase.grpc.sdk.protocol.CommandGet.getDefaultInstance();
+  }
+  /**
+   * <code>.protocol.CommandGet get = 2;</code>
+   */
+  @java.lang.Override
+  public com.couchbase.grpc.sdk.protocol.CommandGetOrBuilder getGetOrBuilder() {
+    if (commandCase_ == 2) {
+       return (com.couchbase.grpc.sdk.protocol.CommandGet) command_;
+    }
+    return com.couchbase.grpc.sdk.protocol.CommandGet.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -181,6 +228,9 @@ private static final long serialVersionUID = 0L;
     if (commandCase_ == 1) {
       output.writeMessage(1, (com.couchbase.grpc.sdk.protocol.CommandInsert) command_);
     }
+    if (commandCase_ == 2) {
+      output.writeMessage(2, (com.couchbase.grpc.sdk.protocol.CommandGet) command_);
+    }
     unknownFields.writeTo(output);
   }
 
@@ -193,6 +243,10 @@ private static final long serialVersionUID = 0L;
     if (commandCase_ == 1) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(1, (com.couchbase.grpc.sdk.protocol.CommandInsert) command_);
+    }
+    if (commandCase_ == 2) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(2, (com.couchbase.grpc.sdk.protocol.CommandGet) command_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -215,6 +269,10 @@ private static final long serialVersionUID = 0L;
         if (!getInsert()
             .equals(other.getInsert())) return false;
         break;
+      case 2:
+        if (!getGet()
+            .equals(other.getGet())) return false;
+        break;
       case 0:
       default:
     }
@@ -233,6 +291,10 @@ private static final long serialVersionUID = 0L;
       case 1:
         hash = (37 * hash) + INSERT_FIELD_NUMBER;
         hash = (53 * hash) + getInsert().hashCode();
+        break;
+      case 2:
+        hash = (37 * hash) + GET_FIELD_NUMBER;
+        hash = (53 * hash) + getGet().hashCode();
         break;
       case 0:
       default:
@@ -405,6 +467,13 @@ private static final long serialVersionUID = 0L;
           result.command_ = insertBuilder_.build();
         }
       }
+      if (commandCase_ == 2) {
+        if (getBuilder_ == null) {
+          result.command_ = command_;
+        } else {
+          result.command_ = getBuilder_.build();
+        }
+      }
       result.commandCase_ = commandCase_;
       onBuilt();
       return result;
@@ -457,6 +526,10 @@ private static final long serialVersionUID = 0L;
       switch (other.getCommandCase()) {
         case INSERT: {
           mergeInsert(other.getInsert());
+          break;
+        }
+        case GET: {
+          mergeGet(other.getGet());
           break;
         }
         case COMMAND_NOT_SET: {
@@ -646,6 +719,147 @@ private static final long serialVersionUID = 0L;
       commandCase_ = 1;
       onChanged();;
       return insertBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.couchbase.grpc.sdk.protocol.CommandGet, com.couchbase.grpc.sdk.protocol.CommandGet.Builder, com.couchbase.grpc.sdk.protocol.CommandGetOrBuilder> getBuilder_;
+    /**
+     * <code>.protocol.CommandGet get = 2;</code>
+     * @return Whether the get field is set.
+     */
+    @java.lang.Override
+    public boolean hasGet() {
+      return commandCase_ == 2;
+    }
+    /**
+     * <code>.protocol.CommandGet get = 2;</code>
+     * @return The get.
+     */
+    @java.lang.Override
+    public com.couchbase.grpc.sdk.protocol.CommandGet getGet() {
+      if (getBuilder_ == null) {
+        if (commandCase_ == 2) {
+          return (com.couchbase.grpc.sdk.protocol.CommandGet) command_;
+        }
+        return com.couchbase.grpc.sdk.protocol.CommandGet.getDefaultInstance();
+      } else {
+        if (commandCase_ == 2) {
+          return getBuilder_.getMessage();
+        }
+        return com.couchbase.grpc.sdk.protocol.CommandGet.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.protocol.CommandGet get = 2;</code>
+     */
+    public Builder setGet(com.couchbase.grpc.sdk.protocol.CommandGet value) {
+      if (getBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        command_ = value;
+        onChanged();
+      } else {
+        getBuilder_.setMessage(value);
+      }
+      commandCase_ = 2;
+      return this;
+    }
+    /**
+     * <code>.protocol.CommandGet get = 2;</code>
+     */
+    public Builder setGet(
+        com.couchbase.grpc.sdk.protocol.CommandGet.Builder builderForValue) {
+      if (getBuilder_ == null) {
+        command_ = builderForValue.build();
+        onChanged();
+      } else {
+        getBuilder_.setMessage(builderForValue.build());
+      }
+      commandCase_ = 2;
+      return this;
+    }
+    /**
+     * <code>.protocol.CommandGet get = 2;</code>
+     */
+    public Builder mergeGet(com.couchbase.grpc.sdk.protocol.CommandGet value) {
+      if (getBuilder_ == null) {
+        if (commandCase_ == 2 &&
+            command_ != com.couchbase.grpc.sdk.protocol.CommandGet.getDefaultInstance()) {
+          command_ = com.couchbase.grpc.sdk.protocol.CommandGet.newBuilder((com.couchbase.grpc.sdk.protocol.CommandGet) command_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          command_ = value;
+        }
+        onChanged();
+      } else {
+        if (commandCase_ == 2) {
+          getBuilder_.mergeFrom(value);
+        }
+        getBuilder_.setMessage(value);
+      }
+      commandCase_ = 2;
+      return this;
+    }
+    /**
+     * <code>.protocol.CommandGet get = 2;</code>
+     */
+    public Builder clearGet() {
+      if (getBuilder_ == null) {
+        if (commandCase_ == 2) {
+          commandCase_ = 0;
+          command_ = null;
+          onChanged();
+        }
+      } else {
+        if (commandCase_ == 2) {
+          commandCase_ = 0;
+          command_ = null;
+        }
+        getBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>.protocol.CommandGet get = 2;</code>
+     */
+    public com.couchbase.grpc.sdk.protocol.CommandGet.Builder getGetBuilder() {
+      return getGetFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.protocol.CommandGet get = 2;</code>
+     */
+    @java.lang.Override
+    public com.couchbase.grpc.sdk.protocol.CommandGetOrBuilder getGetOrBuilder() {
+      if ((commandCase_ == 2) && (getBuilder_ != null)) {
+        return getBuilder_.getMessageOrBuilder();
+      } else {
+        if (commandCase_ == 2) {
+          return (com.couchbase.grpc.sdk.protocol.CommandGet) command_;
+        }
+        return com.couchbase.grpc.sdk.protocol.CommandGet.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.protocol.CommandGet get = 2;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.couchbase.grpc.sdk.protocol.CommandGet, com.couchbase.grpc.sdk.protocol.CommandGet.Builder, com.couchbase.grpc.sdk.protocol.CommandGetOrBuilder> 
+        getGetFieldBuilder() {
+      if (getBuilder_ == null) {
+        if (!(commandCase_ == 2)) {
+          command_ = com.couchbase.grpc.sdk.protocol.CommandGet.getDefaultInstance();
+        }
+        getBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.couchbase.grpc.sdk.protocol.CommandGet, com.couchbase.grpc.sdk.protocol.CommandGet.Builder, com.couchbase.grpc.sdk.protocol.CommandGetOrBuilder>(
+                (com.couchbase.grpc.sdk.protocol.CommandGet) command_,
+                getParentForChildren(),
+                isClean());
+        command_ = null;
+      }
+      commandCase_ = 2;
+      onChanged();;
+      return getBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

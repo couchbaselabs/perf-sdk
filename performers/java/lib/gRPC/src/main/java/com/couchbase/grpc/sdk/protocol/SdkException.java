@@ -9,6 +9,10 @@ package com.couchbase.grpc.sdk.protocol;
 public enum SdkException
     implements com.google.protobuf.ProtocolMessageEnum {
   /**
+   * <pre>
+   *TODO: Need a more comprehensive list of exceptions that can occur
+   * </pre>
+   *
    * <code>NO_EXCEPTION_THROWN = 0;</code>
    */
   NO_EXCEPTION_THROWN(0),
@@ -24,6 +28,10 @@ public enum SdkException
   ;
 
   /**
+   * <pre>
+   *TODO: Need a more comprehensive list of exceptions that can occur
+   * </pre>
+   *
    * <code>NO_EXCEPTION_THROWN = 0;</code>
    */
   public static final int NO_EXCEPTION_THROWN_VALUE = 0;

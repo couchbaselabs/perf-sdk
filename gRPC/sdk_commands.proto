@@ -10,17 +10,28 @@ option java_multiple_files = true;
 import "sdk_basic.proto";
 
 message CommandInsert {
-  DocId docId = 1;
-  string contentJson = 2;
+  BucketInfo bucketInfo = 3;
+  string contentJson = 4;
+}
+
+message CommandGet {
+  // PERF_PERFORMER: this can start with "__doc_X", in which case a UUID for XXX should be generated or used automatically by
+  // the performer.  E.g. the first use of "__doc_0" in a transaction should create a new UUID for 0, and then subsequent uses
+  // of "__doc_0" in the same transaction should reuse that UUID.  X will always be an integer.
+  string docId = 1;
+
+  BucketInfo bucketInfo = 2;
 }
 
 message SdkCommand {
   oneof command {
     CommandInsert insert = 1;
+    CommandGet get = 2;
   }
 }
 
 enum SdkException {
+  //TODO: Need a more comprehensive list of exceptions that can occur
   NO_EXCEPTION_THROWN = 0;
   EXCEPTION = 1;
   EXCEPTION_UNKNOWN = 2;

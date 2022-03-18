@@ -20,6 +20,7 @@ public class ClusterConnection {
         userName = reqData.getClusterUsername();
         password = reqData.getClusterPassword();
         cluster = Cluster.connect(hostname,userName,password);
+        //FIXME: Need something better than this
         bucket = cluster.bucket("default");
         cluster.waitUntilReady(Duration.ofSeconds(30));
     }

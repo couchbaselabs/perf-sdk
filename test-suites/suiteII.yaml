@@ -1,0 +1,36 @@
+---
+runtime: "10s"
+versinId: "Java:3.4.1"
+variables:
+  predefined:
+  - name: "horizontal_scaling"
+    value: 2
+  - name: "doc_id"
+    value: "0006ce42-dbab-456f-8912-29981095fb99"
+  custom:
+  - name: "number_of_inserts"
+    value: 50
+connections:
+  cluster:
+    hostname: "10.112.212.101"
+    username: "Administrator"
+    password: "password"
+  performers:
+  - hostname: "localhost"
+    port: 8060
+  database:
+    hostname: "localhost"
+    port: 5432
+    username: "postgres"
+    password: "password"
+    dbName: "perf"
+runs:
+- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23c4"
+  description: "Insert 50, get 50"
+  operations:
+  - op: "GET"
+    count: 50
+    opConfig: "0006ce42-dbab-456f-8912-29981095fb99"
+  - op: "INSERT"
+    count: 100
+
