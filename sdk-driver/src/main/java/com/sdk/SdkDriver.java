@@ -165,7 +165,6 @@ public class SdkDriver {
             case INSERT:
                 return new OpInsert(initial);
             case GET:
-                //FIXME should take a docID, need to figure out how
                 return new OpGet(op.opConfigAsString());
             default:
                 throw new IllegalArgumentException("Unknown op " + op);
@@ -251,6 +250,8 @@ public class SdkDriver {
                 });
 
                 PerfRunRequest.Builder perf = PerfRunRequest.newBuilder()
+                        //TODO refactor the multiple performers bit
+                        .setClusterConnectionId(performers.get(0).getClusterConnectionId())
                         .setRunForSeconds((int) testSuite.runtimeAsDuration().toSeconds());
 
                 for (int i=0; i< testSuite.variables().horizontalScaling(); i++){
@@ -308,7 +309,7 @@ public class SdkDriver {
 
                         st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
                                 v.timestamp,
-                                //TODO need to generate a versionId somewhere
+                                //FIXME refactor with FIT-esque version id creation
                                 sortedResults.get(0).getVersionId(),
                                 run.uuid(),
                                 v.sdkOpsTotal,

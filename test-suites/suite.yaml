@@ -1,0 +1,31 @@
+---
+runtime: "10s"
+versionId: "Java:3.4.1"
+variables:
+  predefined:
+  - name: "horizontal_scaling"
+    value: 1
+  custom:
+  - name: "number_of_inserts"
+    value: 50
+connections:
+  cluster:
+    hostname: "10.112.212.101"
+    username: "Administrator"
+    password: "password"
+  performers:
+  - hostname: "localhost"
+    port: 8060
+  database:
+    hostname: "localhost"
+    port: 5432
+    username: "postgres"
+    password: "password"
+    dbName: "perf"
+runs:
+- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23c3"
+  description: "Repeating $number_of_inserts inserting doc{from=uuid}; Repeating $number_of_inserts replacing doc{from=uuid, dist=uniform}; "
+  operations:
+  - op: "INSERT"
+    count: 50      
+
