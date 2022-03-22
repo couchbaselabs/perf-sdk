@@ -57,7 +57,6 @@ public class SdkOperation {
         }else if(op.hasGet()) {
             final CommandGet request = op.getGet();
             final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
-            //FIXME should take a docID
             collection.get(request.getDocId());
         }else {
         throw new InternalPerformerFailure(new IllegalArgumentException("Unknown operation"));

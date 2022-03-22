@@ -17,8 +17,6 @@ service PerformerSdkService {
     // Creates a connection between performer and couchbase server
     rpc createConnection (CreateConnectionRequest) returns (CreateConnectionResponse);
 
-    rpc sdkCommand (SdkCreateRequest) returns (SdkCommandResult);
-
     rpc perfRun (PerfRunRequest) returns (stream PerfSingleSdkOpResult);
 }
 

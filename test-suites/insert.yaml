@@ -1,6 +1,6 @@
 ---
 runtime: "10s"
-versinId: "Java:3.4.1"
+versionId: "Java:3.4.1"
 variables:
   predefined:
   - name: "horizontal_scaling"
@@ -26,11 +26,8 @@ connections:
     dbName: "perf"
 runs:
 - uuid: "097572b1-0ab4-435a-9250-5c6cca8d23c4"
-  description: "Insert 50, get 50"
+  description: "Insert 50"
   operations:
-  - op: "GET"
-    count: 50
-    opConfig: "0006ce42-dbab-456f-8912-29981095fb99"
   - op: "INSERT"
-    count: 100
+    count: 50
 

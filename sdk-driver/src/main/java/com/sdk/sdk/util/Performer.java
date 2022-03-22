@@ -32,6 +32,7 @@ public class Performer {
             initialConnectionRequest = createConnection;
             CreateConnectionResponse response = connectToPerformer(initialConnectionRequest);
 
+            clusterConnectionId = response.getClusterConnectionId();
             String protocolVersion = response.getProtocolVersion();
             String[] split = protocolVersion.split("\\.");
             protocolMajorVersion = Integer.parseInt(split[0]);
