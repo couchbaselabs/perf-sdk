@@ -22,8 +22,8 @@ public class SdkOperation {
     ) {
         this.name = req.getName();
 
-        for (SdkCommand command : req.getCommandsList()) {
-            performOperation(connection, command);
+        for (int i=0; i< req.getCount(); i++) {
+            performOperation(connection, req.getCommands());
         }
         SdkCommandResult.Builder response = SdkCommandResult.getDefaultInstance().newBuilderForType();
         return response.build();

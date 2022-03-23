@@ -110,10 +110,10 @@ interface Op {
     void applyTo(SdkCreateRequest.Builder builder);
 }
 
-record OpInsert(JsonObject content) implements Op {
+record OpInsert(JsonObject content, int count) implements Op {
     @Override
     public void applyTo(SdkCreateRequest.Builder builder) {
-        builder.addCommands(SdkCommand.newBuilder()
+        builder.setCommands(SdkCommand.newBuilder()
                 .setInsert(CommandInsert.newBuilder()
                         .setContentJson(content.toString())
                         .setBucketInfo(BucketInfo.newBuilder()
@@ -121,14 +121,15 @@ record OpInsert(JsonObject content) implements Op {
                                 .setScopeName(Defaults.DEFAULT_SCOPE)
                                 .setCollectionName(Defaults.DEFAULT_COLLECTION)
                                 .build())
-                        .build()));
+                        .build()))
+                .setCount(count);
     }
 }
 
-record OpGet(String docId) implements Op {
+record OpGet(String docId, int count) implements Op {
     @Override
     public void applyTo(SdkCreateRequest.Builder builder) {
-        builder.addCommands(SdkCommand.newBuilder()
+        builder.setCommands(SdkCommand.newBuilder()
                 .setGet(CommandGet.newBuilder()
                         .setDocId(docId)
                         .setBucketInfo(BucketInfo.newBuilder()
@@ -136,7 +137,8 @@ record OpGet(String docId) implements Op {
                                 .setScopeName(Defaults.DEFAULT_SCOPE)
                                 .setCollectionName(Defaults.DEFAULT_COLLECTION)
                                 .build())
-                        .build()));
+                        .build()))
+                .setCount(count);
     }
 }
 
@@ -166,9 +168,9 @@ public class SdkDriver {
 
         switch (op.op()) {
             case INSERT:
-                return new OpInsert(initial);
+                return new OpInsert(initial, op.count());
             case GET:
-                return new OpGet(op.opConfigAsString());
+                return new OpGet(op.opConfigAsString(), op.count());
             default:
                 throw new IllegalArgumentException("Unknown op " + op);
         }
@@ -179,8 +181,7 @@ public class SdkDriver {
         var ops = new ArrayList<Op>();
 
         run.operations().forEach(op -> {
-            for (int i=0; i<op.count(); i++)
-                ops.add(addOp(op));
+            ops.add(addOp(op));
         });
         return new BuiltSdkCommand(ops, "Test");
     }

@@ -46,11 +46,10 @@ message CreateConnectionResponse {
 }
 
 message SdkCreateRequest {
-    repeated SdkCommand commands = 1;
-
+    SdkCommand command = 1;
     string name = 2;
-
     string clusterConnectionId=3;
+    int32 count = 4;
 }
 
 message SdkCommandResult {
