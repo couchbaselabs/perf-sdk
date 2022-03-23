@@ -77,6 +77,14 @@ func performOperation(conn *cluster.Connection, op *protocol.SdkCommand, logger 
 			return err
 		}
 		return nil
+	} else if op.GetGet() != nil {
+		request := op.GetGet()
+		collection := conn.DefaultBucket(logger).Scope(request.BucketInfo.ScopeName).Collection(request.BucketInfo.CollectionName)
+		_, err := collection.Get(request.GetDocId(), &gocb.GetOptions{})
+		if err != nil {
+			return err
+		}
+		return nil
 	} else {
 		return fmt.Errorf("internal performer failure: Unknown operation")
 	}
