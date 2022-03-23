@@ -1,8 +1,8 @@
 ---
-runtime: "30m"
+runtime: "5m"
 implementation:
   language: "go"
-  version: "2.4.0"
+  version: "2.3.3"
 variables:
   predefined:
   - name: "horizontal_scaling"
@@ -25,7 +25,7 @@ connections:
     password: "password"
     dbName: "perf"
 runs:
-- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23d3"
+- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23e5"
   description: "Insert 50"
   operations:
   - op: "INSERT"
