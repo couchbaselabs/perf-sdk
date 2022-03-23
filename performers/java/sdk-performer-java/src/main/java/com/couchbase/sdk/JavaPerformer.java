@@ -78,7 +78,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
 
             responseObserver.onCompleted();
         } catch (RuntimeException | InterruptedException err) {
-            System.out.println("AHHHHHHHHHH");
+            responseObserver.onError(Status.ABORTED.withDescription(err.getMessage()).asException());
         }
     }
 

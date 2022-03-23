@@ -13,6 +13,7 @@ require (
 require (
 	github.com/couchbase/gocbcore/v10 v10.1.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 )
 
 require (

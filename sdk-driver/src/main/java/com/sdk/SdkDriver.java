@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
-record TestSuite(String runtime, Variables variables, Connections connections, List<Run> runs) {
+record TestSuite(String runtime, Implementation implementation, Variables variables, Connections connections, List<Run> runs) {
     Duration runtimeAsDuration() {
         var trimmed = runtime.trim();
         char suffix = trimmed.charAt(trimmed.length() - 1);
@@ -41,6 +41,9 @@ record TestSuite(String runtime, Variables variables, Connections connections, L
             case 'h' -> Duration.ofHours(rawNum);
             default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
         };
+    }
+
+    record Implementation(String language, String version){
     }
 
     record Variables(List<PredefinedVariable> predefined, List<CustomVariable> custom) {
@@ -153,7 +156,7 @@ public class SdkDriver {
             //logger.info("Must provide config.yaml");
             System.exit(-1);
         }
-        System.out.println("Runnning run baby");
+        System.out.println("Beginning run");
         run(args[0]);
     }
 
@@ -204,7 +207,6 @@ public class SdkDriver {
         props.setProperty("password", testSuite.connections().database().password());
 
         //logger.info("Connecting to database " + url);
-        System.out.println("Set all wacky variablies");
         try (var conn = DriverManager.getConnection(dbUrl, props)) {
 
             // Make sure that the timescaledb database has been created
@@ -233,11 +235,24 @@ public class SdkDriver {
                 //logger.info("Running workload " + workload);
                 System.out.println("Running Workload");
 
+                var jsonVars = JsonObject.create();
+                testSuite.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
+                testSuite.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.value()));
+
+                var json = JsonObject.create()
+                        .put("cluster", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.connections().cluster())))
+                        .put("impl", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.implementation())))
+                        .put("workload", JsonObject.create()
+                                .put("description", "test description"))
+                        .put("vars", jsonVars)
+                        .put("variables", JsonObject.create()
+                                .put("runtime", testSuite.runtime()));
+
                 try (var st = conn.createStatement()) {
-                    String statement = String.format("INSERT INTO suites VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
+                    String statement = String.format("INSERT INTO runs VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
                             run.uuid(),
-                            "test",
-                            "test");
+                            json.toString(),
+                            json.toString());
                     st.executeUpdate(statement);
                 }
 
@@ -307,10 +322,10 @@ public class SdkDriver {
                 resultsToWrite.forEach(v -> {
                     try (var st = conn.createStatement()) {
 
-                        st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+                        st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
                                 v.timestamp,
                                 //FIXME refactor with FIT-esque version id creation
-                                sortedResults.get(0).getVersionId(),
+                                //sortedResults.get(0).getVersionId(),
                                 run.uuid(),
                                 v.sdkOpsTotal,
                                 v.sdkOpsSuccess,
