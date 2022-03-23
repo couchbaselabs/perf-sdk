@@ -1,15 +1,8 @@
 ---
-<<<<<<< Updated upstream
 runtime: "5m"
 implementation:
   language: "go"
   version: "2.3.3"
-=======
-runtime: "10m"
-implementation:
-  language: "go"
-  version: "2.3.5"
->>>>>>> Stashed changes
 variables:
   predefined:
   - name: "horizontal_scaling"
@@ -32,11 +25,7 @@ connections:
     password: "password"
     dbName: "perf"
 runs:
-<<<<<<< Updated upstream
 - uuid: "097572b1-0ab4-435a-9250-5c6cca8d23e5"
-=======
-- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23d4"
->>>>>>> Stashed changes
   description: "Insert 50"
   operations:
   - op: "INSERT"
