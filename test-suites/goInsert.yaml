@@ -2,7 +2,7 @@
 runtime: "30m"
 implementation:
   language: "go"
-  version: "2.4.1"
+  version: "2.4.0"
 variables:
   predefined:
   - name: "horizontal_scaling"

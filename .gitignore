@@ -26,3 +26,6 @@ hs_err_pid*
 performers/go/protocol
 performers/java/lib/gRPC/src/main/java
 performers/java/lib/gRPC/target
+
+#Test Suites
+test-suites/
