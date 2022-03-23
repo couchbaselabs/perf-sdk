@@ -26,7 +26,7 @@ connections:
     dbName: "perf"
 runs:
 - uuid: "097572b1-0ab4-435a-9250-5c6cca8d23c4"
-  description: "Insert 50, get 50"
+  description: "Insert 100, get 50"
   operations:
   - op: "GET"
     count: 50

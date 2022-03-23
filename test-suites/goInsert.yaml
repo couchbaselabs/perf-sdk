@@ -1,12 +1,12 @@
 ---
-runtime: "10s"
-versionId: "Java:3.4.1"
+runtime: "30m"
+implementation:
+  language: "go"
+  version: "2.4.1"
 variables:
   predefined:
   - name: "horizontal_scaling"
     value: 2
-  - name: "doc_id"
-    value: "0006ce42-dbab-456f-8912-29981095fb99"
   custom:
   - name: "number_of_inserts"
     value: 50
@@ -25,7 +25,7 @@ connections:
     password: "password"
     dbName: "perf"
 runs:
-- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23c4"
+- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23d3"
   description: "Insert 50"
   operations:
   - op: "INSERT"

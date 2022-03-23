@@ -87,6 +87,7 @@ message PerfRunRequest {
 message PerfSingleSdkOpResult {
     // Implementations should not provide the logs field here, to conserve memory & bandwidth
     SdkCommandResult results = 1;
+    //TODO remove this
     string versionId=2;
 
     google.protobuf.Timestamp initiated = 3;
