@@ -76,7 +76,7 @@ record TestSuite(String runtime, Implementation implementation, Variables variab
         }
     }
 
-    record Connections(Cluster cluster, List<PerformerConn> performers, Database database) {
+    record Connections(Cluster cluster, PerformerConn performer, Database database) {
         record Cluster(String hostname, String username, String password) {
         }
 
@@ -218,16 +218,12 @@ public class SdkDriver {
                             .setClusterPassword(testSuite.connections().cluster().password())
                             .build();
 
-            logger.info("Connecting to performer on {}:{}", testSuite.connections().performers().get(0).hostname(), testSuite.connections().performers().get(0).port());
+            logger.info("Connecting to performer on {}:{}", testSuite.connections().performer().hostname(), testSuite.connections().performer().port());
 
-            List<Performer> performers = new ArrayList<Performer>();
-
-            for (int i=0; i < testSuite.connections().performers().size(); i++){
-                performers.add(new Performer(i,
-                        testSuite.connections().performers().get(i).hostname(),
-                        testSuite.connections().performers().get(i).port(),
-                        createConnection));
-            }
+            Performer performer = new Performer(
+                    testSuite.connections().performer().hostname(),
+                    testSuite.connections().performer().port(),
+                    createConnection);
 
             for (TestSuite.Run run : testSuite.runs()) {
                 logger.info("Running workload " + run);
@@ -263,7 +259,7 @@ public class SdkDriver {
 
                 PerfRunRequest.Builder perf = PerfRunRequest.newBuilder()
                         //TODO refactor the multiple performers bit
-                        .setClusterConnectionId(performers.get(0).getClusterConnectionId())
+                        .setClusterConnectionId(performer.getClusterConnectionId())
                         .setRunForSeconds((int) testSuite.runtimeAsDuration().toSeconds());
 
                 for (int i=0; i< testSuite.variables().horizontalScaling(); i++){
@@ -298,9 +294,7 @@ public class SdkDriver {
                     }
                 };
 
-                for (Performer performer: performers) {
-                    performer.stubBlockFuture().perfRun(perf.build(), responseObserver);
-                }
+                performer.stubBlockFuture().perfRun(perf.build(), responseObserver);
 
                 // Tests are short enough that we can just buffer everything then write it currently
                 while (!done.get()) {

@@ -4,10 +4,13 @@ import com.couchbase.grpc.sdk.protocol.CreateConnectionResponse;
 import com.couchbase.grpc.sdk.protocol.CreateConnectionRequest;
 
 import com.couchbase.grpc.sdk.protocol.PerformerSdkServiceGrpc;
+import com.sdk.SdkDriver;
+import com.sdk.logging.LogUtil;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,11 +23,10 @@ public class Performer {
     private PerformerSdkServiceGrpc.PerformerSdkServiceStub stubBlockFuture;
     private PerformerSdkServiceGrpc.PerformerSdkServiceBlockingStub stubBlock;
     private int protocolMajorVersion;
-    private String performerUserAgent;
-    private Version performerLibraryVersion;
     private String clusterConnectionId;
+    private static final Logger logger = LogUtil.getLogger(Performer.class);
 
-    public Performer(int performerIdx, String hostname, int port, CreateConnectionRequest createConnection) {
+    public Performer(String hostname, int port, CreateConnectionRequest createConnection) {
         try {
             ManagedChannel channelBlocking = ManagedChannelBuilder.forAddress(hostname, port).usePlaintext().build();
             stubBlockFuture = PerformerSdkServiceGrpc.newStub(channelBlocking);
@@ -37,10 +39,6 @@ public class Performer {
             String[] split = protocolVersion.split("\\.");
             protocolMajorVersion = Integer.parseInt(split[0]);
             int protocolMinorVersion = Integer.parseInt(split[1]);
-            performerUserAgent = response.getPerformerUserAgent();
-            if (!response.getPerformerLibraryVersion().isEmpty()) {
-                performerLibraryVersion = Version.fromString(response.getPerformerLibraryVersion());
-            }
 
             if (protocolMajorVersion < 1 || protocolMajorVersion > 2 || protocolMinorVersion < 0
                     || (protocolMajorVersion == 1 && protocolMinorVersion != 0)
@@ -50,7 +48,7 @@ public class Performer {
 
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == Status.Code.ABORTED) {
-                //logger.error("gRPC Exception from createConnection. Error Message: {} ", e.getMessage());
+                logger.error("gRPC Exception from createConnection. Error Message: {} ", e.getMessage());
             }
         }
     }

@@ -33,14 +33,6 @@ message CreateConnectionRequest {
 // performer)
 //TODO: FIT equivalent is splitting this into two files, wait for that patchset to come through
 message CreateConnectionResponse {
-    //repeated PerformerCaps performerCaps = 1;
-
-    // Human-readable string identifying the performer.  For example, "java".
-    string performerUserAgent = 1;
-
-    // Identifies the version of the library under test.  For example, "1.1.2".
-    string performerLibraryVersion = 2;
-
     // Defined https://hackmd.io/foGjnSSIQmqfks2lXwNp8w#Protocol-Versions
     // Must be "1.0" or "2.0", any other values will cause the driver to abort.
     string protocolVersion = 3;
@@ -67,7 +59,7 @@ message SdkCommandResult {
 // For some languages that will be threads.  For some, a larger pool of concurrent Future/Promises.  For some,
 // forking a new process.
 // Whatever is produced (thread, new process), it should run the provided transaction in a tight loop.  So essentially
-// PerfRunHorizontalScaling is the number of concurrent transactions.
+// PerfRunHorizontalScaling is the number of concurrent sdk operations taking place.
 message PerfRunHorizontalScaling {
     // Performer will run these transactions, in a loop.
     repeated SdkCreateRequest sdkCommand = 1;
@@ -82,16 +74,12 @@ message PerfRunRequest {
     repeated PerfRunHorizontalScaling horizontalScaling = 2;
 
     // Performer will run until this much time has elapsed.
-    // Counted from when it creates the factory, after waiting for the bucket to be opened.
     int32 runForSeconds = 3;
 }
 
 message PerfSingleSdkOpResult {
     // Implementations should not provide the logs field here, to conserve memory & bandwidth
     SdkCommandResult results = 1;
-    //TODO remove this
-    string versionId=2;
-
     google.protobuf.Timestamp initiated = 3;
     google.protobuf.Timestamp finished = 4;
 }
