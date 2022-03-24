@@ -58,8 +58,8 @@ func PerfMarshaller(conn *cluster.Connection, perfReq *protocol.PerfRunRequest, 
 }
 
 func beginOperations(conn *cluster.Connection, req *protocol.SdkCreateRequest, logger *logrus.Logger) (*protocol.SdkCommandResult, error) {
-	for _, command := range req.GetCommands() {
-		err := performOperation(conn, command, logger)
+	for i := 0; i < int(req.GetCount()); i++ {
+		err := performOperation(conn, req.GetCommand(), logger)
 		if err != nil {
 			return nil, err
 		}

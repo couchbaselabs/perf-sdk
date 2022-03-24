@@ -9,11 +9,13 @@ import com.sdk.constants.Strings;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.grpc.sdk.protocol.CommandInsert;
 import com.couchbase.grpc.sdk.protocol.CreateConnectionRequest;
+import com.sdk.logging.LogUtil;
 import com.sdk.sdk.util.Performer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -113,7 +115,7 @@ interface Op {
 record OpInsert(JsonObject content, int count) implements Op {
     @Override
     public void applyTo(SdkCreateRequest.Builder builder) {
-        builder.setCommands(SdkCommand.newBuilder()
+        builder.setCommand(SdkCommand.newBuilder()
                 .setInsert(CommandInsert.newBuilder()
                         .setContentJson(content.toString())
                         .setBucketInfo(BucketInfo.newBuilder()
@@ -122,14 +124,15 @@ record OpInsert(JsonObject content, int count) implements Op {
                                 .setCollectionName(Defaults.DEFAULT_COLLECTION)
                                 .build())
                         .build()))
-                .setCount(count);
+                .setCount(count)
+                .setName("INSERT");
     }
 }
 
 record OpGet(String docId, int count) implements Op {
     @Override
     public void applyTo(SdkCreateRequest.Builder builder) {
-        builder.setCommands(SdkCommand.newBuilder()
+        builder.setCommand(SdkCommand.newBuilder()
                 .setGet(CommandGet.newBuilder()
                         .setDocId(docId)
                         .setBucketInfo(BucketInfo.newBuilder()
@@ -138,7 +141,8 @@ record OpGet(String docId, int count) implements Op {
                                 .setCollectionName(Defaults.DEFAULT_COLLECTION)
                                 .build())
                         .build()))
-                .setCount(count);
+                .setCount(count)
+                .setName("GET");
     }
 }
 
@@ -148,17 +152,13 @@ public class SdkDriver {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private final static ObjectMapper jsonMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    //TODO: add logger
-
-    //private static final Logger logger = LogUtil.getLogger(PerfRunnerTest.class);
-    //private static final Logger logger = LogUtil.getLogger(PerfRunnerTest.class);
+    private static final Logger logger = LogUtil.getLogger(SdkDriver.class);
 
     public static void main(String[] args)  throws SQLException, IOException, InterruptedException {
         if (args.length != 1) {
-            //logger.info("Must provide config.yaml");
+            logger.info("Must provide config.yaml");
             System.exit(-1);
         }
-        System.out.println("Beginning run");
         run(args[0]);
     }
 
@@ -207,11 +207,10 @@ public class SdkDriver {
         props.setProperty("user", testSuite.connections().database().username());
         props.setProperty("password", testSuite.connections().database().password());
 
-        //logger.info("Connecting to database " + url);
+        logger.info("Connecting to database " + dbUrl);
         try (var conn = DriverManager.getConnection(dbUrl, props)) {
 
             // Make sure that the timescaledb database has been created
-            System.out.println("Connection Begin");
             CreateConnectionRequest createConnection =
                     CreateConnectionRequest.newBuilder()
                             .setClusterHostname(testSuite.connections().cluster().hostname())
@@ -219,9 +218,7 @@ public class SdkDriver {
                             .setClusterPassword(testSuite.connections().cluster().password())
                             .build();
 
-            //logger.info("Connecting to performer on {}:{}", perfConfig.connections().performer().hostname(), perfConfig.connections().performer().port());
-            System.out.println("Connection Done");
-            System.out.println("Performer Connect");
+            logger.info("Connecting to performer on {}:{}", testSuite.connections().performers().get(0).hostname(), testSuite.connections().performers().get(0).port());
 
             List<Performer> performers = new ArrayList<Performer>();
 
@@ -233,8 +230,7 @@ public class SdkDriver {
             }
 
             for (TestSuite.Run run : testSuite.runs()) {
-                //logger.info("Running workload " + workload);
-                System.out.println("Running Workload");
+                logger.info("Running workload " + run);
 
                 var jsonVars = JsonObject.create();
                 testSuite.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
@@ -291,13 +287,13 @@ public class SdkDriver {
 
                     @Override
                     public void onError(Throwable throwable) {
-                        //logger.error("Error from performer: ", throwable);
+                        logger.error("Error from performer: ", throwable);
                         done.set(true);
                     }
 
                     @Override
                     public void onCompleted() {
-                        //logger.info("Performer has finished");
+                        logger.info("Performer has finished");
                         done.set(true);
                     }
                 };
@@ -319,6 +315,8 @@ public class SdkDriver {
                 long finishedAll = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
 
                 var resultsToWrite = processResults(sortedResults, first.get());
+
+                logger.info("Completed workload " + run);
 
                 resultsToWrite.forEach(v -> {
                     try (var st = conn.createStatement()) {

@@ -22,7 +22,6 @@
     <orderEntry type="library" name="Maven: com.google.errorprone:error_prone_annotations:2.4.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: io.perfmark:perfmark-api:0.23.0" level="project" />
     <orderEntry type="library" name="Maven: io.grpc:grpc-core:1.39.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Maven: com.google.code.gson:gson:2.8.6" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.google.android:annotations:4.1.1.4" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.codehaus.mojo:animal-sniffer-annotations:1.19" level="project" />
     <orderEntry type="library" name="Maven: io.grpc:grpc-protobuf:1.39.0" level="project" />
@@ -43,5 +42,37 @@
     <orderEntry type="library" name="Maven: com.couchbase.client:core-io:2.1.4" level="project" />
     <orderEntry type="library" name="Maven: io.projectreactor:reactor-core:3.4.4" level="project" />
     <orderEntry type="library" name="Maven: org.reactivestreams:reactive-streams:1.0.3" level="project" />
+    <orderEntry type="module" module-name="sdk-driver" />
+    <orderEntry type="library" name="Maven: com.txn.gRPC:gRPC:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.3.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.3" level="project" />
+    <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.1.3" level="project" />
+    <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.6" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.2.4" level="project" />
+    <orderEntry type="library" name="Maven: com.j256.ormlite:ormlite-core:5.1" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.12.1" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.12.1" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.12.1" level="project" />
+    <orderEntry type="library" name="Maven: org.testcontainers:testcontainers:1.13.0" level="project" />
+    <orderEntry type="library" name="Maven: junit:junit:4.12" level="project" />
+    <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
+    <orderEntry type="library" name="Maven: org.jetbrains:annotations:17.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-compress:1.20" level="project" />
+    <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.3.1" level="project" />
+    <orderEntry type="library" name="Maven: javax.activation:javax.activation-api:1.2.0" level="project" />
+    <orderEntry type="library" name="Maven: org.rnorth.duct-tape:duct-tape:1.0.8" level="project" />
+    <orderEntry type="library" name="Maven: org.rnorth.visible-assertions:visible-assertions:2.1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.rnorth:tcp-unix-socket-proxy:1.0.2" level="project" />
+    <orderEntry type="library" name="Maven: com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4" level="project" />
+    <orderEntry type="library" name="Maven: org.scijava:native-lib-loader:2.0.2" level="project" />
+    <orderEntry type="library" name="Maven: com.kohlschutter.junixsocket:junixsocket-common:2.0.4" level="project" />
+    <orderEntry type="library" name="Maven: net.java.dev.jna:jna-platform:5.5.0" level="project" />
+    <orderEntry type="library" name="Maven: net.java.dev.jna:jna:5.5.0" level="project" />
+    <orderEntry type="library" name="Maven: org.awaitility:awaitility:4.0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.hamcrest:hamcrest:2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.21" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.1" level="project" />
+    <orderEntry type="library" name="Maven: org.postgresql:postgresql:42.2.19" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.checkerframework:checker-qual:3.5.0" level="project" />
   </component>
 </module>

@@ -18,6 +18,9 @@ service PerformerSdkService {
     rpc createConnection (CreateConnectionRequest) returns (CreateConnectionResponse);
 
     rpc perfRun (PerfRunRequest) returns (stream PerfSingleSdkOpResult);
+
+    // Tells the performer to exit.
+    rpc exit (ExitRequest) returns (stream google.protobuf.Empty);
 }
 
 message CreateConnectionRequest {
@@ -91,4 +94,9 @@ message PerfSingleSdkOpResult {
 
     google.protobuf.Timestamp initiated = 3;
     google.protobuf.Timestamp finished = 4;
+}
+
+message ExitRequest {
+    string reason = 1;
+    int32 exitCode = 2;
 }

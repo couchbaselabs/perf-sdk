@@ -17,7 +17,7 @@ connections:
     password: "password"
   performers:
   - hostname: "localhost"
-    port: 8060s
+    port: 8060
   database:
     hostname: "localhost"
     port: 5432
