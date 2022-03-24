@@ -10,6 +10,7 @@ import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.grpc.sdk.protocol.CommandInsert;
 import com.couchbase.grpc.sdk.protocol.CreateConnectionRequest;
 import com.sdk.logging.LogUtil;
+import com.sdk.sdk.util.DocCreateThread;
 import com.sdk.sdk.util.Performer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +42,18 @@ record TestSuite(String runtime, Implementation implementation, Variables variab
             case 's' -> Duration.ofSeconds(rawNum);
             case 'm' -> Duration.ofMinutes(rawNum);
             case 'h' -> Duration.ofHours(rawNum);
+            default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
+        };
+    }
+
+    int runtimeAsInt(){
+        var trimmed = runtime.trim();
+        char suffix = trimmed.charAt(trimmed.length() - 1);
+        var rawNum = Integer.parseInt(trimmed.substring(0, trimmed.length() - 1));
+        return switch (suffix) {
+            case 's' -> rawNum;
+            case 'm' -> rawNum * Defaults.secPerMin;
+            case 'h' -> rawNum * Defaults.secPerHour;
             default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
         };
     }
@@ -91,7 +104,8 @@ record TestSuite(String runtime, Implementation implementation, Variables variab
         record Operation(Op op, int count, Object opConfig) {
             enum Op {
                 INSERT,
-                GET
+                GET,
+                REMOVE
             }
 
             int opConfigAsInt(){
@@ -154,7 +168,7 @@ public class SdkDriver {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private static final Logger logger = LogUtil.getLogger(SdkDriver.class);
 
-    public static void main(String[] args)  throws SQLException, IOException, InterruptedException {
+    public static void main(String[] args)  throws SQLException, IOException, InterruptedException, Exception {
         if (args.length != 1) {
             logger.info("Must provide config.yaml");
             System.exit(-1);
@@ -195,8 +209,32 @@ public class SdkDriver {
         return null;
     }
 
-    static void run(String testSuiteFile) throws IOException, SQLException, InterruptedException {
+    static void run(String testSuiteFile) throws IOException, SQLException, InterruptedException, Exception {
         var testSuite = readTestSuite(testSuiteFile);
+
+        // check how many times remove will be tested in all runs
+        //FIXME absolutely terrible and horrible, there must be a better we to do this
+        int workloadMultiplier = 0;
+        for (TestSuite.Run run : testSuite.runs()){
+            for (TestSuite.Run.Operation operation : run.operations()){
+                if (operation.op() == TestSuite.Run.Operation.Op.REMOVE){
+                    workloadMultiplier += 1;
+                }
+            }
+        }
+
+        // docThread creates a pool of new documents for certain operations to use
+        // it creates enough documents for every operation that needs documents in a run to complete 50 times per thread per second
+        // If there are no REMOVE commands in the test suite then workloadMultiplier will be 0 so no docs will be created
+        //TODO discuss whether this is the best way to do this
+        DocCreateThread docThread = new DocCreateThread(
+                Defaults.docCreateMultiplier * workloadMultiplier * testSuite.variables().horizontalScaling() * testSuite.runtimeAsInt(),
+                testSuite.connections().cluster().hostname(),
+                testSuite.connections().cluster().username(),
+                testSuite.connections().cluster().password(),
+                Defaults.DEFAULT_BUCKET,
+                Defaults.DEFAULT_SCOPE);
+        docThread.start();
 
         var dbUrl = String.format("jdbc:postgresql://%s:%d/%s",
                 testSuite.connections().database().hostname(),
@@ -294,6 +332,9 @@ public class SdkDriver {
                         done.set(true);
                     }
                 };
+
+                // wait for all docs to be created
+                docThread.join();
 
                 performer.stubBlockFuture().perfRun(perf.build(), responseObserver);
 
