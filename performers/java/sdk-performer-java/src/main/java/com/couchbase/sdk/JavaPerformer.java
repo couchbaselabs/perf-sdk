@@ -18,10 +18,12 @@ package com.couchbase.sdk;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.sdk.perf.PerfMarshaller;
 import com.couchbase.sdk.utils.ClusterConnection;
+import com.sdk.logging.LogUtil;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceImplBase {
 
+    private static final Logger logger = LogUtil.getLogger(JavaPerformer.class);
     public static final String DEFAULT_CONFIG_RESOURCE_NAME = "config.toml";
     private final String configResourceName;
     private ClusterConnection defaultConnection= null;
@@ -44,7 +47,6 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
 
     @Override
     public void createConnection(CreateConnectionRequest request, StreamObserver<CreateConnectionResponse> responseObserver) {
-        System.out.println("connection stuff happening");
         try {
             CreateConnectionResponse.Builder response = CreateConnectionResponse.getDefaultInstance().newBuilderForType();
             response.setProtocolVersion("2.0");
@@ -58,11 +60,14 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
             defaultConnection = connection;
 
             response.setClusterConnectionId(clusterConnectionId);
+            logger.info("Established connection to cluster at IP: {} with user {} ",request.getClusterHostname(),request.getClusterUsername());
+            logger.info("For this user, we assigned clusterConnectionId:"+clusterConnectionId);
 
             responseObserver.onNext(response.build());
             responseObserver.onCompleted();
         }
         catch (Exception err) {
+            logger.error("Operation failed during createConn due to {}", err.getMessage());
             responseObserver.onError(Status.ABORTED.withDescription(err.getMessage()).asException());
         }
     }
@@ -70,10 +75,10 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
     @Override
     public void perfRun(PerfRunRequest request,
                         StreamObserver<PerfSingleSdkOpResult> responseObserver) {
-        System.out.println("Performer stuff is happening");
         try{
             ClusterConnection connection = getClusterConnection(request.getClusterConnectionId());
 
+            logger.info("Beginning PerfRun");
             PerfMarshaller.run(connection, request, responseObserver);
 
             responseObserver.onCompleted();
@@ -89,7 +94,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
         for(String parameter : args) {
             switch (parameter.split("=")[0]) {
                 case "loglevel":
-                    //LogUtil.setLevelFromSpec(parameter.split("=")[1]);
+                    LogUtil.setLevelFromSpec(parameter.split("=")[1]);
                     break;
                 case "port":
                     port= Integer.parseInt(parameter.split("=")[1]);
@@ -99,8 +104,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
                     version = "v"+originalVersion.split("\\.")[0]+"_"+originalVersion.split("\\.")[1]+"_"+originalVersion.split("\\.")[2];
                     break;
                 default:
-                    //logger.warn("Undefined input: {}. Ignoring it",parameter);
-                    System.out.println("Undefined input: {}. Ignoring it");
+                    logger.warn("Undefined input: {}. Ignoring it",parameter);
             }
         }
 
@@ -108,8 +112,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
                 .addService(new JavaPerformer(configResourceName))
                 .build();
         server.start();
-        System.out.println("Server Started");
-        //logger.info("Server Started at {}", server.getPort());
+        logger.info("Server Started at {}", server.getPort());
         server.awaitTermination();
 
     }
@@ -119,16 +122,24 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
         if(clusterConnectionId==null || clusterConnectionId.equals("")) {
             // If test does not send any clusterConnectionId, then use the very first connection i.e sharedTestState connection
             connection = defaultConnection;
+            logger.info("Using default connection at host : {}  and with username {} ", connection.hostname, connection.userName);
         }else {
             if (mapIdToClusterConnection.containsKey(clusterConnectionId)) {
                 connection = mapIdToClusterConnection.get(clusterConnectionId);
+                logger.info("Using custom connection at host : {}  and with username {} ", connection.hostname, connection.userName);
             } else {
                 //We should not be getting here.
-                //logger.error("Unknown clusterConnectionId");
+                logger.error("Unknown clusterConnectionId");
                 System.exit(-1);
             }
         }
         return connection;
+    }
+
+    public void exit(com.couchbase.grpc.sdk.protocol.ExitRequest request,
+                     io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
+        logger.info("Been told to exit for reason '{}' with code {}", request.getReason(), request.getExitCode());
+        System.exit(request.getExitCode());
     }
 
 }

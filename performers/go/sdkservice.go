@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/charlie-hayes/perf-sdk/cluster"
 	"github.com/charlie-hayes/perf-sdk/perf"
@@ -71,5 +72,11 @@ func (sdk *SdkService) PerfRun(in *protocol.PerfRunRequest, stream protocol.Perf
 
 	perf.PerfMarshaller(connection, in, stream, sdk.logger)
 
+	return nil
+}
+
+func (sdk *SdkService) Exit(in *protocol.ExitRequest, exit protocol.PerformerSdkService_ExitServer) error {
+	sdk.logger.Logf(logrus.InfoLevel, "Been told to exit for reason '%s' with code %d", in.GetReason(), in.GetExitCode())
+	os.Exit(int(in.GetExitCode()))
 	return nil
 }

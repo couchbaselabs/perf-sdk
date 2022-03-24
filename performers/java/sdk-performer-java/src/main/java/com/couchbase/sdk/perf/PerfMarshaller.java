@@ -7,6 +7,7 @@ import com.couchbase.grpc.sdk.protocol.SdkCommandResult;
 import com.couchbase.sdk.SdkOperation;
 import com.couchbase.sdk.utils.ClusterConnection;
 import com.google.protobuf.Timestamp;
+import com.sdk.logging.LogUtil;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class PerfMarshaller {
+    private static final Logger logger = LogUtil.getLogger(PerfMarshaller.class);
 
     public static void run(ClusterConnection connection,
                            PerfRunRequest perfRun,
@@ -35,10 +37,12 @@ public class PerfMarshaller {
         for (PerfRunnerThread perfRunnerThread : runners) {
             perfRunnerThread.start();
         }
+        logger.info("Started {} threads", runners.size());
 
         for (PerfRunnerThread runner : runners) {
             runner.join();
         }
+        logger.info("All {} threads completed", runners.size());
 
     }
 
@@ -49,7 +53,6 @@ class PerfRunnerThread extends Thread {
     private final ClusterConnection connection;
     private final PerfRunRequest perfRun;
     private final PerfRunHorizontalScaling perThread;
-    //    private final List<PerfSingleTransactionResult> results = new ArrayList<>();
     private final StreamObserver<PerfSingleSdkOpResult> responseObserver;
 
     PerfRunnerThread(int runnerIndex,
