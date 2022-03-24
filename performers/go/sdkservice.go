@@ -57,10 +57,8 @@ func (sdk *SdkService) CreateConnection(ctx context.Context, in *protocol.Create
 	sdk.conns[connID] = conn
 
 	return &protocol.CreateConnectionResponse{
-		PerformerLibraryVersion: sdk.performerVersion,
-		PerformerUserAgent:      "go",
-		ProtocolVersion:         "2.0",
-		ClusterConnectionId:     connID,
+		ProtocolVersion:     "2.0",
+		ClusterConnectionId: connID,
 	}, nil
 }
 

@@ -15,8 +15,8 @@ connections:
     hostname: "10.112.212.101"
     username: "Administrator"
     password: "password"
-  performers:
-  - hostname: "localhost"
+  performer:
+    hostname: "localhost"
     port: 8060
   database:
     hostname: "localhost"

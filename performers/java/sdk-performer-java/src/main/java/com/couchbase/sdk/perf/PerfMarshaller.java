@@ -90,8 +90,6 @@ class PerfRunnerThread extends Thread {
 
                 singleResult.setFinished(getTimeNow());
                 singleResult.setResults(result.toBuilder());
-                //FIXME FIT equivalent gets this data from the driver implement that then remove this
-                singleResult.setVersionId("Java:3.1.4");
 
                 responseObserver.onNext(singleResult.build());
 

@@ -35,8 +35,6 @@ func PerfMarshaller(conn *cluster.Connection, perfReq *protocol.PerfRunRequest, 
 						}
 						opResult.Finished = timestamppb.Now()
 						opResult.Results = result
-						//TODO remove this
-						opResult.VersionId = "go:2.4.1"
 
 						if err := stream.Send(&opResult); err != nil {
 							return err
