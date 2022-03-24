@@ -29,3 +29,6 @@ performers/java/lib/gRPC/target
 
 #Test Suites
 test-suites/
+
+#IntelliJ
+.idea
