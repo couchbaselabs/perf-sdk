@@ -27,6 +27,7 @@ message CreateConnectionRequest {
     string clusterHostname=1;
     string clusterUsername=2;
     string clusterPassword=3;
+    string bucketName=4;
 }
 
 // Returns the capabilities of the performer (or more specifically, the transactions-implementation-under-test by that

@@ -20,8 +20,7 @@ public class ClusterConnection {
         userName = reqData.getClusterUsername();
         password = reqData.getClusterPassword();
         cluster = Cluster.connect(hostname,userName,password);
-        //FIXME: set this in the driver and send it over here
-        bucket = cluster.bucket("default");
+        bucket = cluster.bucket(reqData.getBucketName());
         cluster.waitUntilReady(Duration.ofSeconds(30));
     }
 
@@ -29,8 +28,8 @@ public class ClusterConnection {
         return bucket;
     }
 
-    public Bucket getBucket(String bucketname) {
-        return  cluster.bucket(bucketname);
+    public Bucket getBucket(String bucketName) {
+        return  cluster.bucket(bucketName);
     }
 
     public Cluster getCluster(){

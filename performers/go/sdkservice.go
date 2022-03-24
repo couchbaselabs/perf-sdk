@@ -22,7 +22,6 @@ type SdkService struct {
 }
 
 func (sdk *SdkService) getConn(connID string) *cluster.Connection {
-	//TODO figure out what to do with null connection string
 	if connID == "" {
 		return sdk.defaultConn
 	}
@@ -42,7 +41,7 @@ func (sdk *SdkService) CreateConnection(ctx context.Context, in *protocol.Create
 	sdk.logger.Log(logrus.InfoLevel, "CreateConnection called")
 
 	sdk.logger.Log(logrus.InfoLevel, "Creating new connection")
-	conn, err := cluster.Connect(in.ClusterHostname, in.ClusterUsername, in.ClusterPassword, sdk.logger)
+	conn, err := cluster.Connect(in.GetClusterHostname(), in.GetClusterUsername(), in.GetClusterPassword(), in.GetBucketName(), sdk.logger)
 	if err != nil {
 		sdk.logger.Logf(logrus.ErrorLevel, "Failed to connect cluster %v", err)
 		return nil, status.Errorf(codes.Aborted, "connection creation failed: %v", err)
@@ -55,6 +54,9 @@ func (sdk *SdkService) CreateConnection(ctx context.Context, in *protocol.Create
 		sdk.conns = make(map[string]*cluster.Connection)
 	}
 	sdk.conns[connID] = conn
+
+	// defaultConn will always be the most recent connection
+	sdk.defaultConn = conn
 
 	return &protocol.CreateConnectionResponse{
 		ProtocolVersion:     "2.0",

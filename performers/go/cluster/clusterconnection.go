@@ -12,7 +12,7 @@ type Connection struct {
 	bucket  *gocb.Bucket
 }
 
-func Connect(hostname, username, password string, logger *logrus.Logger) (*Connection, error) {
+func Connect(hostname, username, password, bucketName string, logger *logrus.Logger) (*Connection, error) {
 	gocb.SetLogger(&gocbLogger{logger: logger})
 	c, err := gocb.Connect(hostname, gocb.ClusterOptions{
 		Username: username,
@@ -22,8 +22,7 @@ func Connect(hostname, username, password string, logger *logrus.Logger) (*Conne
 		return nil, err
 	}
 
-	//TODO: make the driver send the performer this bucket name
-	b := c.Bucket("default")
+	b := c.Bucket(bucketName)
 	logger.Logf(logrus.InfoLevel, "Bucket set: ", b.Name())
 	err = b.WaitUntilReady(30*time.Second, nil)
 	if err != nil {
