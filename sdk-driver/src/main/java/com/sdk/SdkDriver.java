@@ -216,6 +216,8 @@ public class SdkDriver {
                             .setClusterHostname(testSuite.connections().cluster().hostname())
                             .setClusterUsername(testSuite.connections().cluster().username())
                             .setClusterPassword(testSuite.connections().cluster().password())
+                            //bucketName is set here rather than in the performer so if it ever needs to be changed it can be done from a single place
+                            .setBucketName(Defaults.DEFAULT_BUCKET)
                             .build();
 
             logger.info("Connecting to performer on {}:{}", testSuite.connections().performer().hostname(), testSuite.connections().performer().port());
@@ -258,7 +260,6 @@ public class SdkDriver {
                 });
 
                 PerfRunRequest.Builder perf = PerfRunRequest.newBuilder()
-                        //TODO refactor the multiple performers bit
                         .setClusterConnectionId(performer.getClusterConnectionId())
                         .setRunForSeconds((int) testSuite.runtimeAsDuration().toSeconds());
 
@@ -317,8 +318,6 @@ public class SdkDriver {
 
                         st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
                                 v.timestamp,
-                                //FIXME refactor with FIT-esque version id creation
-                                //sortedResults.get(0).getVersionId(),
                                 run.uuid(),
                                 v.sdkOpsTotal,
                                 v.sdkOpsSuccess,
