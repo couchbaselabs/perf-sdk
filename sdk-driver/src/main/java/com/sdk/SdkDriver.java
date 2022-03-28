@@ -160,6 +160,23 @@ record OpGet(String docId, int count) implements Op {
     }
 }
 
+record OpRemove(int count) implements Op {
+    @Override
+    public void applyTo(SdkCreateRequest.Builder builder){
+        builder.setCommand(SdkCommand.newBuilder()
+                        .setRemove(CommandRemove.newBuilder()
+                                .setBucketInfo(BucketInfo.newBuilder()
+                                        .setBucketName(Defaults.DEFAULT_BUCKET)
+                                        .setScopeName(Defaults.DEFAULT_SCOPE)
+                                        .setCollectionName(Defaults.DOCPOOL_COLLECTION)
+                                        .build())
+                                .setKeyPreface(Defaults.KEY_PREFACE)
+                                .build()))
+                .setCount(count)
+                .setName("REMOVE");
+    }
+}
+
 public class SdkDriver {
 
     private final static ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory())
@@ -185,6 +202,8 @@ public class SdkDriver {
                 return new OpInsert(initial, op.count());
             case GET:
                 return new OpGet(op.opConfigAsString(), op.count());
+            case REMOVE:
+                return new OpRemove(op.count());
             default:
                 throw new IllegalArgumentException("Unknown op " + op);
         }
@@ -213,7 +232,7 @@ public class SdkDriver {
         var testSuite = readTestSuite(testSuiteFile);
 
         // check how many times remove will be tested in all runs
-        //FIXME absolutely terrible and horrible, there must be a better we to do this
+        //FIXME There must be a better we to do this
         int workloadMultiplier = 0;
         for (TestSuite.Run run : testSuite.runs()){
             for (TestSuite.Run.Operation operation : run.operations()){
@@ -334,6 +353,7 @@ public class SdkDriver {
                 };
 
                 // wait for all docs to be created
+                logger.info("Waiting for docPool to be created");
                 docThread.join();
 
                 performer.stubBlockFuture().perfRun(perf.build(), responseObserver);

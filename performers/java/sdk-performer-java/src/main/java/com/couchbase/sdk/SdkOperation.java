@@ -18,12 +18,15 @@ public class SdkOperation {
     private String name;
     private Map<Integer, String> docIds;
     private Logger logger;
+    private AtomicInteger docPool;
 
+    public SdkOperation(AtomicInteger docPool){
+        this.docPool = docPool;
+    }
 
     public com.couchbase.grpc.sdk.protocol.SdkCommandResult run(
             ClusterConnection connection,
-            SdkCreateRequest req
-    ) {
+            SdkCreateRequest req) {
         this.name = req.getName();
         logger = LogUtil.getLogger(this.name);
 
@@ -49,6 +52,12 @@ public class SdkOperation {
             logger.info("Performing get operation on bucket {} on collection {}",
                     request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName());
             collection.get(request.getDocId());
+        }else if(op.hasRemove()){
+            final CommandRemove request = op.getRemove();
+            final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
+            logger.info("Performing remove operation on bucket {} on collection {}, docId {}",
+                    request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName(), docPool.get());
+            collection.remove(request.getKeyPreface() + docPool.addAndGet(1));
         }else {
         throw new InternalPerformerFailure(new IllegalArgumentException("Unknown operation"));
     }

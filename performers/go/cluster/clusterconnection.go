@@ -3,7 +3,7 @@ package cluster
 import (
 	"time"
 
-	"github.com/couchbase/gocb/v2"
+	gocb "github.com/couchbase/gocb/v2"
 	"github.com/sirupsen/logrus"
 )
 

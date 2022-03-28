@@ -2,18 +2,34 @@ package perf
 
 import (
 	"fmt"
+	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/charlie-hayes/perf-sdk/cluster"
 	"github.com/charlie-hayes/perf-sdk/protocol"
-	"github.com/couchbase/gocb/v2"
+	gocb "github.com/couchbase/gocb/v2"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+type docPoolCounter struct {
+	//Using int64 as the string conversion function converts an int to that anyway
+	docPoolNum int64
+}
+
+func (c *docPoolCounter) add(num int64) {
+	atomic.AddInt64(&c.docPoolNum, num)
+}
+
+func (c *docPoolCounter) read() int64 {
+	return atomic.LoadInt64(&c.docPoolNum)
+}
+
 func PerfMarshaller(conn *cluster.Connection, perfReq *protocol.PerfRunRequest, stream protocol.PerformerSdkService_PerfRunServer, logger *logrus.Logger) error {
+	docPool := &docPoolCounter{1}
 	g := new(errgroup.Group)
 	for i := 0; i < len(perfReq.GetHorizontalScaling()); i++ {
 		perGoRoutine := perfReq.GetHorizontalScaling()[i]
@@ -29,7 +45,7 @@ func PerfMarshaller(conn *cluster.Connection, perfReq *protocol.PerfRunRequest, 
 						opResult := protocol.PerfSingleSdkOpResult{
 							Initiated: timestamppb.Now(),
 						}
-						result, err := beginOperations(conn, perGoRoutine.GetSdkCommand()[r], logger)
+						result, err := beginOperations(conn, perGoRoutine.GetSdkCommand()[r], logger, docPool)
 						if err != nil {
 							return err
 						}
@@ -55,9 +71,10 @@ func PerfMarshaller(conn *cluster.Connection, perfReq *protocol.PerfRunRequest, 
 	return nil
 }
 
-func beginOperations(conn *cluster.Connection, req *protocol.SdkCreateRequest, logger *logrus.Logger) (*protocol.SdkCommandResult, error) {
+func beginOperations(conn *cluster.Connection, req *protocol.SdkCreateRequest, logger *logrus.Logger, docPool *docPoolCounter) (*protocol.SdkCommandResult, error) {
+	logger.Log(logrus.InfoLevel, "Beginning operations")
 	for i := 0; i < int(req.GetCount()); i++ {
-		err := performOperation(conn, req.GetCommand(), logger)
+		err := performOperation(conn, req.GetCommand(), logger, docPool)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +83,7 @@ func beginOperations(conn *cluster.Connection, req *protocol.SdkCreateRequest, l
 	return &protocol.SdkCommandResult{}, nil
 }
 
-func performOperation(conn *cluster.Connection, op *protocol.SdkCommand, logger *logrus.Logger) error {
+func performOperation(conn *cluster.Connection, op *protocol.SdkCommand, logger *logrus.Logger, docPool *docPoolCounter) error {
 	if op.GetInsert() != nil {
 		request := op.GetInsert()
 		collection := conn.DefaultBucket(logger).Scope(request.BucketInfo.ScopeName).Collection(request.BucketInfo.CollectionName)
@@ -82,6 +99,16 @@ func performOperation(conn *cluster.Connection, op *protocol.SdkCommand, logger 
 		if err != nil {
 			return err
 		}
+		return nil
+	} else if op.GetRemove() != nil {
+		logger.Logf(logrus.InfoLevel, "Performing remove operation:", docPool.read())
+		request := op.GetRemove()
+		collection := conn.DefaultBucket(logger).Scope(request.BucketInfo.ScopeName).Collection(request.BucketInfo.CollectionName)
+		_, err := collection.Remove(fmt.Sprintf(request.GetKeyPreface()+strconv.FormatInt(docPool.read(), 10)), &gocb.RemoveOptions{})
+		if err != nil {
+			return err
+		}
+		docPool.add(1)
 		return nil
 	} else {
 		return fmt.Errorf("internal performer failure: Unknown operation")
