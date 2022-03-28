@@ -23,10 +23,16 @@ message CommandGet {
   BucketInfo bucketInfo = 2;
 }
 
+message CommandRemove {
+  BucketInfo bucketInfo = 1;
+  string keyPreface = 2;
+}
+
 message SdkCommand {
   oneof command {
     CommandInsert insert = 1;
     CommandGet get = 2;
+    CommandRemove remove = 3;
   }
 }
 

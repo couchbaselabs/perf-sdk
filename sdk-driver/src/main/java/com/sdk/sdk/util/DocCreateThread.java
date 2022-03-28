@@ -1,5 +1,7 @@
 package com.sdk.sdk.util;
 
+import com.couchbase.client.core.error.CollectionExistsException;
+import com.couchbase.client.core.error.IndexFailureException;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.Collection;
@@ -7,6 +9,10 @@ import com.couchbase.client.java.Scope;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.manager.bucket.BucketManager;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
+import com.couchbase.client.java.manager.collection.CollectionManager;
+import com.couchbase.client.java.manager.collection.CollectionSpec;
+import com.couchbase.client.java.query.QueryResult;
+import com.sdk.constants.Defaults;
 import com.sdk.constants.Strings;
 import com.sdk.logging.LogUtil;
 import org.slf4j.Logger;
@@ -38,13 +44,21 @@ public class DocCreateThread extends Thread {
 
     @Override
     public void run() {
-        logger.info("Creating docPool collection");
-        // collection called docPool has to exist
-        Collection collection = scope.collection("docPool");
-        JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
-        //TODO add awareness if docs pool already exists, if so flush it of try to make use of documents in it
-        for (int i=0; i < this.docNum; i++){
-            collection.insert("doc_" + i, input);
+        logger.info("Creating and filling " + Defaults.DOCPOOL_COLLECTION +" collection");
+        try{
+            CollectionSpec spec = CollectionSpec.create(Defaults.DOCPOOL_COLLECTION, Defaults.DEFAULT_SCOPE);
+            bucket.collections().createCollection(spec);
         }
+        catch (CollectionExistsException err){
+            logger.info("Collection named " + Defaults.DOCPOOL_COLLECTION + " already exists, moving on");
+        }
+        Collection collection = scope.collection(Defaults.DOCPOOL_COLLECTION);
+        JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
+        // Starts from 1 because the performer uses addAndGet() to get a doc id, meaning 0 is never used.
+        // This behaviour should be shared for all performers.
+        for (int i=1; i < this.docNum; i++){
+            collection.insert(Defaults.KEY_PREFACE + i, input);
+        }
+        cluster.disconnect();
     }
 }

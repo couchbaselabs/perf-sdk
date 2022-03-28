@@ -16,9 +16,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PerfMarshaller {
     private static final Logger logger = LogUtil.getLogger(PerfMarshaller.class);
+    public static AtomicInteger docPool = new AtomicInteger();
 
     public static void run(ClusterConnection connection,
                            PerfRunRequest perfRun,
@@ -31,7 +33,8 @@ public class PerfMarshaller {
                     connection,
                     perfRun,
                     perThread,
-                    responseObserver));
+                    responseObserver,
+                    docPool));
         }
 
         for (PerfRunnerThread perfRunnerThread : runners) {
@@ -54,17 +57,20 @@ class PerfRunnerThread extends Thread {
     private final PerfRunRequest perfRun;
     private final PerfRunHorizontalScaling perThread;
     private final StreamObserver<PerfSingleSdkOpResult> responseObserver;
+    private AtomicInteger docPool;
 
     PerfRunnerThread(int runnerIndex,
                      ClusterConnection connection,
                      PerfRunRequest perfRun,
                      PerfRunHorizontalScaling perThread,
-                     StreamObserver<PerfSingleSdkOpResult> responseObserver) {
+                     StreamObserver<PerfSingleSdkOpResult> responseObserver,
+                     AtomicInteger docPool) {
         this.runnerIndex = runnerIndex;
         this.connection = connection;
         this.perfRun = perfRun;
         this.perThread = perThread;
         this.responseObserver = responseObserver;
+        this.docPool = docPool;
     }
 
     private static Timestamp.Builder getTimeNow() {
@@ -85,7 +91,7 @@ class PerfRunnerThread extends Thread {
             for (int i=0; i<perThread.getSdkCommandCount(); i++){
                 PerfSingleSdkOpResult.Builder singleResult = PerfSingleSdkOpResult.newBuilder();
                 singleResult.setInitiated(getTimeNow());
-                SdkOperation operation = new SdkOperation();
+                SdkOperation operation = new SdkOperation(docPool);
                 SdkCommandResult result = operation.run(connection, perThread.getSdkCommand(i));
 
                 singleResult.setFinished(getTimeNow());
