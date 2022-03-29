@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class SdkOperation {
     private String name;
@@ -29,10 +30,10 @@ public class SdkOperation {
             SdkCreateRequest req) {
         this.name = req.getName();
         logger = LogUtil.getLogger(this.name);
-
-        for (int i=0; i< req.getCount(); i++) {
-            performOperation(connection, req.getCommand());
-        }
+        performOperation(connection, req.getCommand());
+//        for (int i=0; i< req.getCount(); i++) {
+//            performOperation(connection, req.getCommand());
+//        }
         SdkCommandResult.Builder response = SdkCommandResult.getDefaultInstance().newBuilderForType();
         return response.build();
     }

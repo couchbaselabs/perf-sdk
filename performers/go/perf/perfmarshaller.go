@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"sync/atomic"
-	"time"
 
 	"github.com/charlie-hayes/perf-sdk/cluster"
 	"github.com/charlie-hayes/perf-sdk/protocol"
@@ -35,32 +34,38 @@ func PerfMarshaller(conn *cluster.Connection, perfReq *protocol.PerfRunRequest, 
 		perGoRoutine := perfReq.GetHorizontalScaling()[i]
 		logger.Logf(logrus.InfoLevel, "Starting goroutine No.", i)
 		g.Go(func() error {
-			now := time.Now()
-			until := now.Add(time.Second * time.Duration(perfReq.GetRunForSeconds()))
-			isDone := false
+			//now := time.Now()
+			//until := now.Add(time.Second * time.Duration(perfReq.GetRunForSeconds()))
+			//isDone := false
+			count := calculateCount(perGoRoutine.GetSdkCommand())
 
 			for {
-				if !isDone {
-					for r := 0; r < len(perGoRoutine.GetSdkCommand()); r++ {
-						opResult := protocol.PerfSingleSdkOpResult{
-							Initiated: timestamppb.Now(),
-						}
-						result, err := beginOperations(conn, perGoRoutine.GetSdkCommand()[r], logger, docPool)
-						if err != nil {
-							return err
-						}
-						opResult.Finished = timestamppb.Now()
-						opResult.Results = result
+				if countMax(count) != 0 {
+					for _, command := range perGoRoutine.GetSdkCommand() {
+						if count[command.GetName()] > 0 {
+							opResult := protocol.PerfSingleSdkOpResult{
+								Initiated: timestamppb.Now(),
+							}
+							result, err := performOperation(conn, command.GetCommand(), logger, docPool)
+							if err != nil {
+								return err
+							}
+							opResult.Finished = timestamppb.Now()
+							opResult.Results = result
 
-						if err := stream.Send(&opResult); err != nil {
-							return err
-						}
+							if err := stream.Send(&opResult); err != nil {
+								return err
+							}
 
-						if time.Now().After(until) {
-							isDone = true
-							return nil
+							count[command.GetName()] -= 1
+							//if time.Now().After(until) {
+							//	isDone = true
+							//	return nil
+							//}
 						}
 					}
+				} else {
+					return nil
 				}
 			}
 		})
@@ -71,46 +76,66 @@ func PerfMarshaller(conn *cluster.Connection, perfReq *protocol.PerfRunRequest, 
 	return nil
 }
 
-func beginOperations(conn *cluster.Connection, req *protocol.SdkCreateRequest, logger *logrus.Logger, docPool *docPoolCounter) (*protocol.SdkCommandResult, error) {
-	logger.Log(logrus.InfoLevel, "Beginning operations")
-	for i := 0; i < int(req.GetCount()); i++ {
-		err := performOperation(conn, req.GetCommand(), logger, docPool)
-		if err != nil {
-			return nil, err
-		}
+func calculateCount(commandList []*protocol.SdkCreateRequest) map[string]int {
+	count := make(map[string]int)
+	for _, command := range commandList {
+		count[command.GetName()] = int(command.GetCount())
 	}
-	//TODO return errors and logs
-	return &protocol.SdkCommandResult{}, nil
+	return count
 }
 
-func performOperation(conn *cluster.Connection, op *protocol.SdkCommand, logger *logrus.Logger, docPool *docPoolCounter) error {
+func countMax(count map[string]int) int {
+	//commandCount can't be lower than 0
+	max := -1
+	for _, commandCount := range count {
+		if commandCount > max {
+			max = commandCount
+		}
+	}
+	return max
+}
+
+// func beginOperations(conn *cluster.Connection, req *protocol.SdkCreateRequest, logger *logrus.Logger, docPool *docPoolCounter) (*protocol.SdkCommandResult, error) {
+// 	//logger.Log(logrus.InfoLevel, "Beginning operations")
+// 	for i := 0; i < int(req.GetCount()); i++ {
+// 		err := performOperation(conn, req.GetCommand(), logger, docPool)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	}
+// 	//TODO return errors and logs
+// 	return &protocol.SdkCommandResult{}, nil
+// }
+
+func performOperation(conn *cluster.Connection, op *protocol.SdkCommand, logger *logrus.Logger, docPool *docPoolCounter) (*protocol.SdkCommandResult, error) {
 	if op.GetInsert() != nil {
+		logger.Log(logrus.InfoLevel, "Performing insert")
 		request := op.GetInsert()
 		collection := conn.DefaultBucket(logger).Scope(request.BucketInfo.ScopeName).Collection(request.BucketInfo.CollectionName)
 		_, err := collection.Insert(uuid.NewString(), request.ContentJson, &gocb.InsertOptions{})
 		if err != nil {
-			return err
+			return &protocol.SdkCommandResult{}, err
 		}
-		return nil
+		return &protocol.SdkCommandResult{}, nil
 	} else if op.GetGet() != nil {
 		request := op.GetGet()
 		collection := conn.DefaultBucket(logger).Scope(request.BucketInfo.ScopeName).Collection(request.BucketInfo.CollectionName)
 		_, err := collection.Get(request.GetDocId(), &gocb.GetOptions{})
 		if err != nil {
-			return err
+			return &protocol.SdkCommandResult{}, err
 		}
-		return nil
+		return &protocol.SdkCommandResult{}, nil
 	} else if op.GetRemove() != nil {
 		logger.Logf(logrus.InfoLevel, "Performing remove operation:", docPool.read())
 		request := op.GetRemove()
 		collection := conn.DefaultBucket(logger).Scope(request.BucketInfo.ScopeName).Collection(request.BucketInfo.CollectionName)
 		_, err := collection.Remove(fmt.Sprintf(request.GetKeyPreface()+strconv.FormatInt(docPool.read(), 10)), &gocb.RemoveOptions{})
 		if err != nil {
-			return err
+			return &protocol.SdkCommandResult{}, err
 		}
 		docPool.add(1)
-		return nil
+		return &protocol.SdkCommandResult{}, nil
 	} else {
-		return fmt.Errorf("internal performer failure: Unknown operation")
+		return &protocol.SdkCommandResult{}, fmt.Errorf("internal performer failure: Unknown operation")
 	}
 }

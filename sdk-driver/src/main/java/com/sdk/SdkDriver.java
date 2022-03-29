@@ -33,30 +33,30 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
-record TestSuite(String runtime, Implementation implementation, Variables variables, Connections connections, List<Run> runs) {
-    Duration runtimeAsDuration() {
-        var trimmed = runtime.trim();
-        char suffix = trimmed.charAt(trimmed.length() - 1);
-        var rawNum = Integer.parseInt(trimmed.substring(0, trimmed.length() - 1));
-        return switch (suffix) {
-            case 's' -> Duration.ofSeconds(rawNum);
-            case 'm' -> Duration.ofMinutes(rawNum);
-            case 'h' -> Duration.ofHours(rawNum);
-            default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
-        };
-    }
-
-    int runtimeAsInt(){
-        var trimmed = runtime.trim();
-        char suffix = trimmed.charAt(trimmed.length() - 1);
-        var rawNum = Integer.parseInt(trimmed.substring(0, trimmed.length() - 1));
-        return switch (suffix) {
-            case 's' -> rawNum;
-            case 'm' -> rawNum * Defaults.secPerMin;
-            case 'h' -> rawNum * Defaults.secPerHour;
-            default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
-        };
-    }
+record TestSuite(Implementation implementation, Variables variables, Connections connections, List<Run> runs) {
+//    Duration runtimeAsDuration() {
+//        var trimmed = runtime.trim();
+//        char suffix = trimmed.charAt(trimmed.length() - 1);
+//        var rawNum = Integer.parseInt(trimmed.substring(0, trimmed.length() - 1));
+//        return switch (suffix) {
+//            case 's' -> Duration.ofSeconds(rawNum);
+//            case 'm' -> Duration.ofMinutes(rawNum);
+//            case 'h' -> Duration.ofHours(rawNum);
+//            default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
+//        };
+//    }
+//
+//    int runtimeAsInt(){
+//        var trimmed = runtime.trim();
+//        char suffix = trimmed.charAt(trimmed.length() - 1);
+//        var rawNum = Integer.parseInt(trimmed.substring(0, trimmed.length() - 1));
+//        return switch (suffix) {
+//            case 's' -> rawNum;
+//            case 'm' -> rawNum * Defaults.secPerMin;
+//            case 'h' -> rawNum * Defaults.secPerHour;
+//            default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
+//        };
+//    }
 
     record Implementation(String language, String version){
     }
@@ -228,32 +228,15 @@ public class SdkDriver {
         return null;
     }
 
+    static int runRemoveCount(List<TestSuite.Run.Operation> operations){
+        return operations.stream()
+                .filter(op -> op.op().equals(TestSuite.Run.Operation.Op.REMOVE))
+                .mapToInt(count -> count.count())
+                .sum();
+    }
+
     static void run(String testSuiteFile) throws IOException, SQLException, InterruptedException, Exception {
         var testSuite = readTestSuite(testSuiteFile);
-
-        // check how many times remove will be tested in all runs
-        //FIXME There must be a better we to do this
-        int workloadMultiplier = 0;
-        for (TestSuite.Run run : testSuite.runs()){
-            for (TestSuite.Run.Operation operation : run.operations()){
-                if (operation.op() == TestSuite.Run.Operation.Op.REMOVE){
-                    workloadMultiplier += 1;
-                }
-            }
-        }
-
-        // docThread creates a pool of new documents for certain operations to use
-        // it creates enough documents for every operation that needs documents in a run to complete 50 times per thread per second
-        // If there are no REMOVE commands in the test suite then workloadMultiplier will be 0 so no docs will be created
-        //TODO discuss whether this is the best way to do this
-        DocCreateThread docThread = new DocCreateThread(
-                Defaults.docCreateMultiplier * workloadMultiplier * testSuite.variables().horizontalScaling() * testSuite.runtimeAsInt(),
-                testSuite.connections().cluster().hostname(),
-                testSuite.connections().cluster().username(),
-                testSuite.connections().cluster().password(),
-                Defaults.DEFAULT_BUCKET,
-                Defaults.DEFAULT_SCOPE);
-        docThread.start();
 
         var dbUrl = String.format("jdbc:postgresql://%s:%d/%s",
                 testSuite.connections().database().hostname(),
@@ -286,6 +269,18 @@ public class SdkDriver {
 
             for (TestSuite.Run run : testSuite.runs()) {
                 logger.info("Running workload " + run);
+                // docThread creates a pool of new documents for certain operations to use
+                // it creates enough documents for every operation that needs documents in a run to complete 50 times per thread per second
+                // If there are no REMOVE commands in the test suite then workloadMultiplier will be 0 so no docs will be created
+                //TODO discuss whether this is the best way to do this
+                DocCreateThread docThread = new DocCreateThread(
+                        runRemoveCount(run.operations()),
+                        testSuite.connections().cluster().hostname(),
+                        testSuite.connections().cluster().username(),
+                        testSuite.connections().cluster().password(),
+                        Defaults.DEFAULT_BUCKET,
+                        Defaults.DEFAULT_SCOPE);
+                docThread.start();
 
                 var jsonVars = JsonObject.create();
                 testSuite.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
@@ -297,8 +292,8 @@ public class SdkDriver {
                         .put("workload", JsonObject.create()
                                 .put("description", "test description"))
                         .put("vars", jsonVars)
-                        .put("variables", JsonObject.create()
-                                .put("runtime", testSuite.runtime()));
+                        .put("variables", JsonObject.create());
+                                //.put("runtime", testSuite.runtime()));
 
                 try (var st = conn.createStatement()) {
                     String statement = String.format("INSERT INTO runs VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
@@ -317,8 +312,8 @@ public class SdkDriver {
                 });
 
                 PerfRunRequest.Builder perf = PerfRunRequest.newBuilder()
-                        .setClusterConnectionId(performer.getClusterConnectionId())
-                        .setRunForSeconds((int) testSuite.runtimeAsDuration().toSeconds());
+                        .setClusterConnectionId(performer.getClusterConnectionId());
+                        //.setRunForSeconds((int) testSuite.runtimeAsDuration().toSeconds());
 
                 for (int i=0; i< testSuite.variables().horizontalScaling(); i++){
                     perf.addHorizontalScaling(com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.newBuilder()
