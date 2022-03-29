@@ -70,7 +70,10 @@ func (sdk *SdkService) PerfRun(in *protocol.PerfRunRequest, stream protocol.Perf
 	connection := sdk.getConn(in.ClusterConnectionId)
 	sdk.logger.Log(logrus.InfoLevel, connection)
 
-	perf.PerfMarshaller(connection, in, stream, sdk.logger)
+	if err := perf.PerfMarshaller(connection, in, stream, sdk.logger); err != nil {
+		sdk.logger.Logf(logrus.ErrorLevel, "error whilst executing perfRun %v", err)
+		return status.Errorf(codes.Aborted, "error whilst executing perfRun %v", err)
+	}
 
 	return nil
 }

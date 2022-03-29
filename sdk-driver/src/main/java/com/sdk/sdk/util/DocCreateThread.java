@@ -56,7 +56,7 @@ public class DocCreateThread extends Thread {
         JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
         // Starts from 1 because the performer uses addAndGet() to get a doc id, meaning 0 is never used.
         // This behaviour should be shared for all performers.
-        for (int i=1; i < this.docNum; i++){
+        for (int i=1; i < this.docNum + 1; i++){
             collection.insert(Defaults.KEY_PREFACE + i, input);
         }
         cluster.disconnect();

@@ -1,15 +1,14 @@
 ---
-runtime: "5m"
 implementation:
   language: "go"
   version: "2.3.3"
 variables:
   predefined:
   - name: "horizontal_scaling"
-    value: 2
+    value: 1
   custom:
   - name: "number_of_inserts"
-    value: 50
+    value: 5000
 connections:
   cluster:
     hostname: "10.112.212.101"
@@ -25,9 +24,9 @@ connections:
     password: "password"
     dbName: "perf"
 runs:
-- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23e5"
+- uuid: "097572b1-0ab4-435a-9250-5d6cca8d23e5"
   description: "Insert 50"
   operations:
   - op: "INSERT"
-    count: 50
+    count: 5000
 

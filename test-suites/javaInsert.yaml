@@ -1,5 +1,4 @@
 ---
-runtime: "10s"
 implementation:
   language: "java"
   version: "3.1.4"
@@ -25,9 +24,9 @@ connections:
     password: "password"
     dbName: "perf"
 runs:
-- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23f1"
+- uuid: "097572b1-0ab4-435a-9250-5c6cca8d23f4"
   description: "Insert 50"
   operations:
   - op: "INSERT"
-    count: 50
+    count: 5000
 
