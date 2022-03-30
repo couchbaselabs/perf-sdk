@@ -25,8 +25,10 @@ connections:
     dbName: "perf"
 runs:
 - uuid: "097572b1-0ab4-435a-9250-5d6cca8d23e5"
-  description: "Insert 50"
+  description: "Insert 5000, Insert 10000"
   operations:
   - op: "INSERT"
     count: 5000
+  - op: "INSERT"
+    count: 10000
 

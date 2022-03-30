@@ -123,47 +123,50 @@ record BuiltSdkCommand(List<Op> sdkCommand, String description) {
 }
 
 interface Op {
-    void applyTo(SdkCreateRequest.Builder builder);
+    void applyTo(PerfRunHorizontalScaling.Builder builder);
 }
 
 record OpInsert(JsonObject content, int count) implements Op {
     @Override
-    public void applyTo(SdkCreateRequest.Builder builder) {
-        builder.setCommand(SdkCommand.newBuilder()
-                .setInsert(CommandInsert.newBuilder()
-                        .setContentJson(content.toString())
-                        .setBucketInfo(BucketInfo.newBuilder()
-                                .setBucketName(Defaults.DEFAULT_BUCKET)
-                                .setScopeName(Defaults.DEFAULT_SCOPE)
-                                .setCollectionName(Defaults.DEFAULT_COLLECTION)
-                                .build())
-                        .build()))
+    public void applyTo(PerfRunHorizontalScaling.Builder builder) {
+        builder.addSdkCommand(SdkCreateRequest.newBuilder()
+                .setCommand(SdkCommand.newBuilder()
+                        .setInsert(CommandInsert.newBuilder()
+                                .setContentJson(content.toString())
+                                .setBucketInfo(BucketInfo.newBuilder()
+                                        .setBucketName(Defaults.DEFAULT_BUCKET)
+                                        .setScopeName(Defaults.DEFAULT_SCOPE)
+                                        .setCollectionName(Defaults.DEFAULT_COLLECTION)
+                                        .build())
+                                .build()))
                 .setCount(count)
-                .setName("INSERT");
+                .setName("INSERT"));
     }
 }
 
 record OpGet(String docId, int count) implements Op {
     @Override
-    public void applyTo(SdkCreateRequest.Builder builder) {
-        builder.setCommand(SdkCommand.newBuilder()
-                .setGet(CommandGet.newBuilder()
-                        .setDocId(docId)
-                        .setBucketInfo(BucketInfo.newBuilder()
-                                .setBucketName(Defaults.DEFAULT_BUCKET)
-                                .setScopeName(Defaults.DEFAULT_SCOPE)
-                                .setCollectionName(Defaults.DEFAULT_COLLECTION)
-                                .build())
-                        .build()))
+    public void applyTo(PerfRunHorizontalScaling.Builder builder) {
+        builder.addSdkCommand(SdkCreateRequest.newBuilder()
+                .setCommand(SdkCommand.newBuilder()
+                        .setGet(CommandGet.newBuilder()
+                                .setDocId(docId)
+                                .setBucketInfo(BucketInfo.newBuilder()
+                                        .setBucketName(Defaults.DEFAULT_BUCKET)
+                                        .setScopeName(Defaults.DEFAULT_SCOPE)
+                                        .setCollectionName(Defaults.DEFAULT_COLLECTION)
+                                        .build())
+                                .build()))
                 .setCount(count)
-                .setName("GET");
+                .setName("GET"));
     }
 }
 
 record OpRemove(int count) implements Op {
     @Override
-    public void applyTo(SdkCreateRequest.Builder builder){
-        builder.setCommand(SdkCommand.newBuilder()
+    public void applyTo(PerfRunHorizontalScaling.Builder builder){
+        builder.addSdkCommand(SdkCreateRequest.newBuilder()
+                .setCommand(SdkCommand.newBuilder()
                         .setRemove(CommandRemove.newBuilder()
                                 .setBucketInfo(BucketInfo.newBuilder()
                                         .setBucketName(Defaults.DEFAULT_BUCKET)
@@ -173,7 +176,7 @@ record OpRemove(int count) implements Op {
                                 .setKeyPreface(Defaults.KEY_PREFACE)
                                 .build()))
                 .setCount(count)
-                .setName("REMOVE");
+                .setName("REMOVE"));
     }
 }
 
@@ -305,10 +308,10 @@ public class SdkDriver {
 
                 BuiltSdkCommand command = createSdkCommand(run);
 
-                SdkCreateRequest.Builder sdkBuilt = SdkCreateRequest.newBuilder();
+                PerfRunHorizontalScaling.Builder horizontalScalingBuilt = PerfRunHorizontalScaling.newBuilder();
 
                 command.sdkCommand().forEach(op -> {
-                    op.applyTo(sdkBuilt);
+                    op.applyTo(horizontalScalingBuilt);
                 });
 
                 PerfRunRequest.Builder perf = PerfRunRequest.newBuilder()
@@ -316,8 +319,7 @@ public class SdkDriver {
                         //.setRunForSeconds((int) testSuite.runtimeAsDuration().toSeconds());
 
                 for (int i=0; i< testSuite.variables().horizontalScaling(); i++){
-                    perf.addHorizontalScaling(com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling.newBuilder()
-                            .addSdkCommand(sdkBuilt));
+                    perf.addHorizontalScaling(horizontalScalingBuilt);
                 }
 
                 long startedAll = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
