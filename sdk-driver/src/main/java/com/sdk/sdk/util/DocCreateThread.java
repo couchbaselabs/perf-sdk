@@ -29,36 +29,39 @@ public class DocCreateThread extends Thread {
 
     public DocCreateThread(int docNum, String hostname, String userName, String password, String bucketName, String scopeName) throws Exception{
         this.docNum =docNum;
-        logger.info("Creating connection to cluster to create document pool");
-        try {
-            this.cluster = Cluster.connect(hostname, userName, password);
-            this.bucket = cluster.bucket(bucketName);
-            this.scope = bucket.scope(scopeName);
-            cluster.waitUntilReady(Duration.ofSeconds(30));
-        }
-        //TODO Discuss better exception to throw
-        catch (Exception err){
-            throw new Exception("Could not connect to cluster for doc pool creation: " + err.getMessage());
+        if (docNum > 0) {
+            logger.info("Creating connection to cluster to create document pool");
+            try {
+                this.cluster = Cluster.connect(hostname, userName, password);
+                this.bucket = cluster.bucket(bucketName);
+                this.scope = bucket.scope(scopeName);
+                cluster.waitUntilReady(Duration.ofSeconds(30));
+            }
+            //TODO Discuss better exception to throw
+            catch (Exception err) {
+                throw new Exception("Could not connect to cluster for doc pool creation: " + err.getMessage());
+            }
         }
     }
 
     @Override
     public void run() {
-        logger.info("Creating and filling " + Defaults.DOCPOOL_COLLECTION +" collection");
-        try{
-            CollectionSpec spec = CollectionSpec.create(Defaults.DOCPOOL_COLLECTION, Defaults.DEFAULT_SCOPE);
-            bucket.collections().createCollection(spec);
+        if (docNum > 0) {
+            logger.info("Creating and filling " + Defaults.DOCPOOL_COLLECTION + " collection");
+            try {
+                CollectionSpec spec = CollectionSpec.create(Defaults.DOCPOOL_COLLECTION, Defaults.DEFAULT_SCOPE);
+                bucket.collections().createCollection(spec);
+            } catch (CollectionExistsException err) {
+                logger.info("Collection named " + Defaults.DOCPOOL_COLLECTION + " already exists, moving on");
+            }
+            Collection collection = scope.collection(Defaults.DOCPOOL_COLLECTION);
+            JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
+            // Starts from 1 because the performer uses addAndGet() to get a doc id, meaning 0 is never used.
+            // This behaviour should be shared for all performers.
+            for (int i = 1; i < this.docNum + 1; i++) {
+                collection.insert(Defaults.KEY_PREFACE + i, input);
+            }
+            cluster.disconnect();
         }
-        catch (CollectionExistsException err){
-            logger.info("Collection named " + Defaults.DOCPOOL_COLLECTION + " already exists, moving on");
-        }
-        Collection collection = scope.collection(Defaults.DOCPOOL_COLLECTION);
-        JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
-        // Starts from 1 because the performer uses addAndGet() to get a doc id, meaning 0 is never used.
-        // This behaviour should be shared for all performers.
-        for (int i=1; i < this.docNum + 1; i++){
-            collection.insert(Defaults.KEY_PREFACE + i, input);
-        }
-        cluster.disconnect();
     }
 }
