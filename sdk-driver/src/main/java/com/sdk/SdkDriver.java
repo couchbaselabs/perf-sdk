@@ -322,7 +322,6 @@ public class SdkDriver {
                     perf.addHorizontalScaling(horizontalScalingBuilt);
                 }
 
-                long startedAll = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
                 var done = new AtomicBoolean(false);
                 var toWrite = new ConcurrentLinkedQueue<PerfSingleSdkOpResult>();
                 var first = new AtomicReference<Tuple2<Timestamp, Long>>(null);
@@ -364,8 +363,6 @@ public class SdkDriver {
                 var sortedResults = toWrite.stream()
                         .sorted(Comparator.comparingInt(a -> a.getInitiated().getNanos()))
                         .collect(Collectors.toList());
-
-                long finishedAll = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
 
                 var resultsToWrite = processResults(sortedResults, first.get());
 
