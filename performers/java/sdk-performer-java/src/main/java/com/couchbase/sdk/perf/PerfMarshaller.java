@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -22,22 +24,31 @@ public class PerfMarshaller {
     private static final Logger logger = LogUtil.getLogger(PerfMarshaller.class);
     private static AtomicInteger docPool = new AtomicInteger();
     private static ReentrantLock onNextLock = new ReentrantLock();
+    private static ConcurrentLinkedQueue<PerfSingleSdkOpResult> writeQueue = new ConcurrentLinkedQueue<>();
+    private static AtomicBoolean done = new AtomicBoolean();
 
     public static void run(ClusterConnection connection,
                            PerfRunRequest perfRun,
                            StreamObserver<PerfSingleSdkOpResult> responseObserver) throws InterruptedException {
-        List<PerfRunnerThread> runners = new ArrayList<>();
+        PerfWriteThread writer = new PerfWriteThread(
+                responseObserver,
+                writeQueue,
+                done);
 
+        List<PerfRunnerThread> runners = new ArrayList<>();
         for (int runnerIndex = 0; runnerIndex < perfRun.getHorizontalScalingCount(); runnerIndex ++) {
             PerfRunHorizontalScaling perThread = perfRun.getHorizontalScaling(runnerIndex);
             runners.add(new PerfRunnerThread(runnerIndex,
                     connection,
                     perfRun,
                     perThread,
-                    responseObserver,
                     docPool,
-                    onNextLock));
+                    done,
+                    writeQueue));
         }
+
+        logger.info("Starting writer thread");
+        writer.start();
 
         for (PerfRunnerThread perfRunnerThread : runners) {
             perfRunnerThread.start();
@@ -48,6 +59,9 @@ public class PerfMarshaller {
             runner.join();
         }
         logger.info("All {} threads completed", runners.size());
+
+        writer.join();
+        logger.info("Writer thread completed");
 
         docPool.set(0);
 
@@ -60,25 +74,25 @@ class PerfRunnerThread extends Thread {
     private final ClusterConnection connection;
     private final PerfRunRequest perfRun;
     private final PerfRunHorizontalScaling perThread;
-    private final StreamObserver<PerfSingleSdkOpResult> responseObserver;
     private AtomicInteger docPool;
-    private ReentrantLock onNextLock;
+    private AtomicBoolean done;
+    private static ConcurrentLinkedQueue<PerfSingleSdkOpResult> writeQueue;
     private HashMap<String, Integer> count;
 
     PerfRunnerThread(int runnerIndex,
                      ClusterConnection connection,
                      PerfRunRequest perfRun,
                      PerfRunHorizontalScaling perThread,
-                     StreamObserver<PerfSingleSdkOpResult> responseObserver,
                      AtomicInteger docPool,
-                     ReentrantLock onNextLock) {
+                     AtomicBoolean done,
+                     ConcurrentLinkedQueue<PerfSingleSdkOpResult> writeQueue) {
         this.runnerIndex = runnerIndex;
         this.connection = connection;
         this.perfRun = perfRun;
         this.perThread = perThread;
-        this.responseObserver = responseObserver;
         this.docPool = docPool;
-        this.onNextLock = onNextLock;
+        this.done = done;
+        this.writeQueue = writeQueue;
     }
 
     private static Timestamp.Builder getTimeNow() {
@@ -110,13 +124,7 @@ class PerfRunnerThread extends Thread {
                     singleResult.setFinished(getTimeNow());
                     singleResult.setResults(result.toBuilder());
 
-                    onNextLock.lock();
-                    try {
-                        responseObserver.onNext(singleResult.build());
-                    }
-                    finally {
-                        onNextLock.unlock();
-                    }
+                    writeQueue.add(singleResult.build());
 
                     count.replace(command.getName(), count.get(command.getName()) - 1);
                 }
@@ -127,6 +135,8 @@ class PerfRunnerThread extends Thread {
 //                }
             }
         }
+        //Let the writer thread know what there are no more values coming
+        done.set(true);
     }
 
     //calculateCount is run in each thread so that the hashmap does not get shared between them.
