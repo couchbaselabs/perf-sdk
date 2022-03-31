@@ -19,10 +19,14 @@ public class SdkOperation {
     private String name;
     private Map<Integer, String> docIds;
     private Logger logger;
-    private AtomicInteger docPool;
+    private AtomicInteger removeCounter;
+    private AtomicInteger replaceCounter;
+    private AtomicInteger getCounter;
 
-    public SdkOperation(AtomicInteger docPool){
-        this.docPool = docPool;
+    public SdkOperation(AtomicInteger removeCounter, AtomicInteger replaceCounter, AtomicInteger getCounter){
+        this.removeCounter = removeCounter;
+        this.replaceCounter = replaceCounter;
+        this.getCounter = getCounter;
     }
 
     public com.couchbase.grpc.sdk.protocol.SdkCommandResult run(
@@ -52,15 +56,21 @@ public class SdkOperation {
             final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
             logger.info("Performing get operation on bucket {} on collection {}",
                     request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName());
-            collection.get(request.getDocId());
+            collection.get(request.getKeyPreface() + getCounter.getAndIncrement());
         }else if(op.hasRemove()){
             final CommandRemove request = op.getRemove();
             final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
             logger.info("Performing remove operation on bucket {} on collection {}, docId {}",
-                    request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName(), docPool.get());
-            collection.remove(request.getKeyPreface() + docPool.addAndGet(1));
-        }else {
+                    request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName(), removeCounter.get());
+            collection.remove(request.getKeyPreface() + removeCounter.getAndIncrement());
+        }else if(op.hasReplace()){
+            final CommandReplace request = op.getReplace();
+            final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
+            logger.info("Performing replace operation on bucket {} on collection {}, docId {}",
+                    request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName(), replaceCounter.get());
+            collection.replace(request.getKeyPreface() + replaceCounter.getAndIncrement(), request.getContentJson());
+        } else {
         throw new InternalPerformerFailure(new IllegalArgumentException("Unknown operation"));
-    }
+        }
     }
 }

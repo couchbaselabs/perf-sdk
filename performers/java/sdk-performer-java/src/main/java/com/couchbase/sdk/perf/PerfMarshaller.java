@@ -22,8 +22,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class PerfMarshaller {
     private static final Logger logger = LogUtil.getLogger(PerfMarshaller.class);
-    private static AtomicInteger docPool = new AtomicInteger();
-    private static ReentrantLock onNextLock = new ReentrantLock();
+    private static AtomicInteger removeCounter = new AtomicInteger();
+    private static AtomicInteger replaceCounter = new AtomicInteger();
+    private static AtomicInteger getCounter = new AtomicInteger();
     private static ConcurrentLinkedQueue<PerfSingleSdkOpResult> writeQueue = new ConcurrentLinkedQueue<>();
     private static AtomicBoolean done = new AtomicBoolean();
 
@@ -42,7 +43,9 @@ public class PerfMarshaller {
                     connection,
                     perfRun,
                     perThread,
-                    docPool,
+                    removeCounter,
+                    replaceCounter,
+                    getCounter,
                     done,
                     writeQueue));
         }
@@ -59,12 +62,12 @@ public class PerfMarshaller {
             runner.join();
         }
         logger.info("All {} threads completed", runners.size());
+        removeCounter.set(0);
+        replaceCounter.set(0);
+        getCounter.set(0);
 
         writer.join();
         logger.info("Writer thread completed");
-
-        docPool.set(0);
-
     }
 
 }
@@ -74,23 +77,28 @@ class PerfRunnerThread extends Thread {
     private final ClusterConnection connection;
     private final PerfRunRequest perfRun;
     private final PerfRunHorizontalScaling perThread;
-    private AtomicInteger docPool;
+    private AtomicInteger removeCounter;
+    private AtomicInteger replaceCounter;
+    private AtomicInteger getCounter;
     private AtomicBoolean done;
     private static ConcurrentLinkedQueue<PerfSingleSdkOpResult> writeQueue;
-    private HashMap<String, Integer> count;
 
     PerfRunnerThread(int runnerIndex,
                      ClusterConnection connection,
                      PerfRunRequest perfRun,
                      PerfRunHorizontalScaling perThread,
-                     AtomicInteger docPool,
+                     AtomicInteger removeCounter,
+                     AtomicInteger replaceCounter,
+                     AtomicInteger getCounter,
                      AtomicBoolean done,
                      ConcurrentLinkedQueue<PerfSingleSdkOpResult> writeQueue) {
         this.runnerIndex = runnerIndex;
         this.connection = connection;
         this.perfRun = perfRun;
         this.perThread = perThread;
-        this.docPool = docPool;
+        this.removeCounter = removeCounter;
+        this.replaceCounter = replaceCounter;
+        this.getCounter = getCounter;
         this.done = done;
         this.writeQueue = writeQueue;
     }
@@ -108,44 +116,26 @@ class PerfRunnerThread extends Thread {
         //Instant now = Instant.now();
         //Instant until = now.plus(perfRun.getRunForSeconds(), ChronoUnit.SECONDS);
         //boolean isDone = false;
-        SdkOperation operation = new SdkOperation(docPool);
-        count = calculateCount();
+        SdkOperation operation = new SdkOperation(removeCounter, replaceCounter, getCounter);
 
-        //FIXME really don't like the way that this is done
-        // uses a map to find out if each count is still active.
-        // Has to do a lot of calculation just to do one operation which isn't ideal
-        while (Collections.max(count.values()) > 0) {
-            for (SdkCreateRequest command : perThread.getSdkCommandList()){
-                if (count.get(command.getName()) > 0) {
-                    PerfSingleSdkOpResult.Builder singleResult = PerfSingleSdkOpResult.newBuilder();
-                    singleResult.setInitiated(getTimeNow());
-                    SdkCommandResult result = operation.run(connection, command);
+        for (SdkCreateRequest command : perThread.getSdkCommandList()){
+            for (int i=0; i< command.getCount(); i++) {
+                PerfSingleSdkOpResult.Builder singleResult = PerfSingleSdkOpResult.newBuilder();
+                singleResult.setInitiated(getTimeNow());
+                SdkCommandResult result = operation.run(connection, command);
 
-                    singleResult.setFinished(getTimeNow());
-                    singleResult.setResults(result.toBuilder());
+                singleResult.setFinished(getTimeNow());
+                singleResult.setResults(result.toBuilder());
 
-                    writeQueue.add(singleResult.build());
-
-                    count.replace(command.getName(), count.get(command.getName()) - 1);
-                }
+                writeQueue.add(singleResult.build());
                 //use if bounding tests by runtime
-//                if (Instant.now().isAfter(until)) {
-//                    isDone = true;
-//                    break;
-//                }
+//            if (Instant.now().isAfter(until)) {
+//                isDone = true;
+//                break;
+//            }
             }
         }
         //Let the writer thread know what there are no more values coming
         done.set(true);
-    }
-
-    //calculateCount is run in each thread so that the hashmap does not get shared between them.
-    // This just feels bad, I keep going further and further down a rabbit hole of things I don't like...
-    private HashMap<String, Integer> calculateCount(){
-        HashMap<String, Integer> count = new HashMap<>();
-        for (SdkCreateRequest command : perThread.getSdkCommandList()){
-            count.put(command.getName(),command.getCount());
-        }
-        return count;
     }
 }
