@@ -66,10 +66,6 @@ record TestSuite(Implementation implementation, Variables variables, Connections
             return (Integer) predefinedVar(PredefinedVariable.PredefinedVariableName.HORIZONTAL_SCALING);
         }
 
-        String doc_id() {
-            return (String) predefinedVar(PredefinedVariable.PredefinedVariableName.DOC_ID);
-        }
-
         private Object predefinedVar(PredefinedVariable.PredefinedVariableName name) {
             return predefined.stream()
                     .filter(v -> v.name == name)
@@ -81,7 +77,6 @@ record TestSuite(Implementation implementation, Variables variables, Connections
         record PredefinedVariable(PredefinedVariableName name, Object value) {
             enum PredefinedVariableName {
                 @JsonProperty("horizontal_scaling") HORIZONTAL_SCALING,
-                @JsonProperty("doc_id") DOC_ID
             }
         }
 
@@ -101,19 +96,12 @@ record TestSuite(Implementation implementation, Variables variables, Connections
     }
 
     record Run(String uuid, String description, List<Operation> operations) {
-        record Operation(Op op, int count, Object opConfig) {
+        record Operation(Op op, int count) {
             enum Op {
                 INSERT,
                 GET,
-                REMOVE
-            }
-
-            int opConfigAsInt(){
-                return (int) opConfig();
-            }
-
-            String opConfigAsString(){
-                return (String) opConfig();
+                REMOVE,
+                REPLACE
             }
         }
     }
@@ -144,18 +132,18 @@ record OpInsert(JsonObject content, int count) implements Op {
     }
 }
 
-record OpGet(String docId, int count) implements Op {
+record OpGet(int count) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder) {
         builder.addSdkCommand(SdkCreateRequest.newBuilder()
                 .setCommand(SdkCommand.newBuilder()
                         .setGet(CommandGet.newBuilder()
-                                .setDocId(docId)
                                 .setBucketInfo(BucketInfo.newBuilder()
                                         .setBucketName(Defaults.DEFAULT_BUCKET)
                                         .setScopeName(Defaults.DEFAULT_SCOPE)
-                                        .setCollectionName(Defaults.DEFAULT_COLLECTION)
+                                        .setCollectionName(Defaults.DOCPOOL_COLLECTION)
                                         .build())
+                                .setKeyPreface(Defaults.KEY_PREFACE)
                                 .build()))
                 .setCount(count)
                 .setName("GET"));
@@ -177,6 +165,25 @@ record OpRemove(int count) implements Op {
                                 .build()))
                 .setCount(count)
                 .setName("REMOVE"));
+    }
+}
+
+record OpReplace(JsonObject content, int count) implements Op {
+    @Override
+    public void applyTo(PerfRunHorizontalScaling.Builder builder){
+        builder.addSdkCommand(SdkCreateRequest.newBuilder()
+                .setCommand(SdkCommand.newBuilder()
+                        .setReplace(CommandReplace.newBuilder()
+                                .setBucketInfo(BucketInfo.newBuilder()
+                                        .setBucketName(Defaults.DEFAULT_BUCKET)
+                                        .setScopeName(Defaults.DEFAULT_SCOPE)
+                                        .setCollectionName(Defaults.DOCPOOL_COLLECTION)
+                                        .build())
+                                .setKeyPreface(Defaults.KEY_PREFACE)
+                                .setContentJson(content.toString())
+                                .build()))
+                .setCount(count)
+                .setName("REPLACE"));
     }
 }
 
@@ -204,15 +211,19 @@ public class SdkDriver {
             case INSERT:
                 return new OpInsert(initial, op.count());
             case GET:
-                return new OpGet(op.opConfigAsString(), op.count());
+                return new OpGet(op.count());
             case REMOVE:
                 return new OpRemove(op.count());
+            case REPLACE:
+                return new OpReplace(updated, op.count());
             default:
                 throw new IllegalArgumentException("Unknown op " + op);
         }
     }
 
     static BuiltSdkCommand createSdkCommand(TestSuite.Run run) {
+        //TODO Make sure any REPLACE operations are in the YAML before REMOVES
+        // Can be done by the layer above the driver (LAD???)
         //StringBuilder sb = new StringBuilder();
         var ops = new ArrayList<Op>();
 
@@ -231,11 +242,22 @@ public class SdkDriver {
         return null;
     }
 
-    static int runRemoveCount(List<TestSuite.Run.Operation> operations){
-        return operations.stream()
-                .filter(op -> op.op().equals(TestSuite.Run.Operation.Op.REMOVE))
-                .mapToInt(count -> count.count())
-                .sum();
+    //Tried to do this functionally and failed...
+    static int docPoolCount(List<TestSuite.Run.Operation> operations){
+        var max = 0;
+        for (TestSuite.Run.Operation op : operations){
+            switch(op.op()) {
+                case REMOVE:
+                    if (op.count() > max){max = op.count();}
+                case REPLACE:
+                    if (op.count() > max){max = op.count();}
+                case GET:
+                    if (op.count() > max){max = op.count();}
+            }
+
+        }
+        return max;
+
     }
 
     static void run(String testSuiteFile) throws IOException, SQLException, InterruptedException, Exception {
@@ -277,7 +299,8 @@ public class SdkDriver {
                 // If there are no REMOVE commands in the test suite then workloadMultiplier will be 0 so no docs will be created
                 //TODO discuss whether this is the best way to do this
                 DocCreateThread docThread = new DocCreateThread(
-                        runRemoveCount(run.operations()),
+                        //Don't want to create double the amount of documents when REPLACE and REMOVE can use the same ones
+                        docPoolCount(run.operations()) * testSuite.variables().horizontalScaling(),
                         testSuite.connections().cluster().hostname(),
                         testSuite.connections().cluster().username(),
                         testSuite.connections().cluster().password(),

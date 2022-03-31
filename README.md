@@ -11,3 +11,9 @@ To generate java stubs:
 `cd performers/go`
 `make proto`
 
+## Notes
+If you want to test multiple types of commands in the same test run, the REMOVE command has to go last.
+This can be done by putting it at the bottom of the operations section of the input `.yaml` file.
+
+Please also note that only one instance of each command is permitted per mixed workload.
+
