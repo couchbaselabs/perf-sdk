@@ -22,6 +22,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class PerfMarshaller {
     private static final Logger logger = LogUtil.getLogger(PerfMarshaller.class);
+    // There is a counter for each operation as when a single one was used for all operations,
+    // one thread would finish a part of a workload and set the counter to 0 before the other workload was done
     private static AtomicInteger removeCounter = new AtomicInteger();
     private static AtomicInteger replaceCounter = new AtomicInteger();
     private static AtomicInteger getCounter = new AtomicInteger();

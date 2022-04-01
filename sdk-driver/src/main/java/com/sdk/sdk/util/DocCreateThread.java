@@ -57,7 +57,7 @@ public class DocCreateThread extends Thread {
             Collection collection = scope.collection(Defaults.DOCPOOL_COLLECTION);
             JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
             for (int i = 0; i < this.docNum; i++) {
-                collection.insert(Defaults.KEY_PREFACE + i, input);
+                collection.upsert(Defaults.KEY_PREFACE + i, input);
             }
             cluster.disconnect();
         }

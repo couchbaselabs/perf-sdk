@@ -12,14 +12,15 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/charlie-hayes/perf-sdk/protocol"
+	"github.com/charlie-hayes/perf-sdk/service"
 )
 
 func main() {
 	// logLevel := envFlagInt("TXNPERFORMERLOGLEVEL", "log-level", 0,
 	// 	"The log level to use")
-	port := envFlagInt("TXNPERFORMERPORT", "port", 8060,
+	port := envFlagInt("PERFORMERPORT", "port", 8060,
 		"The port to use")
-	version := envFlagString("TXNVERSION", "version", "1.0.0",
+	version := envFlagString("VERSION", "version", "1.0.0",
 		"The version to use")
 	flag.Parse()
 
@@ -36,9 +37,9 @@ func main() {
 	}
 
 	grpcSrv := grpc.NewServer()
-	protocol.RegisterPerformerSdkServiceServer(grpcSrv, &SdkService{
-		logger:           logger,
-		performerVersion: "1.0.0",
+	protocol.RegisterPerformerSdkServiceServer(grpcSrv, &service.SdkService{
+		Logger:           logger,
+		PerformerVersion: "1.0.0",
 	})
 
 	logger.Logf(logrus.InfoLevel, "Starting grpc server at %d", *port)
