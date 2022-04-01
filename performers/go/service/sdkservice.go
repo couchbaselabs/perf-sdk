@@ -1,4 +1,4 @@
-package main
+package service
 
 import (
 	"context"
@@ -17,8 +17,8 @@ type SdkService struct {
 	connCntr         int
 	defaultConn      *cluster.Connection
 	conns            map[string]*cluster.Connection
-	logger           *logrus.Logger
-	performerVersion string
+	Logger           *logrus.Logger
+	PerformerVersion string
 }
 
 func (sdk *SdkService) getConn(connID string) *cluster.Connection {
@@ -38,12 +38,12 @@ func (sdk *SdkService) getConn(connID string) *cluster.Connection {
 }
 
 func (sdk *SdkService) CreateConnection(ctx context.Context, in *protocol.CreateConnectionRequest) (*protocol.CreateConnectionResponse, error) {
-	sdk.logger.Log(logrus.InfoLevel, "CreateConnection called")
+	sdk.Logger.Log(logrus.InfoLevel, "CreateConnection called")
 
-	sdk.logger.Log(logrus.InfoLevel, "Creating new connection")
-	conn, err := cluster.Connect(in.GetClusterHostname(), in.GetClusterUsername(), in.GetClusterPassword(), in.GetBucketName(), sdk.logger)
+	sdk.Logger.Log(logrus.InfoLevel, "Creating new connection")
+	conn, err := cluster.Connect(in.GetClusterHostname(), in.GetClusterUsername(), in.GetClusterPassword(), in.GetBucketName(), sdk.Logger)
 	if err != nil {
-		sdk.logger.Logf(logrus.ErrorLevel, "Failed to connect cluster %v", err)
+		sdk.Logger.Logf(logrus.ErrorLevel, "Failed to connect cluster %v", err)
 		return nil, status.Errorf(codes.Aborted, "connection creation failed: %v", err)
 	}
 
@@ -65,13 +65,13 @@ func (sdk *SdkService) CreateConnection(ctx context.Context, in *protocol.Create
 }
 
 func (sdk *SdkService) PerfRun(in *protocol.PerfRunRequest, stream protocol.PerformerSdkService_PerfRunServer) error {
-	sdk.logger.Log(logrus.InfoLevel, "PerfRun called")
+	sdk.Logger.Log(logrus.InfoLevel, "PerfRun called")
 
 	connection := sdk.getConn(in.ClusterConnectionId)
-	sdk.logger.Log(logrus.InfoLevel, connection)
+	sdk.Logger.Log(logrus.InfoLevel, connection)
 
-	if err := perf.PerfMarshaller(connection, in, stream, sdk.logger); err != nil {
-		sdk.logger.Logf(logrus.ErrorLevel, "error whilst executing perfRun %v", err)
+	if err := perf.PerfMarshaller(connection, in, stream, sdk.Logger); err != nil {
+		sdk.Logger.Logf(logrus.ErrorLevel, "error whilst executing perfRun %v", err)
 		return status.Errorf(codes.Aborted, "error whilst executing perfRun %v", err)
 	}
 
@@ -79,7 +79,7 @@ func (sdk *SdkService) PerfRun(in *protocol.PerfRunRequest, stream protocol.Perf
 }
 
 func (sdk *SdkService) Exit(in *protocol.ExitRequest, exit protocol.PerformerSdkService_ExitServer) error {
-	sdk.logger.Logf(logrus.InfoLevel, "Been told to exit for reason '%s' with code %d", in.GetReason(), in.GetExitCode())
+	sdk.Logger.Logf(logrus.InfoLevel, "Been told to exit for reason '%s' with code %d", in.GetReason(), in.GetExitCode())
 	os.Exit(int(in.GetExitCode()))
 	return nil
 }
