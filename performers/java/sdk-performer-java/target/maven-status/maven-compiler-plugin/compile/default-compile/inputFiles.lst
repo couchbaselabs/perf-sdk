@@ -1,0 +1,9 @@
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/sdk-performer-java/src/main/java/com/couchbase/sdk/utils/ClusterConnection.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/sdk-performer-java/src/main/java/com/couchbase/sdk/logging/LogUtil.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/sdk-performer-java/src/main/java/com/couchbase/sdk/logging/LoggingOptions.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/sdk-performer-java/src/main/java/com/couchbase/sdk/logging/AppenderLevelFilter.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/sdk-performer-java/src/main/java/com/couchbase/sdk/JavaPerformer.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/sdk-performer-java/src/main/java/com/couchbase/sdk/perf/PerfMarshaller.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/sdk-performer-java/src/main/java/com/couchbase/sdk/perf/PerfWriteThread.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/sdk-performer-java/src/main/java/com/couchbase/sdk/InternalPerformerFailure.java
+/Users/charliehayes/Documents/GitHub/perf-sdk/performers/java/sdk-performer-java/src/main/java/com/couchbase/sdk/SdkOperation.java

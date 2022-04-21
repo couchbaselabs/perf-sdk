@@ -3,6 +3,9 @@ package com.couchbase.sdk.utils;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.grpc.sdk.protocol.CreateConnectionRequest;
+import com.couchbase.sdk.JavaPerformer;
+import com.couchbase.sdk.logging.LogUtil;
+import org.slf4j.Logger;
 
 import java.time.Duration;
 
@@ -13,13 +16,21 @@ public class ClusterConnection {
     public String hostname;
     public String userName;
     public String password;
+    private static final Logger logger = LogUtil.getLogger(ClusterConnection.class);
 
 
     public ClusterConnection( CreateConnectionRequest reqData)  {
         hostname = reqData.getClusterHostname();
         userName = reqData.getClusterUsername();
         password = reqData.getClusterPassword();
-        cluster = Cluster.connect(hostname,userName,password);
+        logger.info("The cluster connection command is happening right now");
+        try {
+            cluster = Cluster.connect(hostname, userName, password);
+        }
+        catch (Exception e){
+            logger.error("Error connecting to cluster", e);
+        }
+        logger.info("The cluster object is trying to connect to the bucket");
         bucket = cluster.bucket(reqData.getBucketName());
         cluster.waitUntilReady(Duration.ofSeconds(30));
     }

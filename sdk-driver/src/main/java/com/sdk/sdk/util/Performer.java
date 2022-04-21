@@ -35,6 +35,7 @@ public class Performer {
             CreateConnectionResponse response = connectToPerformer(initialConnectionRequest);
 
             clusterConnectionId = response.getClusterConnectionId();
+            logger.info(getClusterConnectionId());
             String protocolVersion = response.getProtocolVersion();
             String[] split = protocolVersion.split("\\.");
             protocolMajorVersion = Integer.parseInt(split[0]);
@@ -62,6 +63,7 @@ public class Performer {
     }
 
     public CreateConnectionResponse connectToPerformer(com.couchbase.grpc.sdk.protocol.CreateConnectionRequest createConnectionRequest){
+        logger.info("HEY LOOOOOOOOOOK, attempting connection");
         return stubBlock.createConnection(createConnectionRequest);
     }
 

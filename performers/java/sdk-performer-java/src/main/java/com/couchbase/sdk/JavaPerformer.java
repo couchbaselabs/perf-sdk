@@ -18,7 +18,7 @@ package com.couchbase.sdk;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.sdk.perf.PerfMarshaller;
 import com.couchbase.sdk.utils.ClusterConnection;
-import com.sdk.logging.LogUtil;
+import com.couchbase.sdk.logging.LogUtil;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.Status;
@@ -50,8 +50,10 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
         try {
             CreateConnectionResponse.Builder response = CreateConnectionResponse.getDefaultInstance().newBuilderForType();
             response.setProtocolVersion("2.0");
-
+            logger.info(request.getBucketName() + " " + request.getClusterHostname() + " " + request.getClusterUsername());
+            logger.info("CONNECTING");
             ClusterConnection connection = new ClusterConnection(request);
+            logger.info("CONNECTION DONE");
 
             String clusterConnectionId = UUID.randomUUID().toString();
 
@@ -89,6 +91,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
 
     public static void main(String[] args) throws IOException, InterruptedException {
         int port = 8060;
+        //TODO remove this
         String configResourceName = JavaPerformer.DEFAULT_CONFIG_RESOURCE_NAME;
 
         for(String parameter : args) {

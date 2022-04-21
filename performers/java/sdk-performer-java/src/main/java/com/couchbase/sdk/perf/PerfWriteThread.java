@@ -1,7 +1,7 @@
 package com.couchbase.sdk.perf;
 
 import com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult;
-import com.sdk.logging.LogUtil;
+import com.couchbase.sdk.logging.LogUtil;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 
