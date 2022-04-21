@@ -23,14 +23,8 @@ public class ClusterConnection {
         hostname = reqData.getClusterHostname();
         userName = reqData.getClusterUsername();
         password = reqData.getClusterPassword();
-        logger.info("The cluster connection command is happening right now");
-        try {
-            cluster = Cluster.connect(hostname, userName, password);
-        }
-        catch (Exception e){
-            logger.error("Error connecting to cluster", e);
-        }
-        logger.info("The cluster object is trying to connect to the bucket");
+        logger.info("Attempting connection to cluster");
+        cluster = Cluster.connect(hostname, userName, password);
         bucket = cluster.bucket(reqData.getBucketName());
         cluster.waitUntilReady(Duration.ofSeconds(30));
     }
