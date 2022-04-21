@@ -63,7 +63,7 @@ public class Performer {
     }
 
     public CreateConnectionResponse connectToPerformer(com.couchbase.grpc.sdk.protocol.CreateConnectionRequest createConnectionRequest){
-        logger.info("HEY LOOOOOOOOOOK, attempting connection");
+        logger.info("Connecting to performer");
         return stubBlock.createConnection(createConnectionRequest);
     }
 

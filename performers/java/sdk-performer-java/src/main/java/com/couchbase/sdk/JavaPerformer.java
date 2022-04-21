@@ -51,9 +51,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
             CreateConnectionResponse.Builder response = CreateConnectionResponse.getDefaultInstance().newBuilderForType();
             response.setProtocolVersion("2.0");
             logger.info(request.getBucketName() + " " + request.getClusterHostname() + " " + request.getClusterUsername());
-            logger.info("CONNECTING");
             ClusterConnection connection = new ClusterConnection(request);
-            logger.info("CONNECTION DONE");
 
             String clusterConnectionId = UUID.randomUUID().toString();
 
