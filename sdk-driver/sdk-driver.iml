@@ -11,7 +11,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: com.txn.gRPC:gRPC:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="gRPC" />
     <orderEntry type="library" name="Maven: com.google.protobuf:protobuf-java:3.17.3" level="project" />
     <orderEntry type="library" name="Maven: io.grpc:grpc-netty-shaded:1.39.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:30.1-android" level="project" />
@@ -49,9 +49,9 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.jupiter:junit-jupiter-api:5.7.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.opentest4j:opentest4j:1.2.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-commons:1.7.0" level="project" />
-    <orderEntry type="library" name="Maven: com.couchbase.client:java-client:3.1.4" level="project" />
-    <orderEntry type="library" name="Maven: com.couchbase.client:core-io:2.1.4" level="project" />
-    <orderEntry type="library" name="Maven: io.projectreactor:reactor-core:3.4.4" level="project" />
+    <orderEntry type="library" name="Maven: com.couchbase.client:java-client:3.2.6" level="project" />
+    <orderEntry type="library" name="Maven: com.couchbase.client:core-io:2.2.6" level="project" />
+    <orderEntry type="library" name="Maven: io.projectreactor:reactor-core:3.4.14" level="project" />
     <orderEntry type="library" name="Maven: org.reactivestreams:reactive-streams:1.0.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: io.opentracing.brave:brave-opentracing:0.33.7" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: io.opentracing:opentracing-api:0.31.0" level="project" />
@@ -95,6 +95,5 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.1" level="project" />
     <orderEntry type="library" name="Maven: org.postgresql:postgresql:42.2.19" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.checkerframework:checker-qual:3.5.0" level="project" />
-    <orderEntry type="module" module-name="gRPC" />
   </component>
 </module>

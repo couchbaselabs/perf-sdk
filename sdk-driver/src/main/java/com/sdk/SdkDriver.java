@@ -246,15 +246,9 @@ public class SdkDriver {
     static int docPoolCount(List<TestSuite.Run.Operation> operations){
         var max = 0;
         for (TestSuite.Run.Operation op : operations){
-            switch(op.op()) {
-                case REMOVE:
-                    if (op.count() > max){max = op.count();}
-                case REPLACE:
-                    if (op.count() > max){max = op.count();}
-                case GET:
-                    if (op.count() > max){max = op.count();}
+            if (!op.op().equals(TestSuite.Run.Operation.Op.INSERT)){
+                if (op.count() > max){max = op.count();}
             }
-
         }
         return max;
 
@@ -318,8 +312,8 @@ public class SdkDriver {
                         .put("workload", JsonObject.create()
                                 .put("description", "test description"))
                         .put("vars", jsonVars)
-                        .put("variables", JsonObject.create());
-                                //.put("runtime", testSuite.runtime()));
+                        .put("variables", JsonObject.create()
+                                .put("this is a variable", "test var"));
 
                 try (var st = conn.createStatement()) {
                     String statement = String.format("INSERT INTO runs VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
@@ -450,8 +444,10 @@ public class SdkDriver {
             for (PerfSingleSdkOpResult r : results) {
                 long initiated = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getInitiated()));
                 long finished = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getFinished()));
-                assert(finished >= initiated);
-                stats.recordLatency(finished - initiated);
+                //assert(finished >= initiated);
+                if (finished >= initiated) {
+                    stats.recordLatency(finished - initiated);
+                }
 
                 if (r.getResults().getException() == SdkException.NO_EXCEPTION_THROWN) {
                     success += 1;

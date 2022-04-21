@@ -4,7 +4,7 @@ import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.sdk.utils.ClusterConnection;
-import com.sdk.logging.LogUtil;
+import com.couchbase.sdk.logging.LogUtil;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 
