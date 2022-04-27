@@ -1,16 +1,9 @@
 # perf-sdk
 A basic gRPC thing, that has a driver and a performer. Pretty cool stuff overall
 
-## Generating Stubs
-### Java Stubs
-To generate java stubs: 
-`cd performers/java/lib/gRPC`
-`mvn install generate-sources`
-
-### Golang Stubs
-`cd performers/go`
-
-`make proto`
+## Jenkins-SDK
+This project is designed to be run by [Jenkins-SDK](https://github.com/couchbaselabs/jenkins-sdk). Currently the version that works with this project
+lives on  my laptop, so it's exclusive to me only
 
 ## Running Driver-Performer in Docker
 ### Create Docker Network
@@ -18,6 +11,11 @@ To generate java stubs:
 
 Please ensure that the TimescaleDB and Couchbase Server (if running CBS in docker) instances are also run
 in this network.
+
+### Build + Run Database
+`make database`
+
+(This is a very janky thing that just waits 10 seconds for the container to be created)
 
 ### Build Docker Images
 Performer:
@@ -40,6 +38,18 @@ Performer:
 Driver:
 
 `docker run --rm -d --network perf -v /Path/To/testSuite.yaml:/testSuite.yaml driver /testSuite.yaml`
+
+## Generating Stubs
+For use if you want to run things locally
+### Java Stubs
+To generate java stubs:
+`cd performers/java/lib/gRPC`
+`mvn install generate-sources`
+
+### Golang Stubs
+`cd performers/go`
+
+`make proto`
 
 ## Notes
 If you want to test multiple types of commands in the same test run, the REMOVE command has to go last.

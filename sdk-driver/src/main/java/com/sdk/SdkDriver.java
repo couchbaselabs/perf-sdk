@@ -91,7 +91,7 @@ record TestSuite(Implementation implementation, Variables variables, Connections
         record PerformerConn(String hostname, int port) {
         }
 
-        record Database(String hostname, int port, String username, String password, String dbName) {
+        record Database(String hostname, int port, String username, String password, String database) {
         }
     }
 
@@ -260,7 +260,7 @@ public class SdkDriver {
         var dbUrl = String.format("jdbc:postgresql://%s:%d/%s",
                 testSuite.connections().database().hostname(),
                 testSuite.connections().database().port(),
-                testSuite.connections().database().dbName());
+                testSuite.connections().database().database());
 
         var props = new Properties();
         props.setProperty("user", testSuite.connections().database().username());
