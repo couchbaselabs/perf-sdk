@@ -33,7 +33,7 @@ func (sdk *SdkService) getConn(connID string) *cluster.Connection {
 	if conn, isValid := sdk.conns[connID]; isValid {
 		return conn
 	}
-
+	//TODO error here
 	return nil
 }
 

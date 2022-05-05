@@ -8,17 +8,12 @@ import com.couchbase.sdk.logging.LogUtil;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class PerfMarshaller {
     private static final Logger logger = LogUtil.getLogger(PerfMarshaller.class);

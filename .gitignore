@@ -1,3 +1,6 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
 # Compiled class file
 *.class
 
@@ -26,6 +29,8 @@ hs_err_pid*
 performers/go/protocol
 performers/java/lib/gRPC/src/main/java
 performers/java/lib/gRPC/target
+*_pb2.py
+*_pb2_grpc.py
 
 #Test Suites
 test-suites/

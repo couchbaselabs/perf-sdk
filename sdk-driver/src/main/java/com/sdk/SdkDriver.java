@@ -66,18 +66,18 @@ record TestSuite(Implementation implementation, Variables variables, Connections
             return (Integer) predefinedVar(PredefinedVariable.PredefinedVariableName.HORIZONTAL_SCALING);
         }
 
+        record PredefinedVariable(PredefinedVariableName name, Object value) {
+            enum PredefinedVariableName {
+                @JsonProperty("horizontal_scaling") HORIZONTAL_SCALING,
+            }
+        }
+
         private Object predefinedVar(PredefinedVariable.PredefinedVariableName name) {
             return predefined.stream()
                     .filter(v -> v.name == name)
                     .findFirst()
                     .map(v -> v.value)
                     .orElseThrow(() -> new IllegalArgumentException("Predefined variable " + name + " not found"));
-        }
-
-        record PredefinedVariable(PredefinedVariableName name, Object value) {
-            enum PredefinedVariableName {
-                @JsonProperty("horizontal_scaling") HORIZONTAL_SCALING,
-            }
         }
 
         record CustomVariable(String name, Object value) {
