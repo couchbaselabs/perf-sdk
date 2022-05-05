@@ -51,6 +51,14 @@ To generate java stubs:
 
 `make proto`
 
+### Python Stubs
+`cd performers/python`
+
+`make proto`
+
+Please Note: Unfortunately I could not get the generated files to work in a seperate directory so it just dumps them in
+performers/python. If you know how to fix this please do.
+
 ## Notes
 If you want to test multiple types of commands in the same test run, the REMOVE command has to go last.
 This can be done by putting it at the bottom of the operations section of the input `.yaml` file.

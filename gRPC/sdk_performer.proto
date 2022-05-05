@@ -8,7 +8,6 @@ option go_package = "github.com/couchbaselabs/transactions-fit-performer/protoco
 option java_multiple_files = true;
 
 import "sdk_commands.proto";
-import "sdk_basic.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
