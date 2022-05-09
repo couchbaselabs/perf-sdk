@@ -4,7 +4,6 @@ syntax = "proto3";
 package protocol;
 option csharp_namespace = "Couchbase.Grpc.Protocol";
 option java_package = "com.couchbase.grpc.sdk.protocol";
-option go_package = "github.com/couchbaselabs/transactions-fit-performer/protocol";
 option java_multiple_files = true;
 
 import "sdk_commands.proto";
@@ -50,7 +49,7 @@ message SdkCreateRequest {
 message SdkCommandResult {
     SdkException exception=1;
     ExternalException exceptionCause=2;
-    repeated string log=3;
+    string log=3;
 }
 
 // "HorizontalScaling" is an abstraction over there been many forms of concurrency.  The core idea is that the driver

@@ -24,6 +24,8 @@ Performer:
 
 `docker build -f performers/go/Dockerfile -t performer/go .`
 
+`docker build -f performers/python/Dockerfile -t performer/python .`
+
 Driver:
 
 `docker build -f sdk-driver/Dockerfile -t driver .`

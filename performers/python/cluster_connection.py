@@ -1,4 +1,3 @@
-from ast import Pass
 from couchbase.cluster import Cluster
 from couchbase.options import ClusterOptions
 from couchbase.auth import PasswordAuthenticator
