@@ -1,7 +1,7 @@
 from os import times
 from webbrowser import get
 import doc_pool_counter
-from sdk_operation import perform_operation
+from operation import perform_operation
 from threading import Thread
 from google.protobuf.timestamp_pb2 import Timestamp
 import sdk_performer_pb2_grpc as performer_grpc
