@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
-record TestSuite(Implementation implementation, Variables variables, Connections connections, List<Run> runs) {
+record TestSuite(Implementation impl, Variables variables, Connections connections, List<Run> runs) {
 //    Duration runtimeAsDuration() {
 //        var trimmed = runtime.trim();
 //        char suffix = trimmed.charAt(trimmed.length() - 1);
@@ -307,13 +307,15 @@ public class SdkDriver {
                 testSuite.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.value()));
 
                 var json = JsonObject.create()
-                        .put("cluster", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.connections().cluster())))
-                        .put("impl", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.implementation())))
+                        .put("cluster", JsonObject.create()
+                                .put("hostname", testSuite.connections().cluster().hostname()))
+                        .put("impl", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.impl())))
                         .put("workload", JsonObject.create()
-                                .put("description", "test description"))
-                        .put("vars", jsonVars)
-                        .put("variables", JsonObject.create()
-                                .put("this is a variable", "test var"));
+                                .put("description", run.description()))
+                        .put("vars", jsonVars);
+//                        .put("variables", JsonObject.create()
+//                                .put("this is a variable", "test var"));
+                logger.info(json.toString());
 
                 try (var st = conn.createStatement()) {
                     String statement = String.format("INSERT INTO runs VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
@@ -407,6 +409,21 @@ public class SdkDriver {
                     }
 
                 });
+                logger.info("Completed Writing Perf Data");
+                toWrite.forEach(v -> {
+                    try (var st = conn.createStatement()) {
+                        var initiated = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(v.getInitiated()));
+                        var finished = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(v.getFinished()));
+                        st.executeUpdate(String.format("INSERT INTO metrics VALUES (to_timestamp(%d), '%s', '%s')",
+                                initiated - finished,
+                                run.uuid(),
+                                v.getResults().getLog()
+                        ));
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
+                });
+                logger.info("Completed Writing Metric Data");
             }
 
         }

@@ -4,7 +4,7 @@ syntax = "proto3";
 package protocol;
 option csharp_namespace = "Couchbase.Grpc.Protocol";
 option java_package = "com.couchbase.grpc.sdk.protocol";
-option go_package = "github.com/couchbaselabs/transactions-fit-performer/protocol";
+option go_package = "github.com/charlie-hayes/perf-sdk/protocol";
 option java_multiple_files = true;
 
 import "sdk_basic.proto";
