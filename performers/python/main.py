@@ -62,6 +62,7 @@ class Listener(performer_grpc.PerformerSdkServiceServicer):
         perf.start()
         while not(write_queue.empty() and not(perf.is_alive())):
             yield write_queue.get()
+        return None
     
     def Exit(self, request, context):
         None

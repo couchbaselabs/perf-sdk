@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install make protobuf-compiler -y
 RUN go get -u github.com/golang/protobuf/protoc-gen-go
 
 
-#This is copying what is in the make file, not ideal but the same commands didn't work in the make file...
 RUN mkdir -p "protocol"
 
 RUN protoc --proto_path=../../gRPC --go_opt=paths=source_relative --go_out=plugins=grpc:./protocol ../../gRPC/sdk_basic.proto && \
