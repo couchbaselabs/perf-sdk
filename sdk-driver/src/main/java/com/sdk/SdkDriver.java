@@ -62,6 +62,17 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
     }
 
     record Variables(List<PredefinedVariable> predefined, List<CustomVariable> custom) {
+        Integer getCustomVarAsInt(String varName) {
+            if (varName.startsWith("$")) {
+                return getCustomVarAsInt(varName.substring(1));
+            }
+
+            var match = custom.stream().filter(v -> v.name.equals(varName)).findFirst();
+            return match
+                    .map(v -> (Integer) v.value)
+                    .orElseThrow(() -> new IllegalArgumentException("Custom variable " + varName + " not found"));
+        }
+
         Integer horizontalScaling() {
             return (Integer) predefinedVar(PredefinedVariable.PredefinedVariableName.HORIZONTAL_SCALING);
         }
@@ -96,7 +107,7 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
     }
 
     record Run(String uuid, String description, List<Operation> operations) {
-        record Operation(Op op, int count) {
+        record Operation(Op op, String count) {
             enum Op {
                 INSERT,
                 GET,
@@ -203,34 +214,46 @@ public class SdkDriver {
         run(args[0]);
     }
 
-    static Op addOp(TestSuite.Run.Operation op) {
+    static Op addOp(TestSuite.Run.Operation op, int count) {
         JsonObject initial = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
         JsonObject updated = JsonObject.create().put(Strings.CONTENT_NAME, Strings.UPDATED_CONTENT_VALUE);
 
         switch (op.op()) {
             case INSERT:
-                return new OpInsert(initial, op.count());
+                return new OpInsert(initial, count);
             case GET:
-                return new OpGet(op.count());
+                return new OpGet(count);
             case REMOVE:
-                return new OpRemove(op.count());
+                return new OpRemove(count);
             case REPLACE:
-                return new OpReplace(updated, op.count());
+                return new OpReplace(updated, count);
             default:
                 throw new IllegalArgumentException("Unknown op " + op);
         }
     }
 
-    static BuiltSdkCommand createSdkCommand(TestSuite.Run run) {
+    static BuiltSdkCommand createSdkCommand(TestSuite.Variables variables, TestSuite.Run run) {
         //TODO Make sure any REPLACE operations are in the YAML before REMOVES
-        // Can be done by the layer above the driver (LAD???)
         //StringBuilder sb = new StringBuilder();
         var ops = new ArrayList<Op>();
 
         run.operations().forEach(op -> {
-            ops.add(addOp(op));
+            int count = evaluateCount(variables, op.count());
+            ops.add(addOp(op, count));
         });
         return new BuiltSdkCommand(ops, "Test");
+    }
+
+    private static int evaluateCount(TestSuite.Variables variables, String count){
+        try {
+            return Integer.parseInt(count);
+        } catch (RuntimeException err) {
+            if (count.startsWith("$")) {
+                return variables.getCustomVarAsInt(count);
+            }
+
+            throw new IllegalArgumentException("Don't know how to handle repeated count " + count);
+        }
     }
 
     static TestSuite readTestSuite(String configFilename) {
@@ -243,11 +266,16 @@ public class SdkDriver {
     }
 
     //Tried to do this functionally and failed...
-    static int docPoolCount(List<TestSuite.Run.Operation> operations){
-        var max = 0;
+    static int docPoolCount(TestSuite.Variables variables, List<TestSuite.Run.Operation> operations){
+        int max = 0;
         for (TestSuite.Run.Operation op : operations){
             if (!op.op().equals(TestSuite.Run.Operation.Op.INSERT)){
-                if (op.count() > max){max = op.count();}
+                //TODO find a way to save down the evaluated count value as currently we have to evaluate it twice.
+                // (here and in createSdkCommand())
+                int count = evaluateCount(variables, op.count());
+                if (count > max){
+                    max = count;
+                }
             }
         }
         return max;
@@ -294,7 +322,7 @@ public class SdkDriver {
                 //TODO discuss whether this is the best way to do this
                 DocCreateThread docThread = new DocCreateThread(
                         //Don't want to create double the amount of documents when REPLACE and REMOVE can use the same ones
-                        docPoolCount(run.operations()) * testSuite.variables().horizontalScaling(),
+                        docPoolCount(testSuite.variables(), run.operations()) * testSuite.variables().horizontalScaling(),
                         testSuite.connections().cluster().hostname(),
                         testSuite.connections().cluster().username(),
                         testSuite.connections().cluster().password(),
@@ -325,7 +353,7 @@ public class SdkDriver {
                     st.executeUpdate(statement);
                 }
 
-                BuiltSdkCommand command = createSdkCommand(run);
+                BuiltSdkCommand command = createSdkCommand(testSuite.variables(), run);
 
                 PerfRunHorizontalScaling.Builder horizontalScalingBuilt = PerfRunHorizontalScaling.newBuilder();
 

@@ -39,9 +39,9 @@
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
     <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.6" level="project" />
     <orderEntry type="library" name="Maven: javax.annotation:javax.annotation-api:1.2" level="project" />
-    <orderEntry type="library" name="Maven: com.couchbase.client:java-client:3.2.6" level="project" />
-    <orderEntry type="library" name="Maven: com.couchbase.client:core-io:2.2.6" level="project" />
-    <orderEntry type="library" name="Maven: io.projectreactor:reactor-core:3.4.14" level="project" />
+    <orderEntry type="library" name="Maven: com.couchbase.client:java-client:3.2.7" level="project" />
+    <orderEntry type="library" name="Maven: com.couchbase.client:core-io:2.2.7" level="project" />
+    <orderEntry type="library" name="Maven: io.projectreactor:reactor-core:3.4.17" level="project" />
     <orderEntry type="library" name="Maven: org.reactivestreams:reactive-streams:1.0.3" level="project" />
   </component>
 </module>
