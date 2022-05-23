@@ -13,11 +13,11 @@ RUN mvn install generate-sources
 WORKDIR /app/sdk-driver
 RUN mvn package -DskipTests
 
-# Multistage build to keep things small
-FROM openjdk:17-alpine
+## Multistage build to keep things small
+#FROM openjdk:17-alpine
+#
+#WORKDIR /app
+#COPY --from=0 /app/sdk-driver/target/sdk-driver-1.0-SNAPSHOT.jar .
 
-WORKDIR /app
-COPY --from=0 /app/sdk-driver/target/sdk-driver-1.0-SNAPSHOT.jar .
-
-ENTRYPOINT ["java", "--enable-preview", "-cp", "/app/sdk-driver-1.0-SNAPSHOT.jar", "com.sdk.SdkDriver"]
+ENTRYPOINT ["java", "--enable-preview", "-cp", "/app/sdk-driver/target/sdk-driver-1.0-SNAPSHOT.jar", "com.sdk.SdkDriver"]
 
