@@ -453,6 +453,7 @@ public class SdkDriver {
                             throwables.printStackTrace();
                         }
                     }
+                    counter += 1;
                 }
                 logger.info("Completed Writing Metric Data");
             }
