@@ -438,19 +438,22 @@ public class SdkDriver {
 
                 });
                 logger.info("Completed Writing Perf Data");
-                toWrite.forEach(v -> {
-                    try (var st = conn.createStatement()) {
-                        var initiated = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(v.getInitiated()));
-                        var finished = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(v.getFinished()));
-                        st.executeUpdate(String.format("INSERT INTO metrics VALUES (to_timestamp(%d), '%s', '%s')",
-                                initiated - finished,
-                                run.uuid(),
-                                v.getResults().getLog()
-                        ));
-                    } catch (SQLException throwables) {
-                        throwables.printStackTrace();
+                int counter = 0;
+                for (PerfSingleSdkOpResult result : toWrite){
+                    if (counter % 1000 == 0){
+                        try (var st = conn.createStatement()) {
+                            var initiated = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(result.getInitiated()));
+                            var finished = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(result.getFinished()));
+                            st.executeUpdate(String.format("INSERT INTO metrics VALUES (to_timestamp(%d), '%s', '%s')",
+                                    initiated - finished,
+                                    run.uuid(),
+                                    result.getResults().getLog()
+                            ));
+                        } catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
                     }
-                });
+                }
                 logger.info("Completed Writing Metric Data");
             }
 
