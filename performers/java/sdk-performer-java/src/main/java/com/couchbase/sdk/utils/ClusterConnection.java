@@ -20,7 +20,7 @@ public class ClusterConnection {
 
 
     public ClusterConnection( CreateConnectionRequest reqData)  {
-        hostname = reqData.getClusterHostname();
+        hostname = "couchbase://" + reqData.getClusterHostname();
         userName = reqData.getClusterUsername();
         password = reqData.getClusterPassword();
         logger.info("Attempting connection to cluster");
