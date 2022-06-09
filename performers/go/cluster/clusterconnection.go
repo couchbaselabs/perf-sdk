@@ -14,7 +14,7 @@ type Connection struct {
 
 func Connect(hostname, username, password, bucketName string, logger *logrus.Logger) (*Connection, error) {
 	gocb.SetLogger(&gocbLogger{logger: logger})
-	c, err := gocb.Connect(hostname, gocb.ClusterOptions{
+	c, err := gocb.Connect("couchbase://"+hostname, gocb.ClusterOptions{
 		Username: username,
 		Password: password,
 	})
