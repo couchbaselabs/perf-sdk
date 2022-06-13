@@ -32,10 +32,10 @@ public class DocCreateThread extends Thread {
         if (docNum > 0) {
             logger.info("Creating connection to cluster to create document pool");
             try {
-                this.cluster = Cluster.connect(hostname, userName, password);
+                this.cluster = Cluster.connect("couchbase://"+hostname, userName, password);
+                cluster.waitUntilReady(Duration.ofSeconds(30));
                 this.bucket = cluster.bucket(bucketName);
                 this.scope = bucket.scope(scopeName);
-                cluster.waitUntilReady(Duration.ofSeconds(30));
             }
             //TODO Discuss better exception to throw
             catch (Exception err) {

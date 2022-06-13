@@ -42,6 +42,7 @@ message CreateConnectionResponse {
 
 message SdkCreateRequest {
     SdkCommand command = 1;
+    // TODO remove this, use oneof implementation instead
     string name = 2;
     string clusterConnectionId=3;
     int32 count = 4;
@@ -71,7 +72,6 @@ message PerfRunRequest {
 
     // See PerfRunHorizontalScaling for a discussion of this.  Broadly, it's the number of concurrent transactions
     // required.
-    //TODO send over a number instead of multiple commands
     repeated PerfRunHorizontalScaling horizontalScaling = 2;
 
     // Performer will run until this much time has elapsed.
