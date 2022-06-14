@@ -90,6 +90,8 @@ def perf_runner(connection, request, get_counter, replace_counter, remove_counte
             collection = connection.bucket.scope(request.bucketInfo.scopeName).collection(request.bucketInfo.collectionName)
 
             for _ in range(command.count):
+                command_initiated = get_time_now()
+
                 logger.info(f"Performing replace operation on bucket {request.bucketInfo.bucketName} on collection {request.bucketInfo.collectionName}")
                 collection.replace(request.keyPreface + str(replace_counter.get_and_inc()), request.contentJson)
                 perf_result = sdk_performer_pb2.SdkCommandResult(log = str(psutil.virtual_memory()))
