@@ -54,14 +54,18 @@ class Listener(performer_grpc.PerformerSdkServiceServicer):
             
 
     def perfRun(self, request, context):
-        self.logger.info("Starting perf run")
-        write_queue = queue.Queue()
-        connection = self.get_connection(request.clusterConnectionId)
-        self.logger.info(connection)
-        perf = Thread(target = perf_marshaller, args = (connection, request, write_queue, self.logger))
-        perf.start()
-        while not(write_queue.empty() and not(perf.is_alive())):
-            yield write_queue.get()
+        try:
+            self.logger.info("Starting perf run")
+            write_queue = queue.Queue()
+            connection = self.get_connection(request.clusterConnectionId)
+            self.logger.info(connection)
+            perf = Thread(target = perf_marshaller, args = (connection, request, write_queue, self.logger))
+            perf.start()
+            while not(write_queue.empty() and not(perf.is_alive())):
+                yield write_queue.get()
+
+        except Exception as e:
+            return e
         return None
     
     def Exit(self, request, context):
