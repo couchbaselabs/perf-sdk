@@ -18,26 +18,29 @@ def get_time_now():
 
 
 def perf_marshaller(connection, perf_request, write_queue, logger):
-    get_counter = doc_pool_counter.DocPoolCounter()
-    replace_counter = doc_pool_counter.DocPoolCounter()
-    remove_counter = doc_pool_counter.DocPoolCounter()
-    runners = []
-    for request in perf_request.horizontalScaling:
-        runners.append(Thread(target = perf_runner, args = (connection, request, get_counter, replace_counter, remove_counter, write_queue, logger)))
+    try:
+        get_counter = doc_pool_counter.DocPoolCounter()
+        replace_counter = doc_pool_counter.DocPoolCounter()
+        remove_counter = doc_pool_counter.DocPoolCounter()
+        runners = []
+        for request in perf_request.horizontalScaling:
+            runners.append(Thread(target = perf_runner, args = (connection, request, get_counter, replace_counter, remove_counter, write_queue, logger)))
 
-    logger.info(f"Starting {len(runners)} thread(s)")
+        logger.info(f"Starting {len(runners)} thread(s)")
 
-    for per_thread in runners:
-        per_thread.start()
+        for per_thread in runners:
+            per_thread.start()
 
-    for per_thread in runners:
-        per_thread.join()
+        for per_thread in runners:
+            per_thread.join()
 
-    logger.info(f"All {len(runners)} threads completed")
+        logger.info(f"All {len(runners)} threads completed")
 
-    get_counter.reset_counter()
-    replace_counter.reset_counter()
-    remove_counter.reset_counter()
+        get_counter.reset_counter()
+        replace_counter.reset_counter()
+        remove_counter.reset_counter()
+    except Exeception as e:
+        return e
 
 
 

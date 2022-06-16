@@ -46,20 +46,24 @@ public class DocCreateThread extends Thread {
 
     @Override
     public void run() {
-        if (docNum > 0) {
-            logger.info("Creating and filling " + Defaults.DOCPOOL_COLLECTION + " collection");
-            try {
-                CollectionSpec spec = CollectionSpec.create(Defaults.DOCPOOL_COLLECTION, Defaults.DEFAULT_SCOPE);
-                bucket.collections().createCollection(spec);
-            } catch (CollectionExistsException err) {
-                logger.info("Collection named " + Defaults.DOCPOOL_COLLECTION + " already exists, moving on");
+        try{
+            if (docNum > 0) {
+                logger.info("Creating and filling " + Defaults.DOCPOOL_COLLECTION + " collection");
+                try {
+                    CollectionSpec spec = CollectionSpec.create(Defaults.DOCPOOL_COLLECTION, Defaults.DEFAULT_SCOPE);
+                    bucket.collections().createCollection(spec);
+                } catch (CollectionExistsException err) {
+                    logger.info("Collection named " + Defaults.DOCPOOL_COLLECTION + " already exists, moving on");
+                }
+                Collection collection = scope.collection(Defaults.DOCPOOL_COLLECTION);
+                JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
+                for (int i = 0; i < this.docNum; i++) {
+                    collection.upsert(Defaults.KEY_PREFACE + i, input);
+                }
+                cluster.disconnect();
             }
-            Collection collection = scope.collection(Defaults.DOCPOOL_COLLECTION);
-            JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
-            for (int i = 0; i < this.docNum; i++) {
-                collection.upsert(Defaults.KEY_PREFACE + i, input);
-            }
-            cluster.disconnect();
+        } catch (Exception e){
+            logger.error("Error adding documents to cluster", e);
         }
     }
 }
