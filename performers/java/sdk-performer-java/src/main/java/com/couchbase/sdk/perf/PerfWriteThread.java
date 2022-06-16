@@ -9,10 +9,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PerfWriteThread extends Thread {
+    private static final Logger logger = LogUtil.getLogger(PerfWriteThread.class);
     private final StreamObserver<PerfSingleSdkOpResult> responseObserver;
     private static ConcurrentLinkedQueue<PerfSingleSdkOpResult> writeQueue;
     private static AtomicBoolean done;
-    private Logger logger = LogUtil.getLogger(PerfWriteThread.class);
 
     public PerfWriteThread(
             StreamObserver<PerfSingleSdkOpResult> responseObserver,
@@ -25,17 +25,21 @@ public class PerfWriteThread extends Thread {
 
     @Override
     public void run() {
-        while(!(writeQueue.isEmpty() && done.get())){
-            if (writeQueue.isEmpty()){
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException err) {
-                    logger.error("Writer thread interrupted whilst waiting for results", err);
-                    responseObserver.onError(err);
+        try{
+            while(!(writeQueue.isEmpty() && done.get())){
+                if (writeQueue.isEmpty()){
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException err) {
+                        logger.error("Writer thread interrupted whilst waiting for results", err);
+                        responseObserver.onError(err);
+                    }
+                }else{
+                    responseObserver.onNext(writeQueue.remove());
                 }
-            }else{
-                responseObserver.onNext(writeQueue.remove());
             }
+        } catch (Exception e){
+            logger.error("Error sending performance data to driver", e);
         }
     }
 }
