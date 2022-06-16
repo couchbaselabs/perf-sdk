@@ -10,6 +10,7 @@ import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.grpc.sdk.protocol.CommandInsert;
 import com.couchbase.grpc.sdk.protocol.CreateConnectionRequest;
 import com.sdk.logging.LogUtil;
+import com.sdk.sdk.util.DbWriteThread;
 import com.sdk.sdk.util.DocCreateThread;
 import com.sdk.sdk.util.Performer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -370,8 +371,9 @@ public class SdkDriver {
                 }
 
                 var done = new AtomicBoolean(false);
-                var toWrite = new ConcurrentLinkedQueue<PerfSingleSdkOpResult>();
                 var first = new AtomicReference<Tuple2<Timestamp, Long>>(null);
+                DbWriteThread dbWrite = new DbWriteThread(conn, run.uuid(), done, first);
+                dbWrite.start();
 
                 var responseObserver = new StreamObserver<PerfSingleSdkOpResult>() {
                     @Override
@@ -379,7 +381,7 @@ public class SdkDriver {
                         if (first.get() == null) {
                             first.set(Tuples.of(perfRunResult.getInitiated(), System.currentTimeMillis()));
                         }
-                        toWrite.add(perfRunResult);
+                        dbWrite.addToQ(perfRunResult);
                     }
 
                     @Override
@@ -400,62 +402,8 @@ public class SdkDriver {
                 docThread.join();
 
                 performer.stubBlockFuture().perfRun(perf.build(), responseObserver);
-
-                // Tests are short enough that we can just buffer everything then write it currently
-                while (!done.get()) {
-                    Thread.sleep(100);
-                }
-
-                // Due to performer threading can't rely on results being streamed in perfect order
-                var sortedResults = toWrite.stream()
-                        .sorted(Comparator.comparingInt(a -> a.getInitiated().getNanos()))
-                        .collect(Collectors.toList());
-
-                var resultsToWrite = processResults(sortedResults, first.get());
-
-                logger.info("Completed workload " + run);
-
-                resultsToWrite.forEach(v -> {
-                    try (var st = conn.createStatement()) {
-
-                        st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
-                                v.timestamp,
-                                run.uuid(),
-                                v.sdkOpsTotal,
-                                v.sdkOpsSuccess,
-                                v.sdkOpsFailed,
-                                v.sdkOpsIncomplete,
-                                v.latencyMin,
-                                v.latencyMax,
-                                v.latencyAverage,
-                                v.latencyP50,
-                                v.latencyP95,
-                                v.latencyP99
-                        ));
-                    } catch (SQLException throwables) {
-                        throwables.printStackTrace();
-                    }
-
-                });
-                logger.info("Completed Writing Perf Data");
-                int counter = 0;
-                for (PerfSingleSdkOpResult result : toWrite){
-                    if (counter % 1000 == 0){
-                        try (var st = conn.createStatement()) {
-                            var initiated = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(result.getInitiated()));
-                            var finished = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(result.getFinished()));
-                            st.executeUpdate(String.format("INSERT INTO metrics VALUES (to_timestamp(%d), '%s', '%s')",
-                                    initiated - finished,
-                                    run.uuid(),
-                                    result.getResults().getLog()
-                            ));
-                        } catch (SQLException throwables) {
-                            throwables.printStackTrace();
-                        }
-                    }
-                    counter += 1;
-                }
-                logger.info("Completed Writing Metric Data");
+                logger.info("Waiting for data to be written to db");
+                dbWrite.join();
             }
 
         }
