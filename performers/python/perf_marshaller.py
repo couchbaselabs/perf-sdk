@@ -39,7 +39,7 @@ def perf_marshaller(connection, perf_request, write_queue, logger):
         get_counter.reset_counter()
         replace_counter.reset_counter()
         remove_counter.reset_counter()
-    except Exeception as e:
+    except Exception as e:
         return e
 
 
