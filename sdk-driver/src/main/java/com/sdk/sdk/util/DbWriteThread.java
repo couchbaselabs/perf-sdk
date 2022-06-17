@@ -187,7 +187,7 @@ public class DbWriteThread extends Thread {
     private List<PerfSingleSdkOpResult> splitIncompleteBucket(List<PerfSingleSdkOpResult> sortedResults, List<PerfSingleSdkOpResult> nextBucket){
         long currentSecond = nextBucket.get(sortedResults.size()-1).getInitiated().getSeconds();
         long wantedSecond = currentSecond -1;
-        int counter = nextBucket.size();
+        int counter = nextBucket.size() + 1;
         // Making sure we don't split the bucket
         while(currentSecond != wantedSecond){
             counter -= 1;
