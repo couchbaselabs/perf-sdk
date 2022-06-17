@@ -43,7 +43,7 @@ public class DbWriteThread extends Thread {
     @Override
     public void run() {
         try{
-            int partition = 100;
+            int partition = 1000000;
             while(!(toWrite.isEmpty() && done.get())){
                 List<PerfSingleSdkOpResult> results = new ArrayList<>();
                 // Every 1 million items are written to the database throughout the run to prevent OOM issues
