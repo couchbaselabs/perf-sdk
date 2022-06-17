@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 public class DbWriteThread extends Thread {
     private static final Logger logger = LogUtil.getLogger(DbWriteThread.class);
     private static ConcurrentLinkedQueue<PerfSingleSdkOpResult> toWrite = new ConcurrentLinkedQueue<PerfSingleSdkOpResult>();
+    private static List<PerfSingleSdkOpResult> nextBucket = new ArrayList<PerfSingleSdkOpResult>();
     private AtomicBoolean done;
     private String uuid;
     private AtomicReference<Tuple2<Timestamp, Long>> first;
@@ -42,10 +43,9 @@ public class DbWriteThread extends Thread {
     @Override
     public void run() {
         try{
-            int partition = 1000000;
+            int partition = 100;
             while(!(toWrite.isEmpty() && done.get())){
                 List<PerfSingleSdkOpResult> results = new ArrayList<>();
-                List<PerfSingleSdkOpResult> nextBucket = new ArrayList<PerfSingleSdkOpResult>();
                 // Every 1 million items are written to the database throughout the run to prevent OOM issues
                 // 1 million was chosen arbitrarily and can be changed if needed
                 if(toWrite.size() >= partition){
@@ -53,9 +53,9 @@ public class DbWriteThread extends Thread {
                     for (int i=0; i<partition; i++){
                         results.add(toWrite.remove());
                     }
-                    var sortedResults = sortResults(results, nextBucket);
+                    sortResults(results);
 
-                    var toBucket = splitIncompleteBucket(sortedResults, nextBucket);
+                    var toBucket = splitIncompleteBucket();
 
                     var resultsToWrite = processResults(toBucket, first.get());
                     write(resultsToWrite);
@@ -63,7 +63,7 @@ public class DbWriteThread extends Thread {
                 }else if(done.get()){
                     logger.info("writing data");
 
-                    var sortedResults = sortResults(toWrite, nextBucket);
+                    sortResults(toWrite);
                     toWrite.clear();
                     var resultsToWrite = processResults(nextBucket, first.get());
                     write(resultsToWrite);
@@ -174,30 +174,35 @@ public class DbWriteThread extends Thread {
         });
     }
 
-    private List<PerfSingleSdkOpResult> sortResults(Collection<PerfSingleSdkOpResult> results, List<PerfSingleSdkOpResult> nextBucket){
+    private void sortResults(Collection<PerfSingleSdkOpResult> results){
         // results may get sent back out of order due to multithreading
         var sortedResults = results.stream()
                 .sorted(Comparator.comparingInt(a -> a.getInitiated().getNanos()))
                 .collect(Collectors.toList());
 
         nextBucket.addAll(sortedResults);
-        return sortedResults;
     }
 
-    private List<PerfSingleSdkOpResult> splitIncompleteBucket(List<PerfSingleSdkOpResult> sortedResults, List<PerfSingleSdkOpResult> nextBucket){
-        long currentSecond = nextBucket.get(sortedResults.size()-1).getInitiated().getSeconds();
-        long wantedSecond = currentSecond -1;
-        int counter = nextBucket.size() + 1;
-        // Making sure we don't split the bucket
-        while(currentSecond != wantedSecond){
-            counter -= 1;
-            currentSecond = nextBucket.get(counter).getInitiated().getSeconds();
-        }
-        counter += 1;
+    private List<PerfSingleSdkOpResult> splitIncompleteBucket(){
+        long currentSecond = nextBucket.get(nextBucket.size()-1).getInitiated().getSeconds();
+        long firstSecond = nextBucket.get(0).getInitiated().getSeconds();
+        if (firstSecond == currentSecond){
+            return nextBucket;
+        } else {
+            long wantedSecond = currentSecond -1;
+            int counter = nextBucket.size();
+            // Making sure we don't split the bucket
+            while(currentSecond != wantedSecond){
+                counter -= 1;
+                currentSecond = nextBucket.get(counter).getInitiated().getSeconds();
+            }
+            counter += 1;
 
-        nextBucket.clear();
-        nextBucket.addAll(sortedResults.subList(counter, sortedResults.size()));
-        return nextBucket.subList(0, counter);
+            var completeData = nextBucket.subList(0, counter);
+
+            nextBucket = nextBucket.subList(counter, nextBucket.size());
+            return completeData;
+        }
     }
 
     public void addToQ(PerfSingleSdkOpResult res){
