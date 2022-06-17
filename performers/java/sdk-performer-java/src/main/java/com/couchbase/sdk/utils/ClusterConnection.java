@@ -9,27 +9,28 @@ import org.slf4j.Logger;
 
 import java.time.Duration;
 
-
+/**
+ * Creates a connection to the given cluster
+ */
 public class ClusterConnection {
-    private Cluster cluster;
-    private Bucket bucket;
-    public String hostname;
-    public String userName;
-    public String password;
+    private static String hostname;
+    private static String userName;
+    private static Cluster cluster;
+    private static Bucket bucket;
     private static final Logger logger = LogUtil.getLogger(ClusterConnection.class);
 
 
     public ClusterConnection( CreateConnectionRequest reqData)  {
         hostname = "couchbase://" + reqData.getClusterHostname();
         userName = reqData.getClusterUsername();
-        password = reqData.getClusterPassword();
+        String password = reqData.getClusterPassword();
         logger.info("Attempting connection to cluster");
         cluster = Cluster.connect(hostname, userName, password);
         bucket = cluster.bucket(reqData.getBucketName());
         cluster.waitUntilReady(Duration.ofSeconds(30));
     }
 
-    public Bucket getBucket() {
+    public static Bucket getBucket() {
         return bucket;
     }
 
@@ -39,6 +40,14 @@ public class ClusterConnection {
 
     public Cluster getCluster(){
         return cluster;
+    }
+
+    public String getHostname(){
+        return hostname;
+    }
+
+    public String getUsername(){
+        return userName;
     }
 }
 

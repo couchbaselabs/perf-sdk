@@ -15,6 +15,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * PerfMarshaller creates however many threads need to run in tandem based on the given horizontal scaling value
+ */
 public class PerfMarshaller {
     private static final Logger logger = LogUtil.getLogger(PerfMarshaller.class);
     // There is a counter for each operation as when a single one was used for all operations,

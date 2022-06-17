@@ -8,6 +8,11 @@ import org.slf4j.Logger;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * PerfWriteThread gets given performance data and streams the options back to the driver one by one.
+ * This was done because the response observer on the driver is not thread safe so couldn't handle multiple messages
+ * at the same time.
+ */
 public class PerfWriteThread extends Thread {
     private static final Logger logger = LogUtil.getLogger(PerfWriteThread.class);
     private final StreamObserver<PerfSingleSdkOpResult> responseObserver;

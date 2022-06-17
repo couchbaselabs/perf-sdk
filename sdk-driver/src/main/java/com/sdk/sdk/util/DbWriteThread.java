@@ -20,7 +20,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-// DbWriteThread dynamically writes performance data sent by the performer to the database
+/**
+ * DbWriteThread dynamically writes performance data sent by the performer to the database
+ */
 public class DbWriteThread extends Thread {
     private static final Logger logger = LogUtil.getLogger(DbWriteThread.class);
     private static ConcurrentLinkedQueue<PerfSingleSdkOpResult> toWrite = new ConcurrentLinkedQueue<PerfSingleSdkOpResult>();
@@ -40,13 +42,14 @@ public class DbWriteThread extends Thread {
     @Override
     public void run() {
         try{
-            int partition = 1000000;
+            int partition = 100;
             while(!(toWrite.isEmpty() && done.get())){
                 List<PerfSingleSdkOpResult> results = new ArrayList<>();
                 List<PerfSingleSdkOpResult> nextBucket = new ArrayList<PerfSingleSdkOpResult>();
                 // Every 1 million items are written to the database throughout the run to prevent OOM issues
                 // 1 million was chosen arbitrarily and can be changed if needed
                 if(toWrite.size() >= partition){
+                    logger.info("100 docs reached");
                     for (int i=0; i<partition; i++){
                         results.add(toWrite.remove());
                     }
@@ -184,7 +187,7 @@ public class DbWriteThread extends Thread {
     private List<PerfSingleSdkOpResult> splitIncompleteBucket(List<PerfSingleSdkOpResult> sortedResults, List<PerfSingleSdkOpResult> nextBucket){
         long currentSecond = nextBucket.get(sortedResults.size()-1).getInitiated().getSeconds();
         long wantedSecond = currentSecond -1;
-        int counter = nextBucket.size()-1;
+        int counter = nextBucket.size();
         // Making sure we don't split the bucket
         while(currentSecond != wantedSecond){
             counter -= 1;

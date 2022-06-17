@@ -123,11 +123,11 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
         if(clusterConnectionId==null || clusterConnectionId.equals("")) {
             // If test does not send any clusterConnectionId, then use the very first connection i.e sharedTestState connection
             connection = defaultConnection;
-            logger.info("Using default connection at host : {}  and with username {} ", connection.hostname, connection.userName);
+            logger.info("Using default connection at host : {}  and with username {} ", connection.getHostname(), connection.getUsername());
         }else {
             if (mapIdToClusterConnection.containsKey(clusterConnectionId)) {
                 connection = mapIdToClusterConnection.get(clusterConnectionId);
-                logger.info("Using custom connection at host : {}  and with username {} ", connection.hostname, connection.userName);
+                logger.info("Using custom connection at host : {}  and with username {} ", connection.getHostname(), connection.getUsername());
             } else {
                 //We should not be getting here.
                 logger.error("Unknown clusterConnectionId");
