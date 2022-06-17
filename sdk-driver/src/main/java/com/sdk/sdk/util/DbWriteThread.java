@@ -42,7 +42,7 @@ public class DbWriteThread extends Thread {
     @Override
     public void run() {
         try{
-            int partition = 100;
+            int partition = 1000000;
             while(!(toWrite.isEmpty() && done.get())){
                 List<PerfSingleSdkOpResult> results = new ArrayList<>();
                 List<PerfSingleSdkOpResult> nextBucket = new ArrayList<PerfSingleSdkOpResult>();
