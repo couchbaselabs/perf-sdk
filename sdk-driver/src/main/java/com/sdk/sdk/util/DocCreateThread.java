@@ -19,6 +19,10 @@ import org.slf4j.Logger;
 
 import java.time.Duration;
 
+
+/**
+ * Connects to the provided cluster and adds the correct number of documents
+ */
 public class DocCreateThread extends Thread {
     private final int docNum;
     private Cluster cluster;

@@ -15,9 +15,11 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * SdkOperation performs each requested SDK operation
+ */
 public class SdkOperation {
     private String name;
-    private Map<Integer, String> docIds;
     private Logger logger;
     private AtomicInteger removeCounter;
     private AtomicInteger replaceCounter;
