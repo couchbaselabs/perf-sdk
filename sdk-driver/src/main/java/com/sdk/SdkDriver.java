@@ -1,6 +1,5 @@
 package com.sdk;
 
-import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
 import com.couchbase.client.java.json.JsonObject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -8,8 +7,6 @@ import com.sdk.constants.Defaults;
 import com.sdk.constants.Strings;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.grpc.sdk.protocol.CommandInsert;
-import com.couchbase.grpc.sdk.protocol.CreateConnectionRequest;
-import com.sdk.logging.LogUtil;
 import com.sdk.sdk.util.DbWriteThread;
 import com.sdk.sdk.util.DocCreateThread;
 import com.sdk.sdk.util.Performer;
@@ -18,20 +15,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 record TestSuite(Implementation impl, Variables variables, Connections connections, List<Run> runs) {
@@ -100,10 +95,10 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
         record Cluster(String hostname, String username, String password) {
         }
 
-        record PerformerConn(String hostname, int port) {
+        record PerformerConn(String hostname, String hostname_docker, int port) {
         }
 
-        record Database(String hostname, int port, String username, String password, String database) {
+        record Database(String hostname, String hostname_docker, int port, String username, String password, String database) {
         }
     }
 
@@ -129,73 +124,70 @@ interface Op {
 record OpInsert(JsonObject content, int count) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder) {
-        builder.addSdkCommand(SdkCreateRequest.newBuilder()
-                .setCommand(SdkCommand.newBuilder()
-                        .setInsert(CommandInsert.newBuilder()
-                                .setContentJson(content.toString())
-                                .setBucketInfo(BucketInfo.newBuilder()
-                                        .setBucketName(Defaults.DEFAULT_BUCKET)
-                                        .setScopeName(Defaults.DEFAULT_SCOPE)
-                                        .setCollectionName(Defaults.DEFAULT_COLLECTION)
-                                        .build())
-                                .build()))
-                .setCount(count)
-                .setName("INSERT"));
+        builder.addSdkCommand(Workload.newBuilder()
+                .setSdk(SdkWorkload.newBuilder()
+                        .setCommand(SdkCommand.newBuilder()
+                                .setInsert(CommandInsert.newBuilder()
+                                        .setContentJson(content.toString())
+                                        .setLocation(DocLocation.newBuilder()
+                                                .setBucket(Defaults.DEFAULT_BUCKET)
+                                                .setScope(Defaults.DEFAULT_SCOPE)
+                                                .setCollection(Defaults.DEFAULT_COLLECTION)
+                                                .build())
+                                        .build()))
+                        .setCount(count)));
     }
 }
 
 record OpGet(int count) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder) {
-        builder.addSdkCommand(SdkCreateRequest.newBuilder()
-                .setCommand(SdkCommand.newBuilder()
-                        .setGet(CommandGet.newBuilder()
-                                .setBucketInfo(BucketInfo.newBuilder()
-                                        .setBucketName(Defaults.DEFAULT_BUCKET)
-                                        .setScopeName(Defaults.DEFAULT_SCOPE)
-                                        .setCollectionName(Defaults.DOCPOOL_COLLECTION)
-                                        .build())
-                                .setKeyPreface(Defaults.KEY_PREFACE)
-                                .build()))
-                .setCount(count)
-                .setName("GET"));
+        builder.addSdkCommand(Workload.newBuilder()
+                .setSdk(SdkWorkload.newBuilder()
+                        .setCommand(SdkCommand.newBuilder()
+                                .setGet(CommandGet.newBuilder()
+                                        .setLocation(DocLocation.newBuilder()
+                                                .setBucket(Defaults.DEFAULT_BUCKET)
+                                                .setScope(Defaults.DEFAULT_SCOPE)
+                                                .setCollection(Defaults.DEFAULT_COLLECTION)
+                                                .build())
+                                        .build()))
+                        .setCount(count)));
     }
 }
 
 record OpRemove(int count) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder){
-        builder.addSdkCommand(SdkCreateRequest.newBuilder()
-                .setCommand(SdkCommand.newBuilder()
-                        .setRemove(CommandRemove.newBuilder()
-                                .setBucketInfo(BucketInfo.newBuilder()
-                                        .setBucketName(Defaults.DEFAULT_BUCKET)
-                                        .setScopeName(Defaults.DEFAULT_SCOPE)
-                                        .setCollectionName(Defaults.DOCPOOL_COLLECTION)
-                                        .build())
-                                .setKeyPreface(Defaults.KEY_PREFACE)
-                                .build()))
-                .setCount(count)
-                .setName("REMOVE"));
+        builder.addSdkCommand(Workload.newBuilder()
+                .setSdk(SdkWorkload.newBuilder()
+                        .setCommand(SdkCommand.newBuilder()
+                                .setRemove(CommandRemove.newBuilder()
+                                        .setLocation(DocLocation.newBuilder()
+                                                .setBucket(Defaults.DEFAULT_BUCKET)
+                                                .setScope(Defaults.DEFAULT_SCOPE)
+                                                .setCollection(Defaults.DEFAULT_COLLECTION)
+                                                .build())
+                                        .build()))
+                        .setCount(count)));
     }
 }
 
 record OpReplace(JsonObject content, int count) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder){
-        builder.addSdkCommand(SdkCreateRequest.newBuilder()
-                .setCommand(SdkCommand.newBuilder()
-                        .setReplace(CommandReplace.newBuilder()
-                                .setBucketInfo(BucketInfo.newBuilder()
-                                        .setBucketName(Defaults.DEFAULT_BUCKET)
-                                        .setScopeName(Defaults.DEFAULT_SCOPE)
-                                        .setCollectionName(Defaults.DOCPOOL_COLLECTION)
-                                        .build())
-                                .setKeyPreface(Defaults.KEY_PREFACE)
-                                .setContentJson(content.toString())
-                                .build()))
-                .setCount(count)
-                .setName("REPLACE"));
+        builder.addSdkCommand(Workload.newBuilder()
+                .setSdk(SdkWorkload.newBuilder()
+                        .setCommand(SdkCommand.newBuilder()
+                                .setReplace(CommandReplace.newBuilder()
+                                        .setContentJson(content.toString())
+                                        .setLocation(DocLocation.newBuilder()
+                                                .setBucket(Defaults.DEFAULT_BUCKET)
+                                                .setScope(Defaults.DEFAULT_SCOPE)
+                                                .setCollection(Defaults.DEFAULT_COLLECTION)
+                                                .build())
+                                        .build()))
+                        .setCount(count)));
     }
 }
 
@@ -205,7 +197,7 @@ public class SdkDriver {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private final static ObjectMapper jsonMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    private static final Logger logger = LogUtil.getLogger(SdkDriver.class);
+    private static final Logger logger = LoggerFactory.getLogger(SdkDriver.class);
 
     public static void main(String[] args)  throws SQLException, IOException, InterruptedException, Exception {
         if (args.length != 1) {
@@ -283,11 +275,21 @@ public class SdkDriver {
 
     }
 
-    static void run(String testSuiteFile) throws IOException, SQLException, InterruptedException, Exception {
+    // Credit to https://stackoverflow.com/questions/52580008/how-does-java-application-know-it-is-running-within-a-docker-container
+    public static Boolean isRunningInsideDocker() {
+        try (Stream<String> stream =
+                     Files.lines(Paths.get("/proc/1/cgroup"))) {
+            return stream.anyMatch(line -> line.contains("/docker"));
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    static void run(String testSuiteFile) throws Exception {
         var testSuite = readTestSuite(testSuiteFile);
 
         var dbUrl = String.format("jdbc:postgresql://%s:%d/%s",
-                testSuite.connections().database().hostname(),
+                isRunningInsideDocker() ? testSuite.connections().database().hostname_docker() : testSuite.connections().database().hostname(),
                 testSuite.connections().database().port(),
                 testSuite.connections().database().database());
 
@@ -299,19 +301,19 @@ public class SdkDriver {
         try (var conn = DriverManager.getConnection(dbUrl, props)) {
 
             // Make sure that the timescaledb database has been created
-            CreateConnectionRequest createConnection =
-                    CreateConnectionRequest.newBuilder()
+            var createConnection =
+                    ClusterConnectionCreateRequest.newBuilder()
                             .setClusterHostname(testSuite.connections().cluster().hostname())
                             .setClusterUsername(testSuite.connections().cluster().username())
                             .setClusterPassword(testSuite.connections().cluster().password())
-                            //bucketName is set here rather than in the performer so if it ever needs to be changed it can be done from a single place
-                            .setBucketName(Defaults.DEFAULT_BUCKET)
+                            .setClusterConnectionId(UUID.randomUUID().toString())
                             .build();
 
-            logger.info("Connecting to performer on {}:{}", testSuite.connections().performer().hostname(), testSuite.connections().performer().port());
+            var performerHostname = isRunningInsideDocker() ? testSuite.connections().performer().hostname_docker() : testSuite.connections().performer().hostname();
+            logger.info("Connecting to performer on {}:{}", performerHostname, testSuite.connections().performer().port());
 
             Performer performer = new Performer(
-                    testSuite.connections().performer().hostname(),
+                    performerHostname,
                     testSuite.connections().performer().port(),
                     createConnection);
 
@@ -363,25 +365,22 @@ public class SdkDriver {
                 });
 
                 PerfRunRequest.Builder perf = PerfRunRequest.newBuilder()
-                        .setClusterConnectionId(performer.getClusterConnectionId());
-                        //.setRunForSeconds((int) testSuite.runtimeAsDuration().toSeconds());
+                        .setClusterConnectionId(createConnection.getClusterConnectionId());
 
                 for (int i=0; i< testSuite.variables().horizontalScaling(); i++){
                     perf.addHorizontalScaling(horizontalScalingBuilt);
                 }
 
                 var done = new AtomicBoolean(false);
-                var first = new AtomicReference<Tuple2<Timestamp, Long>>(null);
-                DbWriteThread dbWrite = new DbWriteThread(conn, run.uuid(), done, first);
+                DbWriteThread dbWrite = new DbWriteThread(conn, run.uuid(), done);
                 dbWrite.start();
 
-                var responseObserver = new StreamObserver<PerfSingleSdkOpResult>() {
+                var responseObserver = new StreamObserver<PerfSingleResult>() {
                     @Override
-                    public void onNext(PerfSingleSdkOpResult perfRunResult) {
-                        if (first.get() == null) {
-                            first.set(Tuples.of(perfRunResult.getInitiated(), System.currentTimeMillis()));
+                    public void onNext(PerfSingleResult perfRunResult) {
+                        if (perfRunResult.hasOperationResult()) {
+                            dbWrite.addToQ(perfRunResult.getOperationResult());
                         }
-                        dbWrite.addToQ(perfRunResult);
                     }
 
                     @Override
@@ -409,70 +408,4 @@ public class SdkDriver {
         }
     }
 
-    private static long grpcTimestampToNanos(Timestamp ts) {
-        return TimeUnit.SECONDS.toNanos(ts.getSeconds()) + ts.getNanos();
-    }
-
-    record PerfBucketResult(long timestamp,
-                            int sdkOpsTotal,
-                            int sdkOpsSuccess,
-                            int sdkOpsFailed,
-                            int sdkOpsIncomplete,
-                            int latencyMin,
-                            int latencyMax,
-                            int latencyAverage,
-                            int latencyP50,
-                            int latencyP95,
-                            int latencyP99) {
-    }
-
-    private static List<PerfBucketResult> processResults(List<PerfSingleSdkOpResult> result, Tuple2<Timestamp, Long> firstTimes) {
-        var groupedBySeconds = result.stream()
-                .collect(Collectors.groupingBy(v -> v.getInitiated().getSeconds()));
-
-        var out = new ArrayList<PerfBucketResult>();
-
-        groupedBySeconds.forEach((bySecond, results) -> {
-            var stats = new LatencyStats();
-            var success = 0;
-            var failure = 0;
-            var unstagingIncomplete = 0;
-
-            for (PerfSingleSdkOpResult r : results) {
-                long initiated = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getInitiated()));
-                long finished = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getFinished()));
-                //assert(finished >= initiated);
-                if (finished >= initiated) {
-                    stats.recordLatency(finished - initiated);
-                }
-
-                if (r.getResults().getException() == SdkException.NO_EXCEPTION_THROWN) {
-                    success += 1;
-                } else {
-                    failure += 1;
-                }
-            }
-
-            var histogram = stats.getIntervalHistogram();
-            var timeSinceFirstSecs = bySecond - firstTimes.getT1().getSeconds();
-            var timestampMs = TimeUnit.SECONDS.toMillis(timeSinceFirstSecs) + firstTimes.getT2();
-            var timestampSec = TimeUnit.MILLISECONDS.toSeconds(timestampMs);
-            out.add(new PerfBucketResult(timestampSec,
-                    (int) histogram.getTotalCount(),
-                    success,
-                    failure,
-                    unstagingIncomplete,
-                    (int) histogram.getMinValue(),
-                    (int) histogram.getMaxValue(),
-                    (int) histogram.getMean(),
-                    (int) histogram.getValueAtPercentile(0.5),
-                    (int) histogram.getValueAtPercentile(0.95),
-                    (int) histogram.getValueAtPercentile(0.99)));
-        });
-
-        return out.stream()
-                .sorted(Comparator.comparingLong(a -> a.timestamp))
-                .collect(Collectors.toList());
-
-    }
 }

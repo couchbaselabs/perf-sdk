@@ -4,7 +4,7 @@ import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.sdk.utils.ClusterConnection;
-import com.couchbase.sdk.logging.LogUtil;
+import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 
@@ -12,6 +12,8 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -19,8 +21,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * SdkOperation performs each requested SDK operation
  */
 public class SdkOperation {
-    private String name;
-    private Logger logger;
     private AtomicInteger removeCounter;
     private AtomicInteger replaceCounter;
     private AtomicInteger getCounter;
@@ -31,48 +31,52 @@ public class SdkOperation {
         this.getCounter = getCounter;
     }
 
-    public com.couchbase.grpc.sdk.protocol.SdkCommandResult run(
-            ClusterConnection connection,
-            SdkCreateRequest req) {
-        this.name = req.getName();
-        logger = LogUtil.getLogger(this.name);
-        performOperation(connection, req.getCommand());
-//        for (int i=0; i< req.getCount(); i++) {
-//            performOperation(connection, req.getCommand());
-//        }
-        SdkCommandResult.Builder response = SdkCommandResult.getDefaultInstance().newBuilderForType();
-        return response.build();
+    public com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult run(ClusterConnection connection, SdkWorkload req) {
+        PerfSingleOperationResult.Builder singleResult = PerfSingleOperationResult.newBuilder()
+                .setInitiated(getTimeNow());
+
+        try {
+            performOperation(connection, req.getCommand());
+            singleResult.setSdkResult(SdkOperationResult.newBuilder()
+                    .setSuccess(true));
+        }
+        catch (RuntimeException err) {
+            singleResult.setSdkResult(SdkOperationResult.newBuilder()
+                    .setUnknownException(err.getClass().getSimpleName()));
+        }
+
+        singleResult.setFinished(getTimeNow());
+        return singleResult.build();
+    }
+
+    private static Timestamp getTimeNow() {
+        long millis = System.currentTimeMillis();
+
+        return Timestamp.newBuilder().setSeconds(millis / 1000)
+                .setNanos((int) ((millis % 1000) * 1000000)).build();
     }
 
     private void performOperation(ClusterConnection connection,
                                   SdkCommand op) {
         if (op.hasInsert()){
             final CommandInsert request = op.getInsert();
-            final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
+            final Collection collection = connection.collection(request.getLocation());
             JsonObject content = JsonObject.fromJson(request.getContentJson());
-            logger.info("Performing insert operation on bucket {} on collection {}",
-                    request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName());
             collection.insert(UUID.randomUUID().toString(), content);
-        }else if(op.hasGet()) {
+        } else if(op.hasGet()) {
             final CommandGet request = op.getGet();
-            final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
-            logger.info("Performing get operation on bucket {} on collection {}",
-                    request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName());
+            final Collection collection = connection.collection(request.getLocation());
             collection.get(request.getKeyPreface() + getCounter.getAndIncrement());
-        }else if(op.hasRemove()){
+        } else if(op.hasRemove()){
             final CommandRemove request = op.getRemove();
-            final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
-            logger.info("Performing remove operation on bucket {} on collection {}, docId {}",
-                    request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName(), removeCounter.get());
+            final Collection collection = connection.collection(request.getLocation());
             collection.remove(request.getKeyPreface() + removeCounter.getAndIncrement());
-        }else if(op.hasReplace()){
+        } else if(op.hasReplace()){
             final CommandReplace request = op.getReplace();
-            final Collection collection = connection.getBucket().scope(request.getBucketInfo().getScopeName()).collection(request.getBucketInfo().getCollectionName());
-            logger.info("Performing replace operation on bucket {} on collection {}, docId {}",
-                    request.getBucketInfo().getBucketName(), request.getBucketInfo().getCollectionName(), replaceCounter.get());
+            final Collection collection = connection.collection(request.getLocation());
             collection.replace(request.getKeyPreface() + replaceCounter.getAndIncrement(), request.getContentJson());
         } else {
-        throw new InternalPerformerFailure(new IllegalArgumentException("Unknown operation"));
+            throw new InternalPerformerFailure(new IllegalArgumentException("Unknown operation"));
         }
     }
 }

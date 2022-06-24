@@ -9,23 +9,31 @@ option java_multiple_files = true;
 
 import "sdk_basic.proto";
 
+message DocLocation {
+  string bucket = 1;
+  string scope = 2;
+  string collection = 3;
+  string id = 4;
+}
+
 message CommandInsert {
-  BucketInfo bucketInfo = 1;
+  DocLocation location = 1;
   string contentJson = 2;
 }
 
 message CommandGet {
-  BucketInfo bucketInfo = 1;
+  DocLocation location = 1;
+  // todo doc location strategy
   string keyPreface = 2;
 }
 
 message CommandRemove {
-  BucketInfo bucketInfo = 1;
+  DocLocation location = 1;
   string keyPreface = 2;
 }
 
-message CommandReplace{
-  BucketInfo bucketInfo = 1;
+message CommandReplace {
+  DocLocation location = 1;
   string keyPreface = 2;
   string contentJson = 4;
 }
@@ -39,13 +47,3 @@ message SdkCommand {
   }
 }
 
-enum SdkException {
-  //TODO: Need a more comprehensive list of exceptions that can occur
-  NO_EXCEPTION_THROWN = 0;
-  EXCEPTION = 1;
-  EXCEPTION_UNKNOWN = 2;
-}
-
-enum ExternalException {
-  Unknown = 0;
-}

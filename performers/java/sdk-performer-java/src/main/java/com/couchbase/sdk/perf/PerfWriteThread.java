@@ -1,9 +1,10 @@
 package com.couchbase.sdk.perf;
 
-import com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult;
-import com.couchbase.sdk.logging.LogUtil;
+import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
+import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,37 +15,50 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * at the same time.
  */
 public class PerfWriteThread extends Thread {
-    private static final Logger logger = LogUtil.getLogger(PerfWriteThread.class);
-    private final StreamObserver<PerfSingleSdkOpResult> responseObserver;
-    private static ConcurrentLinkedQueue<PerfSingleSdkOpResult> writeQueue;
-    private static AtomicBoolean done;
+    private static final Logger logger = LoggerFactory.getLogger(PerfWriteThread.class);
+    private final StreamObserver<PerfSingleResult> responseObserver;
+    private final ConcurrentLinkedQueue<PerfSingleOperationResult> writeQueue;
+    private final AtomicBoolean done;
 
     public PerfWriteThread(
-            StreamObserver<PerfSingleSdkOpResult> responseObserver,
-            ConcurrentLinkedQueue<PerfSingleSdkOpResult> writeQueue,
+            StreamObserver<PerfSingleResult> responseObserver,
+            ConcurrentLinkedQueue<PerfSingleOperationResult> writeQueue,
             AtomicBoolean done){
         this.responseObserver = responseObserver;
         this.writeQueue = writeQueue;
         this.done = done;
     }
 
+    public void enqueue(PerfSingleOperationResult result) {
+        writeQueue.add(result);
+    }
+
     @Override
     public void run() {
-        try{
-            while(!(writeQueue.isEmpty() && done.get())){
-                if (writeQueue.isEmpty()){
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException err) {
-                        logger.error("Writer thread interrupted whilst waiting for results", err);
-                        responseObserver.onError(err);
-                    }
-                }else{
-                    responseObserver.onNext(writeQueue.remove());
+        try {
+            while (!done.get()) {
+                flush();
+
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException err) {
+                    logger.error("Writer thread interrupted whilst waiting for results", err);
+                    responseObserver.onError(err);
+                    throw new RuntimeException(err);
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("Error sending performance data to driver", e);
+        }
+
+        flush();
+    }
+
+    private void flush() {
+        while (!writeQueue.isEmpty()) {
+            responseObserver.onNext(PerfSingleResult.newBuilder()
+                    .setOperationResult(writeQueue.remove())
+                    .build());
         }
     }
 }

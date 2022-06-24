@@ -14,8 +14,8 @@ import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.couchbase.client.java.query.QueryResult;
 import com.sdk.constants.Defaults;
 import com.sdk.constants.Strings;
-import com.sdk.logging.LogUtil;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 
@@ -28,7 +28,7 @@ public class DocCreateThread extends Thread {
     private Cluster cluster;
     private Bucket bucket;
     private Scope scope;
-    private static final Logger logger = LogUtil.getLogger(DocCreateThread.class);
+    private static final Logger logger = LoggerFactory.getLogger(DocCreateThread.class);
 
 
     public DocCreateThread(int docNum, String hostname, String userName, String password, String bucketName, String scopeName) throws Exception{

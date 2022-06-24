@@ -12,78 +12,173 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 service PerformerSdkService {
+    // Requests the performer's capabilities.
+    rpc performerCapsFetch (PerformerCapsFetchRequest) returns (PerformerCapsFetchResponse);
 
-    // Creates a connection between performer and couchbase server
-    rpc createConnection (CreateConnectionRequest) returns (CreateConnectionResponse);
+    // Creates a connection from the performer to a cluster.
+    rpc clusterConnectionCreate (ClusterConnectionCreateRequest) returns (ClusterConnectionCreateResponse);
 
-    rpc perfRun (PerfRunRequest) returns (stream PerfSingleSdkOpResult);
+    // Close a particular cluster connection.
+    rpc clusterConnectionClose (ClusterConnectionCloseRequest) returns (ClusterConnectionCloseResponse);
+
+    rpc perfRun (PerfRunRequest) returns (stream PerfSingleResult);
+
+    // Request that the performer Echo a string to the performer logs.
+    rpc echo (EchoRequest) returns (EchoResponse);
 
     // Tells the performer to exit.
     rpc exit (ExitRequest) returns (stream google.protobuf.Empty);
 }
 
-message CreateConnectionRequest {
-    string clusterHostname=1;
-    string clusterUsername=2;
-    string clusterPassword=3;
-    string bucketName=4;
+// When an implementation supports multiple APIs, this enum allows sending which is preferred to be used for a given test.
+// This is an abstraction that allows us to test e.g. Java's blocking vs reactive APIs.
+//
+// Declaration in supportedApis:
+//  For implementations with just one API: Only declare DEFAULT.
+//  For implementations with separate blocking & async APIs: declare both.
+//
+// When the performer receives a preferred API:
+//  For implementations with just one API: ignore it.
+//  For implementations with separate blocking & async APIs: use the appropriate one.
+enum API {
+    DEFAULT = 0;
+    ASYNC = 1;
 }
 
-// Returns the capabilities of the performer (or more specifically, the transactions-implementation-under-test by that
-// performer)
-//TODO: FIT equivalent is splitting this into two files, wait for that patchset to come through
-message CreateConnectionResponse {
-    // Defined https://hackmd.io/foGjnSSIQmqfks2lXwNp8w#Protocol-Versions
-    // Must be "1.0" or "2.0", any other values will cause the driver to abort.
-    string protocolVersion = 3;
-
-    string clusterConnectionId=4;
+enum ImplementationCaps {
+    // Empty enum not allowed
+    IMPLEMENTATION_DUMMY = 0;
 }
 
-message SdkCreateRequest {
+enum PerformerCaps {
+    // Empty enum not allowed
+    PERFORMER_DUMMY = 0;
+}
+
+message PerformerCapsFetchRequest {
+}
+
+message PerformerCapsFetchResponse {
+    // The capabilities of the implementation-under-test.
+    repeated ImplementationCaps implementationCaps = 1;
+
+    // The capabilities of this performer.
+    repeated PerformerCaps performerCaps = 2;
+
+    // Human-readable string identifying the performer.  For example, "java".
+    string performerUserAgent = 3;
+
+    // Identifies the version of the library under test.  For example, "3.3.2".
+    string performerLibraryVersion = 4;
+
+    // The APIs this implementation supports.  This is primarily used to run tests on multiple APIs, so if an implementation
+    // only supports one, it should just return one - see comments for `API` for details.
+    // If the performer does not return anything, it will be assumed to support just API.DEFAULT.
+    repeated API supportedApis = 6;
+}
+
+message ClusterConfig {
+    // Used for TLS enabled clusters such as Capella clusters
+    bool useTls = 3;
+    optional string certPath = 4;
+}
+
+// Creates a cluster connection, with an optional cluster & transactions configuration.
+message ClusterConnectionCreateRequest {
+    // The id to use for this connection.
+    string clusterConnectionId = 1;
+
+    // Details of the cluster connection.
+    string clusterHostname = 2;
+    string clusterUsername = 3;
+    string clusterPassword = 4;
+
+    optional ClusterConfig clusterConfig = 5;
+}
+
+message ClusterConnectionCreateResponse {
+}
+
+message ClusterConnectionCloseRequest {
+    string clusterConnectionId = 1;
+}
+
+message ClusterConnectionCloseResponse {
+}
+
+message EchoRequest {
+    string message = 1;
+    string testName = 2;
+}
+
+message EchoResponse {
+}
+
+message SdkWorkload {
+    // The command to run
     SdkCommand command = 1;
-    // TODO remove this, use oneof implementation instead
-    string name = 2;
-    string clusterConnectionId=3;
-    int32 count = 4;
+
+    // The previously established cluster connection to use
+    string clusterConnectionId = 2;
+
+    // The performer should run this many of `command`
+    int32 count = 3;
 }
 
-message SdkCommandResult {
-    SdkException exception=1;
-    ExternalException exceptionCause=2;
-    string log=3;
+// Request the performer runs a particular workload
+message Workload {
+    oneof workload {
+        SdkWorkload sdk = 1;
+    }
 }
 
-// "HorizontalScaling" is an abstraction over there been many forms of concurrency.  The core idea is that the driver
+enum SdkException {
+    // todo - fill these out
+    SDK_EXCEPTION_DUMMY = 0;
+}
+
+message SdkOperationResult {
+    oneof exception {
+        bool success = 1;
+
+        SdkException knownException = 2;
+
+        // If the exception is not represented in SdkException, can return it in raw form here
+        string unknownException = 3;
+    }
+}
+
+// "HorizontalScaling" is an abstraction over there being many forms of concurrency.  The core idea is that the driver
 // is trying to increase the parallelism, and it's up to the performer to choose a suitable platform-dependent way to
 // do this.
 // For some languages that will be threads.  For some, a larger pool of concurrent Future/Promises.  For some,
 // forking a new process.
-// Whatever is produced (thread, new process), it should run the provided transaction in a tight loop.  So essentially
+// Whatever is produced (thread, new process), it should run the provided workload in a tight loop.  So essentially
 // PerfRunHorizontalScaling is the number of concurrent sdk operations taking place.
 message PerfRunHorizontalScaling {
-    // Performer will run these transactions, in a loop.
-    repeated SdkCreateRequest sdkCommand = 1;
+    // Performer will run these workloads in this 'thread-like', in the specified order.
+    // todo support running until N total operations complete
+    repeated Workload workloads = 1;
 }
 
 message PerfRunRequest {
-    // Optional, allows a custom Cluster connection to be used
-    string clusterConnectionId = 1;
-
-    // See PerfRunHorizontalScaling for a discussion of this.  Broadly, it's the number of concurrent transactions
+    // See PerfRunHorizontalScaling for a discussion of this.  Broadly, it's the number of concurrent operations
     // required.
-    repeated PerfRunHorizontalScaling horizontalScaling = 2;
-
-    // Performer will run until this much time has elapsed.
-    // want perf runs to be bounded my number of docs for the moment
-    //int32 runForSeconds = 3;
+    repeated PerfRunHorizontalScaling horizontalScaling = 1;
 }
 
-message PerfSingleSdkOpResult {
-    // Implementations should not provide the logs field here, to conserve memory & bandwidth
-    SdkCommandResult results = 1;
-    google.protobuf.Timestamp initiated = 3;
-    google.protobuf.Timestamp finished = 4;
+message PerfSingleResult {
+    oneof result {
+        PerfSingleOperationResult operationResult = 1;
+    }
+}
+
+message PerfSingleOperationResult {
+    oneof result {
+        SdkOperationResult sdkResult = 1;
+    }
+    google.protobuf.Timestamp initiated = 2;
+    google.protobuf.Timestamp finished = 3;
 }
 
 message ExitRequest {

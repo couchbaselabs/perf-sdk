@@ -18,12 +18,12 @@ package com.couchbase.sdk;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.sdk.perf.PerfMarshaller;
 import com.couchbase.sdk.utils.ClusterConnection;
-import com.couchbase.sdk.logging.LogUtil;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -32,51 +32,39 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceImplBase {
 
-    private static final Logger logger = LogUtil.getLogger(JavaPerformer.class);
-    public static final String DEFAULT_CONFIG_RESOURCE_NAME = "config.toml";
-    private final String configResourceName;
-    private ClusterConnection defaultConnection= null;
-    private static ConcurrentHashMap<String, ClusterConnection> mapIdToClusterConnection = new ConcurrentHashMap<String, ClusterConnection>();
-    private static String version;          // "v1_0_0"
-    private static String originalVersion;  // "1.0.0"
+    private static final Logger logger = LoggerFactory.getLogger(JavaPerformer.class);
+    private static ConcurrentHashMap<String, ClusterConnection> clusterConnections = new ConcurrentHashMap<>();
 
-
-    public JavaPerformer(String configResourceName) {
-        this.configResourceName = configResourceName;
+    @Override
+    public void performerCapsFetch(PerformerCapsFetchRequest request, StreamObserver<PerformerCapsFetchResponse> responseObserver) {
+        responseObserver.onNext(PerformerCapsFetchResponse.newBuilder()
+                .build());
     }
 
     @Override
-    public void createConnection(CreateConnectionRequest request, StreamObserver<CreateConnectionResponse> responseObserver) {
+    public void clusterConnectionCreate(ClusterConnectionCreateRequest request, StreamObserver<ClusterConnectionCreateResponse> responseObserver) {
         try {
-            CreateConnectionResponse.Builder response = CreateConnectionResponse.getDefaultInstance().newBuilderForType();
-            response.setProtocolVersion("2.0");
-            logger.info(request.getBucketName() + " " + request.getClusterHostname() + " " + request.getClusterUsername());
             ClusterConnection connection = new ClusterConnection(request);
+            clusterConnections.put(request.getClusterConnectionId(), connection);
 
-            String clusterConnectionId = UUID.randomUUID().toString();
+            ClusterConnectionCreateRequest.Builder response = ClusterConnectionCreateRequest.getDefaultInstance().newBuilderForType();
 
-            mapIdToClusterConnection.put(clusterConnectionId,connection);
+            logger.info("Established connection to cluster at IP: {} with user {} and id {}",request.getClusterHostname(), request.getClusterUsername(), request.getClusterConnectionId());
 
-            defaultConnection = connection;
-
-            response.setClusterConnectionId(clusterConnectionId);
-            logger.info("Established connection to cluster at IP: {} with user {} ",request.getClusterHostname(),request.getClusterUsername());
-            logger.info("For this user, we assigned clusterConnectionId:"+clusterConnectionId);
-
-            responseObserver.onNext(response.build());
+            responseObserver.onNext(ClusterConnectionCreateResponse.newBuilder().build());
             responseObserver.onCompleted();
         }
         catch (Exception err) {
-            logger.error("Operation failed during createConn due to {}", err.getMessage());
+            logger.error("Operation failed during clusterConnectionCreate due to {}", err.getMessage());
             responseObserver.onError(Status.ABORTED.withDescription(err.getMessage()).asException());
         }
     }
 
     @Override
     public void perfRun(PerfRunRequest request,
-                        StreamObserver<PerfSingleSdkOpResult> responseObserver) {
+                        StreamObserver<PerfSingleResult> responseObserver) {
         try{
-            ClusterConnection connection = getClusterConnection(request.getClusterConnectionId());
+            ClusterConnection connection = clusterConnections.get(request.getClusterConnectionId());
 
             logger.info("Beginning PerfRun");
             PerfMarshaller.run(connection, request, responseObserver);
@@ -89,20 +77,11 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
 
     public static void main(String[] args) throws IOException, InterruptedException {
         int port = 8060;
-        //TODO remove this
-        String configResourceName = JavaPerformer.DEFAULT_CONFIG_RESOURCE_NAME;
 
         for(String parameter : args) {
             switch (parameter.split("=")[0]) {
-                case "loglevel":
-                    LogUtil.setLevelFromSpec(parameter.split("=")[1]);
-                    break;
                 case "port":
                     port= Integer.parseInt(parameter.split("=")[1]);
-                    break;
-                case "version":
-                    originalVersion = parameter.split("=")[1];
-                    version = "v"+originalVersion.split("\\.")[0]+"_"+originalVersion.split("\\.")[1]+"_"+originalVersion.split("\\.")[2];
                     break;
                 default:
                     logger.warn("Undefined input: {}. Ignoring it",parameter);
@@ -110,31 +89,11 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
         }
 
         Server server = ServerBuilder.forPort(port)
-                .addService(new JavaPerformer(configResourceName))
+                .addService(new JavaPerformer())
                 .build();
         server.start();
         logger.info("Server Started at {}", server.getPort());
         server.awaitTermination();
-
-    }
-
-    private ClusterConnection getClusterConnection(@Nullable String clusterConnectionId){
-        ClusterConnection connection =null;
-        if(clusterConnectionId==null || clusterConnectionId.equals("")) {
-            // If test does not send any clusterConnectionId, then use the very first connection i.e sharedTestState connection
-            connection = defaultConnection;
-            logger.info("Using default connection at host : {}  and with username {} ", connection.getHostname(), connection.getUsername());
-        }else {
-            if (mapIdToClusterConnection.containsKey(clusterConnectionId)) {
-                connection = mapIdToClusterConnection.get(clusterConnectionId);
-                logger.info("Using custom connection at host : {}  and with username {} ", connection.getHostname(), connection.getUsername());
-            } else {
-                //We should not be getting here.
-                logger.error("Unknown clusterConnectionId");
-                System.exit(-1);
-            }
-        }
-        return connection;
     }
 
     public void exit(com.couchbase.grpc.sdk.protocol.ExitRequest request,

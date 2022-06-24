@@ -1,12 +1,11 @@
 package com.sdk.sdk.util;
 
 import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
-import com.couchbase.grpc.sdk.protocol.PerfSingleSdkOpResult;
-import com.couchbase.grpc.sdk.protocol.SdkException;
+import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
+import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
 import com.google.protobuf.Timestamp;
-import com.sdk.SdkDriver;
-import com.sdk.logging.LogUtil;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.util.function.Tuple2;
 
 import java.sql.SQLException;
@@ -24,61 +23,64 @@ import java.util.stream.Collectors;
  * DbWriteThread dynamically writes performance data sent by the performer to the database
  */
 public class DbWriteThread extends Thread {
-    private static final Logger logger = LogUtil.getLogger(DbWriteThread.class);
-    private static ConcurrentLinkedQueue<PerfSingleSdkOpResult> toWrite = new ConcurrentLinkedQueue<PerfSingleSdkOpResult>();
-    private static List<PerfSingleSdkOpResult> nextBucket = new ArrayList<PerfSingleSdkOpResult>();
-    private AtomicBoolean done;
-    private String uuid;
-    private AtomicReference<Tuple2<Timestamp, Long>> first;
-    private java.sql.Connection conn;
+    private static final Logger logger = LoggerFactory.getLogger(DbWriteThread.class);
+    private final ConcurrentLinkedQueue<PerfSingleOperationResult> toWrite = new ConcurrentLinkedQueue<>();
+    // todo make better
+//    private final List<PerfSingleOperationResult> nextBucket = new ArrayList<>();
+    private final AtomicBoolean done;
+    private final String uuid;
+    private final java.sql.Connection conn;
 
 
-    public DbWriteThread(java.sql.Connection conn, String uuid, AtomicBoolean done, AtomicReference<Tuple2<Timestamp, Long>> first){
+    public DbWriteThread(java.sql.Connection conn, String uuid, AtomicBoolean done) {
         this.conn = conn;
         this.uuid = uuid;
         this.done = done;
-        this.first = first;
     }
 
     @Override
     public void run() {
-        try{
-            int partition = 100;
-            while(!(toWrite.isEmpty() && done.get())){
-                List<PerfSingleSdkOpResult> results = new ArrayList<>();
-                // Every 1 million items are written to the database throughout the run to prevent OOM issues
-                // 1 million was chosen arbitrarily and can be changed if needed
-                if(toWrite.size() >= partition){
-                    logger.info("100 docs reached");
-                    for (int i=0; i<partition; i++){
+        try {
+            // Every 1 million items are written to the database throughout the run to prevent OOM issues
+            // 1 million was chosen arbitrarily and can be changed if needed
+            int partition = 1_000_000;
+
+            while (!done.get()) {
+                List<PerfSingleOperationResult> results = new ArrayList<>();
+
+                if(toWrite.size() >= partition) {
+                    for (int i = 0; i < partition; i++) {
                         results.add(toWrite.remove());
                     }
-                    sortResults(results);
+                    // results may get sent back out of order due to multithreading
+                    var sorted = results.stream()
+                            .sorted(Comparator.comparingInt(a -> a.getInitiated().getNanos()))
+                            .collect(Collectors.toList());
 
-                    var toBucket = splitIncompleteBucket();
+                    var toBucket = splitIncompleteBucket(sorted);
 
-                    var resultsToWrite = processResults(toBucket, first.get());
-                    write(resultsToWrite);
-
-                }else if(done.get()){
-                    logger.info("writing data");
-
-                    sortResults(toWrite);
-                    toWrite.clear();
-                    var resultsToWrite = processResults(nextBucket, first.get());
+                    var resultsToWrite = processResults(toBucket);
                     write(resultsToWrite);
                 }
-                else{
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
         } catch (Exception e){
             logger.error("Error writing data to database",e);
         }
+
+        // Write what's left.  This may leave a mid-way bucket, but we don't worry about that since all data consumers
+        // should be stripping the start and end of the data anyway.
+        var sorted = toWrite.stream()
+                .sorted(Comparator.comparingInt(a -> a.getInitiated().getNanos()))
+                .collect(Collectors.toList());
+
+        var resultsToWrite = processResults(sorted);
+        write(resultsToWrite);
 
     }
 
@@ -99,7 +101,7 @@ public class DbWriteThread extends Thread {
                             int latencyP99) {
     }
 
-    private List<PerfBucketResult> processResults(List<PerfSingleSdkOpResult> result, Tuple2<Timestamp, Long> firstTimes) {
+    private List<PerfBucketResult> processResults(List<PerfSingleOperationResult> result) {
         var groupedBySeconds = result.stream()
                 .collect(Collectors.groupingBy(v -> v.getInitiated().getSeconds()));
 
@@ -111,14 +113,14 @@ public class DbWriteThread extends Thread {
             var failure = 0;
             var unstagingIncomplete = 0;
 
-            for (PerfSingleSdkOpResult r : results) {
+            for (PerfSingleOperationResult r : results) {
                 long initiated = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getInitiated()));
                 long finished = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getFinished()));
                 if (finished >= initiated) {
                     stats.recordLatency(finished - initiated);
                 }
 
-                if (r.getResults().getException() == SdkException.NO_EXCEPTION_THROWN) {
+                if (r.getSdkResult().getSuccess()) {
                     success += 1;
                 } else {
                     failure += 1;
@@ -126,10 +128,7 @@ public class DbWriteThread extends Thread {
             }
 
             var histogram = stats.getIntervalHistogram();
-            var timeSinceFirstSecs = bySecond - firstTimes.getT1().getSeconds();
-            var timestampMs = TimeUnit.SECONDS.toMillis(timeSinceFirstSecs) + firstTimes.getT2();
-            var timestampSec = TimeUnit.MILLISECONDS.toSeconds(timestampMs);
-            out.add(new PerfBucketResult(timestampSec,
+            out.add(new PerfBucketResult(result.get(0).getInitiated().getSeconds(),
                     (int) histogram.getTotalCount(),
                     success,
                     failure,
@@ -148,42 +147,42 @@ public class DbWriteThread extends Thread {
 
     }
 
-    private void write(List<PerfBucketResult> resultsToWrite){
-        resultsToWrite.forEach(v -> {
-            try (var st = conn.createStatement()) {
+    private void write(List<PerfBucketResult> resultsToWrite) {
+        if (resultsToWrite.isEmpty()) {
+            logger.info("No results to write to database");
+        }
+        else {
+            logger.info("Writing bucket for {}", resultsToWrite.get(0).timestamp);
 
-                st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
-                        v.timestamp,
-                        uuid,
-                        v.sdkOpsTotal,
-                        v.sdkOpsSuccess,
-                        v.sdkOpsFailed,
-                        v.sdkOpsIncomplete,
-                        v.latencyMin,
-                        v.latencyMax,
-                        v.latencyAverage,
-                        v.latencyP50,
-                        v.latencyP95,
-                        v.latencyP99
-                ));
-            } catch (SQLException throwables) {
-                logger.error("Failed to write performance data to database", throwables);
-                System.exit(-1);
-            }
+            resultsToWrite.forEach(v -> {
+                try (var st = conn.createStatement()) {
 
-        });
+                    st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+                            v.timestamp,
+                            uuid,
+                            v.sdkOpsTotal,
+                            v.sdkOpsSuccess,
+                            v.sdkOpsFailed,
+                            v.sdkOpsIncomplete,
+                            v.latencyMin,
+                            v.latencyMax,
+                            v.latencyAverage,
+                            v.latencyP50,
+                            v.latencyP95,
+                            v.latencyP99
+                    ));
+                } catch (SQLException throwables) {
+                    logger.error("Failed to write performance data to database", throwables);
+                    System.exit(-1);
+                }
+            });
+        }
     }
 
-    private void sortResults(Collection<PerfSingleSdkOpResult> results){
-        // results may get sent back out of order due to multithreading
-        var sortedResults = results.stream()
-                .sorted(Comparator.comparingInt(a -> a.getInitiated().getNanos()))
-                .collect(Collectors.toList());
-
-        nextBucket.addAll(sortedResults);
-    }
-
-    private List<PerfSingleSdkOpResult> splitIncompleteBucket(){
+    /**
+     * Only want to look at full second buckets of data.  They'll usually be some data leftover in the next bucket.
+     */
+    private List<PerfSingleOperationResult> splitIncompleteBucket(List<PerfSingleOperationResult> nextBucket) {
         long currentSecond = nextBucket.get(nextBucket.size()-1).getInitiated().getSeconds();
         long firstSecond = nextBucket.get(0).getInitiated().getSeconds();
         if (firstSecond == currentSecond){
@@ -200,12 +199,15 @@ public class DbWriteThread extends Thread {
 
             var completeData = nextBucket.subList(0, counter);
 
-            nextBucket = nextBucket.subList(counter, nextBucket.size());
+            // Put what's left back in the queue
+            nextBucket.subList(counter, nextBucket.size())
+                    .forEach(leftover -> toWrite.add(leftover));
+
             return completeData;
         }
     }
 
-    public void addToQ(PerfSingleSdkOpResult res){
+    public void addToQ(PerfSingleOperationResult res){
         toWrite.add(res);
     }
 }
