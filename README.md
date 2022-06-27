@@ -152,3 +152,9 @@ This can be done by putting it at the bottom of the operations section of the in
 
 Please also note that only one instance of each command is permitted per mixed workload.
 
+
+## Database
+
+```
+select * from runs where params::json->'impl'->>'language' = 'java';
+```

@@ -301,6 +301,7 @@ public class SdkDriver {
         props.setProperty("user", testSuite.connections().database().username());
         props.setProperty("password", testSuite.connections().database().password());
 
+        logger.info("Is running inside Docker {}", isRunningInsideDocker());
         logger.info("Connecting to database " + dbUrl);
         try (var conn = DriverManager.getConnection(dbUrl, props)) {
 
@@ -389,10 +390,22 @@ public class SdkDriver {
                 DbWriteThread dbWrite = new DbWriteThread(conn, run.uuid(), done);
                 dbWrite.start();
 
+                // CBD-4926: this isn't the slickest way of doing this (would prefer to write it all to database and
+                // trim at consumption point), but as a quick fix, discard the first set of data.  This takes care of
+                // JVM warmup and other forms of settling.
+                var start = System.nanoTime();
+                AtomicBoolean ignoringInitialResults = new AtomicBoolean();
+
                 var responseObserver = new StreamObserver<PerfSingleResult>() {
                     @Override
                     public void onNext(PerfSingleResult perfRunResult) {
-                        if (perfRunResult.hasOperationResult()) {
+                        if (ignoringInitialResults.get()) {
+                            if (TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start) >= 15) {
+                                ignoringInitialResults.set(false);
+                            }
+                        }
+
+                        if (perfRunResult.hasOperationResult() && !ignoringInitialResults.get()) {
                             dbWrite.addToQ(perfRunResult.getOperationResult());
                         }
                     }
