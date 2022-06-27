@@ -1,6 +1,10 @@
 package com.sdk;
 
+import com.couchbase.client.core.error.BucketExistsException;
+import com.couchbase.client.core.io.CollectionIdentifier;
+import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.json.JsonObject;
+import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sdk.constants.Defaults;
@@ -92,7 +96,7 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
     }
 
     record Connections(Cluster cluster, PerformerConn performer, Database database) {
-        record Cluster(String hostname, String username, String password) {
+        record Cluster(String hostname, String hostname_docker, String username, String password) {
         }
 
         record PerformerConn(String hostname, String hostname_docker, int port) {
@@ -124,15 +128,15 @@ interface Op {
 record OpInsert(JsonObject content, int count) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder) {
-        builder.addSdkCommand(Workload.newBuilder()
+        builder.addWorkloads(Workload.newBuilder()
                 .setSdk(SdkWorkload.newBuilder()
                         .setCommand(SdkCommand.newBuilder()
                                 .setInsert(CommandInsert.newBuilder()
                                         .setContentJson(content.toString())
                                         .setLocation(DocLocation.newBuilder()
                                                 .setBucket(Defaults.DEFAULT_BUCKET)
-                                                .setScope(Defaults.DEFAULT_SCOPE)
-                                                .setCollection(Defaults.DEFAULT_COLLECTION)
+                                                .setScope(CollectionIdentifier.DEFAULT_SCOPE)
+                                                .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
                                                 .build())
                                         .build()))
                         .setCount(count)));
@@ -142,14 +146,14 @@ record OpInsert(JsonObject content, int count) implements Op {
 record OpGet(int count) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder) {
-        builder.addSdkCommand(Workload.newBuilder()
+        builder.addWorkloads(Workload.newBuilder()
                 .setSdk(SdkWorkload.newBuilder()
                         .setCommand(SdkCommand.newBuilder()
                                 .setGet(CommandGet.newBuilder()
                                         .setLocation(DocLocation.newBuilder()
                                                 .setBucket(Defaults.DEFAULT_BUCKET)
-                                                .setScope(Defaults.DEFAULT_SCOPE)
-                                                .setCollection(Defaults.DEFAULT_COLLECTION)
+                                                .setScope(CollectionIdentifier.DEFAULT_SCOPE)
+                                                .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
                                                 .build())
                                         .build()))
                         .setCount(count)));
@@ -159,14 +163,14 @@ record OpGet(int count) implements Op {
 record OpRemove(int count) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder){
-        builder.addSdkCommand(Workload.newBuilder()
+        builder.addWorkloads(Workload.newBuilder()
                 .setSdk(SdkWorkload.newBuilder()
                         .setCommand(SdkCommand.newBuilder()
                                 .setRemove(CommandRemove.newBuilder()
                                         .setLocation(DocLocation.newBuilder()
                                                 .setBucket(Defaults.DEFAULT_BUCKET)
-                                                .setScope(Defaults.DEFAULT_SCOPE)
-                                                .setCollection(Defaults.DEFAULT_COLLECTION)
+                                                .setScope(CollectionIdentifier.DEFAULT_SCOPE)
+                                                .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
                                                 .build())
                                         .build()))
                         .setCount(count)));
@@ -176,15 +180,15 @@ record OpRemove(int count) implements Op {
 record OpReplace(JsonObject content, int count) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder){
-        builder.addSdkCommand(Workload.newBuilder()
+        builder.addWorkloads(Workload.newBuilder()
                 .setSdk(SdkWorkload.newBuilder()
                         .setCommand(SdkCommand.newBuilder()
                                 .setReplace(CommandReplace.newBuilder()
                                         .setContentJson(content.toString())
                                         .setLocation(DocLocation.newBuilder()
                                                 .setBucket(Defaults.DEFAULT_BUCKET)
-                                                .setScope(Defaults.DEFAULT_SCOPE)
-                                                .setCollection(Defaults.DEFAULT_COLLECTION)
+                                                .setScope(CollectionIdentifier.DEFAULT_SCOPE)
+                                                .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
                                                 .build())
                                         .build()))
                         .setCount(count)));
@@ -300,10 +304,20 @@ public class SdkDriver {
         logger.info("Connecting to database " + dbUrl);
         try (var conn = DriverManager.getConnection(dbUrl, props)) {
 
-            // Make sure that the timescaledb database has been created
+            var clusterHostname = isRunningInsideDocker() ? testSuite.connections().cluster().hostname_docker() : testSuite.connections().cluster().hostname();
+            logger.info("Connecting to cluster {}", clusterHostname);
+
+            var cluster = Cluster.connect(clusterHostname, testSuite.connections().cluster().username(), testSuite.connections().cluster().password());
+
+            try {
+                logger.info("Creating bucket {} if not already there", Defaults.DEFAULT_BUCKET);
+                cluster.buckets().createBucket(BucketSettings.create(Defaults.DEFAULT_BUCKET));
+            }
+            catch (BucketExistsException err) {}
+
             var createConnection =
                     ClusterConnectionCreateRequest.newBuilder()
-                            .setClusterHostname(testSuite.connections().cluster().hostname())
+                            .setClusterHostname(clusterHostname)
                             .setClusterUsername(testSuite.connections().cluster().username())
                             .setClusterPassword(testSuite.connections().cluster().password())
                             .setClusterConnectionId(UUID.randomUUID().toString())
@@ -330,7 +344,7 @@ public class SdkDriver {
                         testSuite.connections().cluster().username(),
                         testSuite.connections().cluster().password(),
                         Defaults.DEFAULT_BUCKET,
-                        Defaults.DEFAULT_SCOPE);
+                        CollectionIdentifier.DEFAULT_SCOPE);
                 docThread.start();
 
                 var jsonVars = JsonObject.create();

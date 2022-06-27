@@ -118,9 +118,6 @@ message SdkWorkload {
     // The command to run
     SdkCommand command = 1;
 
-    // The previously established cluster connection to use
-    string clusterConnectionId = 2;
-
     // The performer should run this many of `command`
     int32 count = 3;
 }
@@ -162,9 +159,12 @@ message PerfRunHorizontalScaling {
 }
 
 message PerfRunRequest {
+    // The previously established cluster connection to use
+    string clusterConnectionId = 1;
+
     // See PerfRunHorizontalScaling for a discussion of this.  Broadly, it's the number of concurrent operations
     // required.
-    repeated PerfRunHorizontalScaling horizontalScaling = 1;
+    repeated PerfRunHorizontalScaling horizontalScaling = 2;
 }
 
 message PerfSingleResult {

@@ -107,7 +107,7 @@ class PerfRunnerThread extends Thread {
         int operationsSuccessful = 0;
         int operationsFailed = 0;
 
-        for (var command : perThread.getSdkCommandList()){
+        for (var command : perThread.getWorkloadsList()){
             if (command.hasSdk()) {
                 var sdkWorkload = command.getSdk();
 
