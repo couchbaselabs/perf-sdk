@@ -68,13 +68,15 @@ message PerformerCapsFetchResponse {
     // Human-readable string identifying the performer.  For example, "java".
     string performerUserAgent = 3;
 
-    // Identifies the version of the library under test.  For example, "3.3.2".
-    string performerLibraryVersion = 4;
-
     // The APIs this implementation supports.  This is primarily used to run tests on multiple APIs, so if an implementation
     // only supports one, it should just return one - see comments for `API` for details.
     // If the performer does not return anything, it will be assumed to support just API.DEFAULT.
-    repeated API supportedApis = 6;
+    repeated API supportedApis = 4;
+
+    // It's crucial we always compare apples-to-apples in the tests, e.g. if anything changes on the performer side that
+    // means we can't compare results from it against previous results.
+    // Bump this whenever that happens.
+    int32 performerVersion = 5;
 }
 
 message ClusterConfig {
@@ -169,7 +171,12 @@ message PerfRunRequest {
 
 message PerfSingleResult {
     oneof result {
+        // Each operation should return back a result.  There is no requirement for these to be in sorted order - the driver
+        // will take care of that.
         PerfSingleOperationResult operationResult = 1;
+
+        // The performer can send back metrics whenever it wishes.
+        PerfMetricsResult metricsResult = 2;
     }
 }
 
@@ -179,6 +186,13 @@ message PerfSingleOperationResult {
     }
     google.protobuf.Timestamp initiated = 2;
     google.protobuf.Timestamp finished = 3;
+}
+
+message PerfMetricsResult {
+    // A JSON blob that can contain any information the performer likes.  '{"cpu":83}' for example.  It will be written
+    // directly into the database.
+    string metrics = 1;
+    google.protobuf.Timestamp initiated = 2;
 }
 
 message ExitRequest {

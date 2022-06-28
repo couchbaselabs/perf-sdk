@@ -22,12 +22,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PerfMarshaller {
     private static final Logger logger = LoggerFactory.getLogger(PerfMarshaller.class);
     private static ConcurrentLinkedQueue<PerfSingleOperationResult> writeQueue = new ConcurrentLinkedQueue<>();
-    private static AtomicBoolean done = new AtomicBoolean();
-
     public static void run(ClusterConnection connection,
                            PerfRunRequest perfRun,
                            StreamObserver<PerfSingleResult> responseObserver) throws InterruptedException {
         try{
+            var done = new AtomicBoolean();
+
             PerfWriteThread writer = new PerfWriteThread(
                     responseObserver,
                     writeQueue,

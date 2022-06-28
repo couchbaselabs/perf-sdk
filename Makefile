@@ -1,5 +1,5 @@
 dbPerf:
-	docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password --network perf --name timedb timescale/timescaledb:latest-pg14
+	docker run -d --rm -p 5432:5432 -e POSTGRES_PASSWORD=password --network perf --name timedb timescale/timescaledb:latest-pg14
 	sleep 10;
 	docker exec timedb psql -U postgres -c "CREATE DATABASE perf;"
 	docker exec timedb psql -U postgres -d perf -c "CREATE TABLE IF NOT EXISTS runs (id uuid PRIMARY KEY, datetime timestamp, params jsonb);"
@@ -7,7 +7,7 @@ dbPerf:
 	docker exec timedb psql -U postgres -d perf -c "CREATE TABLE IF NOT EXISTS metrics (initiated TIMESTAMPTZ NOT NULL, run_id uuid, metric text);"
 
 db:
-	docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password --name timedb timescale/timescaledb:latest-pg14
+	docker run -d --rm -p 5432:5432 -e POSTGRES_PASSWORD=password --name timedb timescale/timescaledb:latest-pg14
 	sleep 10;
 	docker exec timedb psql -U postgres -c "CREATE DATABASE perf;"
 	docker exec timedb psql -U postgres -d perf -c "CREATE TABLE IF NOT EXISTS runs (id uuid PRIMARY KEY, datetime timestamp, params jsonb);"

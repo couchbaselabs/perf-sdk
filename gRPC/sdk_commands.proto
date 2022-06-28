@@ -7,6 +7,8 @@ option java_package = "com.couchbase.grpc.sdk.protocol";
 option go_package = "github.com/charlie-hayes/perf-sdk/protocol";
 option java_multiple_files = true;
 
+import "sdk_options.proto";
+
 message DocLocation {
   string bucket = 1;
   string scope = 2;
@@ -17,23 +19,28 @@ message DocLocation {
 message CommandInsert {
   DocLocation location = 1;
   string contentJson = 2;
+  optional InsertOptions options = 3;
 }
+
 
 message CommandGet {
   DocLocation location = 1;
   // todo doc location strategy
   string keyPreface = 2;
+  optional GetOptions options = 3;
 }
 
 message CommandRemove {
   DocLocation location = 1;
   string keyPreface = 2;
+  optional RemoveOptions options = 3;
 }
 
 message CommandReplace {
   DocLocation location = 1;
   string keyPreface = 2;
   string contentJson = 4;
+  optional ReplaceOptions options = 3;
 }
 
 message SdkCommand {

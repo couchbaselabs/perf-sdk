@@ -33,11 +33,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceImplBase {
 
     private static final Logger logger = LoggerFactory.getLogger(JavaPerformer.class);
-    private static ConcurrentHashMap<String, ClusterConnection> clusterConnections = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ClusterConnection> clusterConnections = new ConcurrentHashMap<>();
 
     @Override
     public void performerCapsFetch(PerformerCapsFetchRequest request, StreamObserver<PerformerCapsFetchResponse> responseObserver) {
         responseObserver.onNext(PerformerCapsFetchResponse.newBuilder()
+                .setPerformerUserAgent("java")
+                .addSupportedApis(API.ASYNC)
+                .addSupportedApis(API.DEFAULT)
+                .setPerformerVersion(0)
                 .build());
     }
 

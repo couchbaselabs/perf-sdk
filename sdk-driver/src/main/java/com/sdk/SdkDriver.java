@@ -1,6 +1,7 @@
 package com.sdk;
 
 import com.couchbase.client.core.error.BucketExistsException;
+import com.couchbase.client.core.error.BucketNotFoundException;
 import com.couchbase.client.core.io.CollectionIdentifier;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.json.JsonObject;
@@ -30,6 +31,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 
@@ -290,6 +292,7 @@ public class SdkDriver {
     }
 
     static void run(String testSuiteFile) throws Exception {
+        logger.info("Reading config file {}", testSuiteFile);
         var testSuite = readTestSuite(testSuiteFile);
 
         var dbUrl = String.format("jdbc:postgresql://%s:%d/%s",
@@ -310,11 +313,17 @@ public class SdkDriver {
 
             var cluster = Cluster.connect(clusterHostname, testSuite.connections().cluster().username(), testSuite.connections().cluster().password());
 
+            logger.info("(Re)creating bucket {}", Defaults.DEFAULT_BUCKET);
+
             try {
-                logger.info("Creating bucket {} if not already there", Defaults.DEFAULT_BUCKET);
+                cluster.buckets().dropBucket(Defaults.DEFAULT_BUCKET);
+            }
+            catch (BucketNotFoundException ignored) {}
+
+            try {
                 cluster.buckets().createBucket(BucketSettings.create(Defaults.DEFAULT_BUCKET));
             }
-            catch (BucketExistsException err) {}
+            catch (BucketExistsException ignored) {}
 
             var createConnection =
                     ClusterConnectionCreateRequest.newBuilder()
@@ -335,11 +344,8 @@ public class SdkDriver {
             for (TestSuite.Run run : testSuite.runs()) {
                 logger.info("Running workload " + run);
                 // docThread creates a pool of new documents for certain operations to use
-                // it creates enough documents for every operation that needs documents in a run to complete 50 times per thread per second
-                // If there are no REMOVE commands in the test suite then workloadMultiplier will be 0 so no docs will be created
-                //TODO discuss whether this is the best way to do this
                 DocCreateThread docThread = new DocCreateThread(
-                        //Don't want to create double the amount of documents when REPLACE and REMOVE can use the same ones
+                        //Don't want to create double the amount of documents when REPLACE and GET can use the same ones
                         docPoolCount(testSuite.variables(), run.operations()) * testSuite.variables().horizontalScaling(),
                         testSuite.connections().cluster().hostname(),
                         testSuite.connections().cluster().username(),
@@ -351,6 +357,10 @@ public class SdkDriver {
                 var jsonVars = JsonObject.create();
                 testSuite.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
                 testSuite.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.value()));
+
+                // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones
+                jsonVars.put("driverVersion", 1);
+                // todo jsonVars.put("performerVersion", performer.response().getPerformerVersion());
 
                 var json = JsonObject.create()
                         .put("cluster", JsonObject.create()
@@ -389,18 +399,25 @@ public class SdkDriver {
                 var done = new AtomicBoolean(false);
                 DbWriteThread dbWrite = new DbWriteThread(conn, run.uuid(), done);
                 dbWrite.start();
+                var received = new AtomicInteger(0);
 
                 // CBD-4926: this isn't the slickest way of doing this (would prefer to write it all to database and
                 // trim at consumption point), but as a quick fix, discard the first set of data.  This takes care of
                 // JVM warmup and other forms of settling.
                 var start = System.nanoTime();
-                AtomicBoolean ignoringInitialResults = new AtomicBoolean();
+                var ignoringInitialResults = new AtomicBoolean(true);
 
                 var responseObserver = new StreamObserver<PerfSingleResult>() {
                     @Override
                     public void onNext(PerfSingleResult perfRunResult) {
+                        var got = received.incrementAndGet();
+                        if (got % 1000 == 0 || got == 1) {
+                            logger.info("Received {}", got);
+                        }
+
                         if (ignoringInitialResults.get()) {
                             if (TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start) >= 15) {
+                                logger.info("Warmup period passed, now writing results to database");
                                 ignoringInitialResults.set(false);
                             }
                         }
@@ -428,8 +445,10 @@ public class SdkDriver {
                 docThread.join();
 
                 performer.stubBlockFuture().perfRun(perf.build(), responseObserver);
-                logger.info("Waiting for data to be written to db");
+                logger.info("Waiting for run to finish and data to be written to db");
                 dbWrite.join();
+
+                logger.info("Finished!");
             }
 
         }

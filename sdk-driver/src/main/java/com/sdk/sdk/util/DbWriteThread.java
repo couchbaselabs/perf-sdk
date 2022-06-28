@@ -6,17 +6,16 @@ import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
 import com.google.protobuf.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.util.function.Tuple2;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -25,12 +24,17 @@ import java.util.stream.Collectors;
 public class DbWriteThread extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(DbWriteThread.class);
     private final ConcurrentLinkedQueue<PerfSingleOperationResult> toWrite = new ConcurrentLinkedQueue<>();
-    // todo make better
-//    private final List<PerfSingleOperationResult> nextBucket = new ArrayList<>();
     private final AtomicBoolean done;
     private final String uuid;
     private final java.sql.Connection conn;
 
+    // We periodically write to the database throughout, to prevent OOM issues.
+    // This value was chosen arbitrarily and can be changed if needed.  It's important to ensure there's at least one
+    // full second bucket of data to write.  It interacts with DISCARD_SECS_OF_DATA.
+    private static final int PARTITION = 100000;
+    // We take several seconds of data from each partition and put it back on the queue.  We only want completed one second buckets.
+    // Data can be out of order, unsorted, etc.
+    private static final int DISCARD_SECS_OF_DATA = 3;
 
     public DbWriteThread(java.sql.Connection conn, String uuid, AtomicBoolean done) {
         this.conn = conn;
@@ -40,52 +44,88 @@ public class DbWriteThread extends Thread {
 
     @Override
     public void run() {
+        // This is in sorted order
+        var resultsBySecondBucket = new TreeMap<Long, List<PerfSingleOperationResult>>();
+
         try {
-            // Every 1 million items are written to the database throughout the run to prevent OOM issues
-            // 1 million was chosen arbitrarily and can be changed if needed
-            int partition = 1_000_000;
+            logger.info("Database write thread started");
 
             while (!done.get()) {
-                List<PerfSingleOperationResult> results = new ArrayList<>();
+                var next = toWrite.poll();
 
-                if(toWrite.size() >= partition) {
-                    for (int i = 0; i < partition; i++) {
-                        results.add(toWrite.remove());
+                if (next == null) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
-                    // results may get sent back out of order due to multithreading
-                    var sorted = results.stream()
-                            .sorted(Comparator.comparingInt(a -> a.getInitiated().getNanos()))
-                            .collect(Collectors.toList());
-
-                    var toBucket = splitIncompleteBucket(sorted);
-
-                    var resultsToWrite = processResults(toBucket);
-                    write(resultsToWrite);
                 }
+                else {
 
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    long bucket = TimeUnit.MICROSECONDS.toSeconds(grpcTimestampToMicros(next.getInitiated()));
+
+                    resultsBySecondBucket.compute(bucket, (k, v) -> {
+                        if (v == null) {
+                            var ret = new ArrayList<PerfSingleOperationResult>();
+                            ret.add(next);
+                            return ret;
+                        } else {
+                            v.add(next);
+                            return v;
+                        }
+                    });
+
+                    // See if we've got enough data to do a write
+                    var first = resultsBySecondBucket.firstEntry().getKey();
+                    var last = resultsBySecondBucket.lastEntry().getKey();
+
+                    while (last - first >= DISCARD_SECS_OF_DATA) {
+                        first = resultsBySecondBucket.firstEntry().getKey();
+
+                        // Insert empty buckets for any missing seconds (e.g. where the performer for whatever reason could
+                        // not complete any operations)
+                        for (long i = first; i < last; i++) {
+                            resultsBySecondBucket.compute(i, (k, v) -> {
+                                if (v == null) {
+                                    return new ArrayList<>();
+                                }
+                                return v;
+                            });
+                        }
+
+                        var sorted = resultsBySecondBucket.get(first)
+                                .stream()
+                                .sorted(Comparator.comparingLong(a -> grpcTimestampToMicros(a.getInitiated())))
+                                .collect(Collectors.toList());
+                        var processed = processResults(sorted);
+                        write(processed);
+
+                        resultsBySecondBucket.remove(first);
+                    }
                 }
             }
         } catch (Exception e){
             logger.error("Error writing data to database",e);
         }
 
+        logger.info("Writing remaining {} results at end", toWrite.size());
+
         // Write what's left.  This may leave a mid-way bucket, but we don't worry about that since all data consumers
         // should be stripping the start and end of the data anyway.
         var sorted = toWrite.stream()
-                .sorted(Comparator.comparingInt(a -> a.getInitiated().getNanos()))
+                .sorted(Comparator.comparingLong(a -> grpcTimestampToMicros(a.getInitiated())))
                 .collect(Collectors.toList());
+
+        // todo empty buckets
 
         var resultsToWrite = processResults(sorted);
         write(resultsToWrite);
 
+        logger.info("Database write thread ended");
     }
 
-    private static long grpcTimestampToNanos(Timestamp ts) {
-        return TimeUnit.SECONDS.toNanos(ts.getSeconds()) + ts.getNanos();
+    private static long grpcTimestampToMicros(Timestamp ts) {
+        return TimeUnit.NANOSECONDS.toMicros(TimeUnit.SECONDS.toNanos(ts.getSeconds()) + ts.getNanos());
     }
 
     record PerfBucketResult(long timestamp,
@@ -102,6 +142,7 @@ public class DbWriteThread extends Thread {
     }
 
     private List<PerfBucketResult> processResults(List<PerfSingleOperationResult> result) {
+        // No order for SortedMap here, we sort the results before returning
         var groupedBySeconds = result.stream()
                 .collect(Collectors.groupingBy(v -> v.getInitiated().getSeconds()));
 
@@ -114,10 +155,13 @@ public class DbWriteThread extends Thread {
             var unstagingIncomplete = 0;
 
             for (PerfSingleOperationResult r : results) {
-                long initiated = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getInitiated()));
-                long finished = TimeUnit.NANOSECONDS.toMicros(grpcTimestampToNanos(r.getFinished()));
-                if (finished >= initiated) {
-                    stats.recordLatency(finished - initiated);
+                long initiatedMicros = grpcTimestampToMicros(r.getInitiated());
+                long finishedMicros = grpcTimestampToMicros(r.getFinished());
+                if (finishedMicros >= initiatedMicros) {
+                    stats.recordLatency(finishedMicros - initiatedMicros);
+                }
+                else {
+                    logger.warn("Got bad values from performer {} {}", initiatedMicros, finishedMicros);
                 }
 
                 if (r.getSdkResult().getSuccess()) {
@@ -128,7 +172,7 @@ public class DbWriteThread extends Thread {
             }
 
             var histogram = stats.getIntervalHistogram();
-            out.add(new PerfBucketResult(result.get(0).getInitiated().getSeconds(),
+            out.add(new PerfBucketResult(bySecond,
                     (int) histogram.getTotalCount(),
                     success,
                     failure,
@@ -155,6 +199,8 @@ public class DbWriteThread extends Thread {
             logger.info("Writing bucket for {}", resultsToWrite.get(0).timestamp);
 
             resultsToWrite.forEach(v -> {
+                // logger.info("Writing bucket for {}", v.timestamp);
+
                 try (var st = conn.createStatement()) {
 
                     st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
@@ -176,34 +222,6 @@ public class DbWriteThread extends Thread {
                     System.exit(-1);
                 }
             });
-        }
-    }
-
-    /**
-     * Only want to look at full second buckets of data.  They'll usually be some data leftover in the next bucket.
-     */
-    private List<PerfSingleOperationResult> splitIncompleteBucket(List<PerfSingleOperationResult> nextBucket) {
-        long currentSecond = nextBucket.get(nextBucket.size()-1).getInitiated().getSeconds();
-        long firstSecond = nextBucket.get(0).getInitiated().getSeconds();
-        if (firstSecond == currentSecond){
-            return nextBucket;
-        } else {
-            long wantedSecond = currentSecond -1;
-            int counter = nextBucket.size();
-            // Making sure we don't split the bucket
-            while(currentSecond != wantedSecond){
-                counter -= 1;
-                currentSecond = nextBucket.get(counter).getInitiated().getSeconds();
-            }
-            counter += 1;
-
-            var completeData = nextBucket.subList(0, counter);
-
-            // Put what's left back in the queue
-            nextBucket.subList(counter, nextBucket.size())
-                    .forEach(leftover -> toWrite.add(leftover));
-
-            return completeData;
         }
     }
 

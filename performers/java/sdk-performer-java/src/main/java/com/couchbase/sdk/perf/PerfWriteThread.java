@@ -19,6 +19,7 @@ public class PerfWriteThread extends Thread {
     private final StreamObserver<PerfSingleResult> responseObserver;
     private final ConcurrentLinkedQueue<PerfSingleOperationResult> writeQueue;
     private final AtomicBoolean done;
+    private int enqueued;
 
     public PerfWriteThread(
             StreamObserver<PerfSingleResult> responseObserver,
@@ -40,7 +41,7 @@ public class PerfWriteThread extends Thread {
                 flush();
 
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(100);
                 } catch (InterruptedException err) {
                     logger.error("Writer thread interrupted whilst waiting for results", err);
                     responseObserver.onError(err);
@@ -49,16 +50,29 @@ public class PerfWriteThread extends Thread {
             }
         } catch (Exception e) {
             logger.error("Error sending performance data to driver", e);
+            // Important to tell the driver something has gone badly wrong otherwise it'll hang
+            responseObserver.onError(e);
         }
 
         flush();
     }
 
     private void flush() {
+        int count = 0;
         while (!writeQueue.isEmpty()) {
-            responseObserver.onNext(PerfSingleResult.newBuilder()
-                    .setOperationResult(writeQueue.remove())
-                    .build());
+
+            var next = writeQueue.poll();
+            if (next != null) {
+                count += 1;
+                responseObserver.onNext(PerfSingleResult.newBuilder()
+                        .setOperationResult(next)
+                        .build());
+            }
+            else {
+                logger.warn("Got null element from queue");
+            }
         }
+
+        logger.info("Flushed {} results", count);
     }
 }
