@@ -2,7 +2,6 @@ package com.sdk.sdk.util;
 
 import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
 import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
-import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
 import com.google.protobuf.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -29,12 +27,9 @@ public class DbWriteThread extends Thread {
     private final java.sql.Connection conn;
 
     // We periodically write to the database throughout, to prevent OOM issues.
-    // This value was chosen arbitrarily and can be changed if needed.  It's important to ensure there's at least one
-    // full second bucket of data to write.  It interacts with DISCARD_SECS_OF_DATA.
-    private static final int PARTITION = 100000;
-    // We take several seconds of data from each partition and put it back on the queue.  We only want completed one second buckets.
-    // Data can be out of order, unsorted, etc.
-    private static final int DISCARD_SECS_OF_DATA = 3;
+    // We only want completed one second buckets.  Data can be out of order, unsorted, etc.  So make sure we're never
+    // writing the most X recent seconds of data.
+    private static final int IGNORE_MOST_RECENT_SECS_OF_DATA = 3;
 
     public DbWriteThread(java.sql.Connection conn, String uuid, AtomicBoolean done) {
         this.conn = conn;
@@ -44,8 +39,8 @@ public class DbWriteThread extends Thread {
 
     @Override
     public void run() {
-        // This is in sorted order
-        var resultsBySecondBucket = new TreeMap<Long, List<PerfSingleOperationResult>>();
+        // This is maintained in time-sorted order
+        var bucketisedResults = new TreeMap<Long, List<PerfSingleOperationResult>>();
 
         try {
             logger.info("Database write thread started");
@@ -61,47 +56,8 @@ public class DbWriteThread extends Thread {
                     }
                 }
                 else {
-
-                    long bucket = TimeUnit.MICROSECONDS.toSeconds(grpcTimestampToMicros(next.getInitiated()));
-
-                    resultsBySecondBucket.compute(bucket, (k, v) -> {
-                        if (v == null) {
-                            var ret = new ArrayList<PerfSingleOperationResult>();
-                            ret.add(next);
-                            return ret;
-                        } else {
-                            v.add(next);
-                            return v;
-                        }
-                    });
-
-                    // See if we've got enough data to do a write
-                    var first = resultsBySecondBucket.firstEntry().getKey();
-                    var last = resultsBySecondBucket.lastEntry().getKey();
-
-                    while (last - first >= DISCARD_SECS_OF_DATA) {
-                        first = resultsBySecondBucket.firstEntry().getKey();
-
-                        // Insert empty buckets for any missing seconds (e.g. where the performer for whatever reason could
-                        // not complete any operations)
-                        for (long i = first; i < last; i++) {
-                            resultsBySecondBucket.compute(i, (k, v) -> {
-                                if (v == null) {
-                                    return new ArrayList<>();
-                                }
-                                return v;
-                            });
-                        }
-
-                        var sorted = resultsBySecondBucket.get(first)
-                                .stream()
-                                .sorted(Comparator.comparingLong(a -> grpcTimestampToMicros(a.getInitiated())))
-                                .collect(Collectors.toList());
-                        var processed = processResults(sorted);
-                        write(processed);
-
-                        resultsBySecondBucket.remove(first);
-                    }
+                    handleOneResult(next, bucketisedResults);
+                    writeResultsIfPossible(bucketisedResults, IGNORE_MOST_RECENT_SECS_OF_DATA);
                 }
             }
         } catch (Exception e){
@@ -112,16 +68,62 @@ public class DbWriteThread extends Thread {
 
         // Write what's left.  This may leave a mid-way bucket, but we don't worry about that since all data consumers
         // should be stripping the start and end of the data anyway.
-        var sorted = toWrite.stream()
-                .sorted(Comparator.comparingLong(a -> grpcTimestampToMicros(a.getInitiated())))
-                .collect(Collectors.toList());
+        while (true) {
+            var next = toWrite.poll();
+            if (next == null) {
+                break;
+            }
+            handleOneResult(next, bucketisedResults);
+        }
 
-        // todo empty buckets
-
-        var resultsToWrite = processResults(sorted);
-        write(resultsToWrite);
+        writeResultsIfPossible(bucketisedResults, 0);
 
         logger.info("Database write thread ended");
+    }
+
+    private static void handleOneResult(PerfSingleOperationResult next, TreeMap<Long, List<PerfSingleOperationResult>> bucketisedResults) {
+        long bucket = TimeUnit.MICROSECONDS.toSeconds(grpcTimestampToMicros(next.getInitiated()));
+
+        bucketisedResults.compute(bucket, (k, v) -> {
+            if (v == null) {
+                var ret = new ArrayList<PerfSingleOperationResult>();
+                ret.add(next);
+                return ret;
+            } else {
+                v.add(next);
+                return v;
+            }
+        });
+    }
+
+    private void writeResultsIfPossible(TreeMap<Long, List<PerfSingleOperationResult>> bucketisedResults, int ignoreMostRecentSecs) {
+        // See if we've got enough data to do a write
+        var first = bucketisedResults.firstEntry().getKey();
+        var last = bucketisedResults.lastEntry().getKey();
+
+        while (last - first >= ignoreMostRecentSecs) {
+            first = bucketisedResults.firstEntry().getKey();
+
+            // Insert empty buckets for any missing seconds (e.g. where the performer for whatever reason could
+            // not complete any operations)
+            for (long i = first; i < last; i++) {
+                bucketisedResults.compute(i, (k, v) -> {
+                    if (v == null) {
+                        return new ArrayList<>();
+                    }
+                    return v;
+                });
+            }
+
+            var sorted = bucketisedResults.get(first)
+                    .stream()
+                    .sorted(Comparator.comparingLong(a -> grpcTimestampToMicros(a.getInitiated())))
+                    .collect(Collectors.toList());
+            var processed = processResults(sorted);
+            write(processed);
+
+            bucketisedResults.remove(first);
+        }
     }
 
     private static long grpcTimestampToMicros(Timestamp ts) {
