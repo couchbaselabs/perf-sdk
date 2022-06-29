@@ -1,8 +1,16 @@
 # Couchbase SDK Performance
 For performance testing of the Couchbase SDKs.
 
-A configuration file is supplied, detailing the full test matrix - what versions of what SDKs to test, against which servers, on which platforms, running which workloads.
-[Jenkins-SDK](https://github.com/couchbaselabs/jenkins-sdk) includes code that processes this config file and calculates the hundreds of performance runs that need to be performed.
+There are three projects:
+
+[Perf-SDK](https://github.com/couchbaselabs/perf-sdk) - this project.  Contains the 'driver' and all 'performers' (defined later).
+[Jenkins-SDK](https://github.com/couchbaselabs/jenkins-sdk) - glue code that's the starting point for doing pretty much everything. 
+Spins up cluster, builds and runs the driver and performers.
+It can run both on CI and locally.
+[Perf-SDK-Frontend](https://github.com/couchbaselabs/perf-sdk-frontend) - UI for viewing the results.
+
+A configuration file is supplied in [Jenkins-SDK](https://github.com/couchbaselabs/jenkins-sdk), detailing the full test matrix - what versions of what SDKs to test, against which servers, on which platforms, running which workloads.
+Jenkins-SDK can process this config file and calculate the hundreds of performance runs that need to be performed.
 It compares this against the database to see what's already been run.
 
 For each run that needs running, jenkins-sdk (running on CI, or locally) will create a per-run config file, and then drive aspects of this project.
@@ -22,7 +30,7 @@ The driver bucketises the data into one-second buckets, and writes it to the dat
 # Technologies
 We use timescaledb, a time-scale version of Postgres, as we're working with timeseries database.
 
-The hosted UI (a separate project) is in Vue and Node.
+The [UI]((https://github.com/couchbaselabs/perf-sdk-frontend) is in Vue and Node.
 
 The driver is in modern Java, and the protocol is GRPC.
 
