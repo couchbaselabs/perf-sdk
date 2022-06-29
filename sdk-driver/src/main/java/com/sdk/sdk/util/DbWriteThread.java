@@ -9,7 +9,10 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +25,8 @@ import java.util.stream.Collectors;
 public class DbWriteThread extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(DbWriteThread.class);
     private final ConcurrentLinkedQueue<PerfSingleOperationResult> toWrite = new ConcurrentLinkedQueue<>();
+    // This is maintained in time-sorted order
+    private final SortedMap<Long, List<PerfSingleOperationResult>> bucketisedResults = new TreeMap<>();
     private final AtomicBoolean done;
     private final String uuid;
     private final java.sql.Connection conn;
@@ -39,9 +44,6 @@ public class DbWriteThread extends Thread {
 
     @Override
     public void run() {
-        // This is maintained in time-sorted order
-        var bucketisedResults = new TreeMap<Long, List<PerfSingleOperationResult>>();
-
         try {
             logger.info("Database write thread started");
 
@@ -56,8 +58,8 @@ public class DbWriteThread extends Thread {
                     }
                 }
                 else {
-                    handleOneResult(next, bucketisedResults);
-                    writeResultsIfPossible(bucketisedResults, IGNORE_MOST_RECENT_SECS_OF_DATA);
+                    handleOneResult(next);
+                    writeResultsIfPossible(IGNORE_MOST_RECENT_SECS_OF_DATA);
                 }
             }
         } catch (Exception e){
@@ -73,15 +75,15 @@ public class DbWriteThread extends Thread {
             if (next == null) {
                 break;
             }
-            handleOneResult(next, bucketisedResults);
+            handleOneResult(next);
         }
 
-        writeResultsIfPossible(bucketisedResults, 0);
+        writeResultsIfPossible(0);
 
         logger.info("Database write thread ended");
     }
 
-    private static void handleOneResult(PerfSingleOperationResult next, TreeMap<Long, List<PerfSingleOperationResult>> bucketisedResults) {
+    private void handleOneResult(PerfSingleOperationResult next) {
         long bucket = TimeUnit.MICROSECONDS.toSeconds(grpcTimestampToMicros(next.getInitiated()));
 
         bucketisedResults.compute(bucket, (k, v) -> {
@@ -96,14 +98,12 @@ public class DbWriteThread extends Thread {
         });
     }
 
-    private void writeResultsIfPossible(TreeMap<Long, List<PerfSingleOperationResult>> bucketisedResults, int ignoreMostRecentSecs) {
+    private void writeResultsIfPossible(int ignoreMostRecentSecs) {
         // See if we've got enough data to do a write
-        var first = bucketisedResults.firstEntry().getKey();
-        var last = bucketisedResults.lastEntry().getKey();
+        var first = bucketisedResults.firstKey();
+        var last = bucketisedResults.lastKey();
 
-        while (last - first >= ignoreMostRecentSecs) {
-            first = bucketisedResults.firstEntry().getKey();
-
+        if (last - first > ignoreMostRecentSecs) {
             // Insert empty buckets for any missing seconds (e.g. where the performer for whatever reason could
             // not complete any operations)
             for (long i = first; i < last; i++) {
@@ -115,14 +115,19 @@ public class DbWriteThread extends Thread {
                 });
             }
 
-            var sorted = bucketisedResults.get(first)
-                    .stream()
-                    .sorted(Comparator.comparingLong(a -> grpcTimestampToMicros(a.getInitiated())))
-                    .collect(Collectors.toList());
-            var processed = processResults(sorted);
-            write(processed);
+            var wrote = new HashSet<Long>();
 
-            bucketisedResults.remove(first);
+            bucketisedResults
+                    .forEach((bySecond, results) -> {
+                        // Remember we're ignoring the most recent few secs of data
+                        if (bySecond < (last - ignoreMostRecentSecs)) {
+                            var processed = processResults(bySecond, results);
+                            write(processed);
+                            wrote.add(bySecond);
+                        }
+                    });
+
+            wrote.forEach(w -> bucketisedResults.remove(w));
         }
     }
 
@@ -143,87 +148,64 @@ public class DbWriteThread extends Thread {
                             int latencyP99) {
     }
 
-    private List<PerfBucketResult> processResults(List<PerfSingleOperationResult> result) {
-        // No order for SortedMap here, we sort the results before returning
-        var groupedBySeconds = result.stream()
-                .collect(Collectors.groupingBy(v -> v.getInitiated().getSeconds()));
+    private PerfBucketResult processResults(long timestamp, List<PerfSingleOperationResult> results) {
+        var stats = new LatencyStats();
+        var success = 0;
+        var failure = 0;
+        var unstagingIncomplete = 0;
 
-        var out = new ArrayList<PerfBucketResult>();
-
-        groupedBySeconds.forEach((bySecond, results) -> {
-            var stats = new LatencyStats();
-            var success = 0;
-            var failure = 0;
-            var unstagingIncomplete = 0;
-
-            for (PerfSingleOperationResult r : results) {
-                long initiatedMicros = grpcTimestampToMicros(r.getInitiated());
-                long finishedMicros = grpcTimestampToMicros(r.getFinished());
-                if (finishedMicros >= initiatedMicros) {
-                    stats.recordLatency(finishedMicros - initiatedMicros);
-                }
-                else {
-                    logger.warn("Got bad values from performer {} {}", initiatedMicros, finishedMicros);
-                }
-
-                if (r.getSdkResult().getSuccess()) {
-                    success += 1;
-                } else {
-                    failure += 1;
-                }
+        for (PerfSingleOperationResult r : results) {
+            long initiatedMicros = grpcTimestampToMicros(r.getInitiated());
+            long finishedMicros = grpcTimestampToMicros(r.getFinished());
+            if (finishedMicros >= initiatedMicros) {
+                stats.recordLatency(finishedMicros - initiatedMicros);
+            } else {
+                logger.warn("Got bad values from performer {} {}", initiatedMicros, finishedMicros);
             }
 
-            var histogram = stats.getIntervalHistogram();
-            out.add(new PerfBucketResult(bySecond,
-                    (int) histogram.getTotalCount(),
-                    success,
-                    failure,
-                    unstagingIncomplete,
-                    (int) histogram.getMinValue(),
-                    (int) histogram.getMaxValue(),
-                    (int) histogram.getMean(),
-                    (int) histogram.getValueAtPercentile(0.5),
-                    (int) histogram.getValueAtPercentile(0.95),
-                    (int) histogram.getValueAtPercentile(0.99)));
-        });
+            if (r.getSdkResult().getSuccess()) {
+                success += 1;
+            } else {
+                failure += 1;
+            }
+        }
 
-        return out.stream()
-                .sorted(Comparator.comparingLong(a -> a.timestamp))
-                .collect(Collectors.toList());
-
+        var histogram = stats.getIntervalHistogram();
+        return new PerfBucketResult(timestamp,
+                (int) histogram.getTotalCount(),
+                success,
+                failure,
+                unstagingIncomplete,
+                (int) histogram.getMinValue(),
+                (int) histogram.getMaxValue(),
+                (int) histogram.getMean(),
+                (int) histogram.getValueAtPercentile(0.5),
+                (int) histogram.getValueAtPercentile(0.95),
+                (int) histogram.getValueAtPercentile(0.99));
     }
 
-    private void write(List<PerfBucketResult> resultsToWrite) {
-        if (resultsToWrite.isEmpty()) {
-            logger.info("No results to write to database");
-        }
-        else {
-            logger.info("Writing bucket for {}", resultsToWrite.get(0).timestamp);
+    private void write(PerfBucketResult v) {
+        logger.info("Writing bucket for {}", v.timestamp);
 
-            resultsToWrite.forEach(v -> {
-                // logger.info("Writing bucket for {}", v.timestamp);
+        try (var st = conn.createStatement()) {
 
-                try (var st = conn.createStatement()) {
-
-                    st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
-                            v.timestamp,
-                            uuid,
-                            v.sdkOpsTotal,
-                            v.sdkOpsSuccess,
-                            v.sdkOpsFailed,
-                            v.sdkOpsIncomplete,
-                            v.latencyMin,
-                            v.latencyMax,
-                            v.latencyAverage,
-                            v.latencyP50,
-                            v.latencyP95,
-                            v.latencyP99
-                    ));
-                } catch (SQLException throwables) {
-                    logger.error("Failed to write performance data to database", throwables);
-                    System.exit(-1);
-                }
-            });
+            st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+                    v.timestamp,
+                    uuid,
+                    v.sdkOpsTotal,
+                    v.sdkOpsSuccess,
+                    v.sdkOpsFailed,
+                    v.sdkOpsIncomplete,
+                    v.latencyMin,
+                    v.latencyMax,
+                    v.latencyAverage,
+                    v.latencyP50,
+                    v.latencyP95,
+                    v.latencyP99
+            ));
+        } catch (SQLException throwables) {
+            logger.error("Failed to write performance data to database", throwables);
+            System.exit(-1);
         }
     }
 

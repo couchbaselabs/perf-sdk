@@ -138,12 +138,16 @@ enum SdkException {
 
 message SdkOperationResult {
     oneof exception {
+        // If the small overhead of creating a full InsertResult is not required (e.g. for performance testing), can
+        // return this generic success instead.
         bool success = 1;
 
         SdkException knownException = 2;
 
         // If the exception is not represented in SdkException, can return it in raw form here
         string unknownException = 3;
+
+        // In future we will have MutationResult, GetResult, etc. for integration testing
     }
 }
 
