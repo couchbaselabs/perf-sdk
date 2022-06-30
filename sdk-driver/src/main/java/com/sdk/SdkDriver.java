@@ -347,9 +347,7 @@ public class SdkDriver {
                 DocCreateThread docThread = new DocCreateThread(
                         //Don't want to create double the amount of documents when REPLACE and GET can use the same ones
                         docPoolCount(testSuite.variables(), run.operations()) * testSuite.variables().horizontalScaling(),
-                        testSuite.connections().cluster().hostname(),
-                        testSuite.connections().cluster().username(),
-                        testSuite.connections().cluster().password(),
+                        cluster,
                         Defaults.DEFAULT_BUCKET,
                         CollectionIdentifier.DEFAULT_SCOPE);
                 docThread.start();

@@ -32,20 +32,12 @@ public class DocCreateThread extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(DocCreateThread.class);
 
 
-    public DocCreateThread(int docNum, String hostname, String userName, String password, String bucketName, String scopeName) throws Exception{
+    public DocCreateThread(int docNum, Cluster cluster, String bucketName, String scopeName) throws Exception{
         this.docNum =docNum;
         if (docNum > 0) {
             logger.info("Creating connection to cluster to create document pool");
-            try {
-                this.cluster = Cluster.connect("couchbase://"+hostname, userName, password);
-                cluster.waitUntilReady(Duration.ofSeconds(30));
-                this.bucket = cluster.bucket(bucketName);
-                this.scope = bucket.scope(scopeName);
-            }
-            //TODO Discuss better exception to throw
-            catch (Exception err) {
-                throw new Exception("Could not connect to cluster for doc pool creation: " + err.getMessage());
-            }
+            this.bucket = cluster.bucket(bucketName);
+            this.scope = bucket.scope(scopeName);
         }
     }
 
@@ -64,11 +56,15 @@ public class DocCreateThread extends Thread {
                 JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
                 for (int i = 0; i < this.docNum; i++) {
                     collection.upsert(Defaults.KEY_PREFACE + i, input);
+
+                    if (i % 1000 == 0) {
+                        logger.info("Inserted {} documents", i);
+                    }
                 }
-                cluster.disconnect();
             }
         } catch (Exception e){
             logger.error("Error adding documents to cluster", e);
+            System.exit(-1);
         }
     }
 }
