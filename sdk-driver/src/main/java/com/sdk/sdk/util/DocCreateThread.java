@@ -7,6 +7,7 @@ import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.Scope;
 import com.couchbase.client.java.json.JsonObject;
+import com.couchbase.client.java.kv.UpsertOptions;
 import com.couchbase.client.java.manager.bucket.BucketManager;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.couchbase.client.java.manager.collection.CollectionManager;
@@ -26,7 +27,6 @@ import java.util.ArrayList;
  */
 public class DocCreateThread extends Thread {
     private final int docNum;
-    private Cluster cluster;
     private Bucket bucket;
     private Scope scope;
     private static final Logger logger = LoggerFactory.getLogger(DocCreateThread.class);
@@ -55,7 +55,7 @@ public class DocCreateThread extends Thread {
                 Collection collection = scope.collection(Defaults.DOCPOOL_COLLECTION);
                 JsonObject input = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
                 for (int i = 0; i < this.docNum; i++) {
-                    collection.upsert(Defaults.KEY_PREFACE + i, input);
+                    collection.upsert(Defaults.KEY_PREFACE + i, input, UpsertOptions.upsertOptions().timeout(Duration.ofSeconds(30)));
 
                     if (i % 1000 == 0) {
                         logger.info("Inserted {} documents", i);

@@ -7,6 +7,7 @@ import com.couchbase.sdk.utils.ClusterConnection;
 import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * SdkOperation performs each requested SDK operation
  */
 public class SdkOperation {
+    private Logger logger = LoggerFactory.getLogger(SdkOperation.class);
     private AtomicInteger removeCounter;
     private AtomicInteger replaceCounter;
     private AtomicInteger getCounter;
@@ -43,6 +45,7 @@ public class SdkOperation {
         catch (RuntimeException err) {
             singleResult.setSdkResult(SdkOperationResult.newBuilder()
                     .setUnknownException(err.getClass().getSimpleName()));
+            logger.warn("Operation failed with {}", err.toString());
         }
 
         singleResult.setFinished(getTimeNow());
