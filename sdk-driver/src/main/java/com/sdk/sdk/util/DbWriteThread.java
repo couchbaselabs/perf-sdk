@@ -1,6 +1,7 @@
 package com.sdk.sdk.util;
 
 import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
+import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
 import com.google.protobuf.Timestamp;
 import org.slf4j.Logger;
@@ -8,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * DbWriteThread dynamically writes performance data sent by the performer to the database
@@ -136,23 +136,24 @@ public class DbWriteThread extends Thread {
     }
 
     record PerfBucketResult(long timestamp,
-                            int sdkOpsTotal,
-                            int sdkOpsSuccess,
-                            int sdkOpsFailed,
-                            int sdkOpsIncomplete,
-                            int latencyMin,
-                            int latencyMax,
-                            int latencyAverage,
-                            int latencyP50,
-                            int latencyP95,
-                            int latencyP99) {
+                            int total,
+                            int success,
+                            int failed,
+                            int durationMin,
+                            int durationMax,
+                            int durationAverage,
+                            int durationP50,
+                            int durationP95,
+                            int durationP99,
+                            Map<String, Long> errors) {
     }
 
     private PerfBucketResult processResults(long timestamp, List<PerfSingleOperationResult> results) {
         var stats = new LatencyStats();
         var success = 0;
         var failure = 0;
-        var unstagingIncomplete = 0;
+
+        var errors = new HashMap<String, Long>();
 
         for (PerfSingleOperationResult r : results) {
             long initiatedMicros = grpcTimestampToMicros(r.getInitiated());
@@ -167,6 +168,11 @@ public class DbWriteThread extends Thread {
                 success += 1;
             } else {
                 failure += 1;
+
+                if (r.getSdkResult().hasUnknownException()) {
+                    var exception = r.getSdkResult().getUnknownException();
+                    errors.compute(exception, (k, v) -> v == null ? 1 : v + 1);
+                }
             }
         }
 
@@ -175,33 +181,37 @@ public class DbWriteThread extends Thread {
                 (int) histogram.getTotalCount(),
                 success,
                 failure,
-                unstagingIncomplete,
                 (int) histogram.getMinValue(),
                 (int) histogram.getMaxValue(),
                 (int) histogram.getMean(),
                 (int) histogram.getValueAtPercentile(0.5),
                 (int) histogram.getValueAtPercentile(0.95),
-                (int) histogram.getValueAtPercentile(0.99));
+                (int) histogram.getValueAtPercentile(0.99),
+                errors);
     }
 
     private void write(PerfBucketResult v) {
-        logger.info("Writing bucket for {}", v.timestamp);
+        logger.info("Writing bucket for {} success={} failed={} avg duration={}", v.timestamp, v.success, v.failed, v.durationAverage);
 
         try (var st = conn.createStatement()) {
+            JsonObject errors = JsonObject.create();
+            if (!v.errors.isEmpty()) {
+                v.errors.forEach((errorName, errorCount) -> errors.put(errorName, errorCount));
+            }
 
-            st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+            st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s')",
                     v.timestamp,
                     uuid,
-                    v.sdkOpsTotal,
-                    v.sdkOpsSuccess,
-                    v.sdkOpsFailed,
-                    v.sdkOpsIncomplete,
-                    v.latencyMin,
-                    v.latencyMax,
-                    v.latencyAverage,
-                    v.latencyP50,
-                    v.latencyP95,
-                    v.latencyP99
+                    v.total,
+                    v.success,
+                    v.failed,
+                    v.durationMin,
+                    v.durationMax,
+                    v.durationAverage,
+                    v.durationP50,
+                    v.durationP95,
+                    v.durationP99,
+                    errors.size() == 0 ? null : errors.toString()
             ));
         } catch (SQLException throwables) {
             logger.error("Failed to write performance data to database", throwables);

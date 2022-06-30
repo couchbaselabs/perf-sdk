@@ -418,7 +418,8 @@ public class SdkDriver {
                         }
 
                         if (ignoringInitialResults.get()) {
-                            if (TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start) >= 15) {
+//                            if (TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start) >= 15) {
+                            if (TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start) >= 0) {
                                 logger.info("Warmup period passed, now writing results to database");
                                 ignoringInitialResults.set(false);
                             }
