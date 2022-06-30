@@ -27,7 +27,9 @@ public class ClusterConnection {
     }
 
     public Collection collection(DocLocation location) {
-        return cluster.bucket(location.getBucket())
+        var bucket = cluster.bucket(location.getBucket());
+        bucket.waitUntilReady(Duration.ofSeconds(30));
+        return bucket
                 .scope(location.getScope())
                 .collection(location.getCollection());
     }
