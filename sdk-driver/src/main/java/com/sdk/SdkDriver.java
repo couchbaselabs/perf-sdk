@@ -21,6 +21,9 @@ import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.shaded.okhttp3.Credentials;
+import org.testcontainers.shaded.okhttp3.OkHttpClient;
+import org.testcontainers.shaded.okhttp3.Request;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,7 +101,7 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
     }
 
     record Connections(Cluster cluster, PerformerConn performer, Database database) {
-        record Cluster(String hostname, String hostname_docker, String username, String password) {
+        record Cluster(String hostname, String hostname_docker, String username, String password, String type) {
         }
 
         record PerformerConn(String hostname, String hostname_docker, int port) {
@@ -360,9 +363,10 @@ public class SdkDriver {
                 jsonVars.put("driverVersion", 1);
                 // todo jsonVars.put("performerVersion", performer.response().getPerformerVersion());
 
+                var clusterJson = produceClusterJson(clusterHostname, testSuite.connections().cluster());
+
                 var json = JsonObject.create()
-                        .put("cluster", JsonObject.create()
-                                .put("hostname", testSuite.connections().cluster().hostname()))
+                        .put("cluster", clusterJson)
                         .put("impl", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.impl())))
                         .put("workload", JsonObject.create()
                                 .put("description", run.description()))
@@ -450,6 +454,44 @@ public class SdkDriver {
             }
 
         }
+    }
+
+    private static JsonObject produceClusterJson(String hostname, TestSuite.Connections.Cluster cluster) {
+        var out = JsonObject.create();
+        out.put("type", cluster.type());
+
+        try {
+            var httpClient = new OkHttpClient().newBuilder().build();
+
+            var adminUsername = cluster.username();
+            var adminPassword = cluster.password();
+
+            var resp1 = httpClient.newCall(new Request.Builder()
+                            .header("Authorization", Credentials.basic(adminUsername, adminPassword))
+                            .url("http://" + hostname + ":8091/pools/default")
+                            .build())
+                    .execute();
+
+            var resp2 = httpClient.newCall(new Request.Builder()
+                            .header("Authorization", Credentials.basic(adminUsername, adminPassword))
+                            .url("http://" + hostname + ":8091/pools")
+                            .build())
+                    .execute();
+
+            var raw1 = JsonObject.fromJson(resp1.body().bytes());
+            var raw2 = JsonObject.fromJson(resp2.body().bytes());
+
+            var node1 = ((JsonObject) raw1.getArray("nodes").get(0));
+
+            out.put("nodeCount", raw1.getArray("nodes").size());
+            out.put("memory", raw1.getInt("memoryQuota"));
+            out.put("cpuCount", node1.getInt("cpuCount"));
+            out.put("version", raw2.getString("implementationVersion"));
+        } catch (IOException e) {
+            logger.warn("Failed to get cluster info {}", e.getMessage());
+        }
+
+        return out;
     }
 
 }
