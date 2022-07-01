@@ -26,12 +26,26 @@ public class ClusterConnection {
         cluster.waitUntilReady(Duration.ofSeconds(30));
     }
 
-    public Collection collection(DocLocation location) {
-        var bucket = cluster.bucket(location.getBucket());
-        bucket.waitUntilReady(Duration.ofSeconds(30));
+    public Collection collection(DocLocation loc) {
+        com.couchbase.grpc.sdk.protocol.Collection coll = null;
+
+        if (loc.hasPool()) {
+            coll = loc.getPool().getCollection();
+        }
+        else if (loc.hasSpecific()) {
+            coll = loc.getSpecific().getCollection();
+        }
+        else if (loc.hasUuid()) {
+            coll = loc.getUuid().getCollection();
+        }
+        else {
+            throw new IllegalArgumentException("Unknown DocLocation type");
+        }
+
+        var bucket = cluster.bucket(coll.getBucket());
         return bucket
-                .scope(location.getScope())
-                .collection(location.getCollection());
+                .scope(coll.getScope())
+                .collection(coll.getCollection());
     }
 }
 

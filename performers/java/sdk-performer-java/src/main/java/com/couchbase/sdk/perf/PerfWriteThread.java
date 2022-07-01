@@ -19,7 +19,6 @@ public class PerfWriteThread extends Thread {
     private final StreamObserver<PerfSingleResult> responseObserver;
     private final ConcurrentLinkedQueue<PerfSingleOperationResult> writeQueue;
     private final AtomicBoolean done;
-    private int enqueued;
 
     public PerfWriteThread(
             StreamObserver<PerfSingleResult> responseObserver,

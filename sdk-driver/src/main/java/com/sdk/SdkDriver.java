@@ -2,10 +2,12 @@ package com.sdk;
 
 import com.couchbase.client.core.error.BucketExistsException;
 import com.couchbase.client.core.error.BucketNotFoundException;
+import com.couchbase.client.core.error.InvalidArgumentException;
 import com.couchbase.client.core.io.CollectionIdentifier;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
+import com.couchbase.grpc.sdk.protocol.Collection;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sdk.constants.Defaults;
@@ -36,6 +38,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
+import static com.couchbase.grpc.sdk.protocol.PoolSelectionStrategy.POOL_SELECTION_COUNTER;
+import static com.couchbase.grpc.sdk.protocol.PoolSelectionStrategy.POOL_SELECTION_RANDOM_UNIFORM;
 
 
 record TestSuite(Implementation impl, Variables variables, Connections connections, List<Run> runs) {
@@ -111,13 +116,76 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
         }
     }
 
+    record DocLocation(Method method, String id, String idPreface, String poolSize, PoolSelectionStrategy poolSelectionStrategy) {
+        enum Method {
+            @JsonProperty("specific") SPECIFIC,
+            @JsonProperty("uuid") UUID,
+            @JsonProperty("pool") POOL
+        }
+
+        enum PoolSelectionStrategy {
+            @JsonProperty("random_uniform") RANDOM_UNIFORM,
+            @JsonProperty("counter") COUNTER
+        }
+
+        public Optional<Long> poolSize(TestSuite.Variables variables) {
+            if (method != Method.POOL) {
+                return Optional.empty();
+            }
+
+            return Optional.of((long) variables.getCustomVarAsInt(poolSize));
+        }
+
+        public com.couchbase.grpc.sdk.protocol.DocLocation convert(TestSuite.Variables variables) {
+            var out = com.couchbase.grpc.sdk.protocol.DocLocation.newBuilder();
+            var collection = Collection.newBuilder()
+                    .setBucket(Defaults.DEFAULT_BUCKET)
+                    .setScope(CollectionIdentifier.DEFAULT_SCOPE)
+                    .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
+                    .build();
+
+
+            switch (method) {
+                case SPECIFIC -> {
+                    if (id == null) {
+                        throw new IllegalArgumentException("Expect id to be set on specific doc location");
+                    }
+
+                    out.setSpecific(DocLocationSpecific.newBuilder()
+                            .setCollection(collection)
+                            .setId(id));
+                }
+
+                case UUID -> out.setUuid(DocLocationUuid.newBuilder()
+                        .setCollection(collection)
+                        .build());
+
+                case POOL -> {
+                    var idPrefaceFinal = (idPreface == null) ? Defaults.KEY_PREFACE : idPreface;
+                    long poolSizeFinal = variables.getCustomVarAsInt(poolSize);
+
+                    out.setPool(DocLocationPool.newBuilder()
+                            .setCollection(collection)
+                            .setIdPreface(idPrefaceFinal)
+                            .setPoolSize(poolSizeFinal)
+                            .setPoolSelectionStrategy((switch (poolSelectionStrategy) {
+                                case RANDOM_UNIFORM -> POOL_SELECTION_RANDOM_UNIFORM;
+                                case COUNTER -> POOL_SELECTION_COUNTER;
+                            })));
+                }
+            }
+
+            return out.build();
+        }
+    }
+
     record Run(String uuid, String description, List<Operation> operations) {
-        record Operation(Op op, String count) {
+        record Operation(Op op, String count, DocLocation docLocation) {
             enum Op {
-                INSERT,
-                GET,
-                REMOVE,
-                REPLACE
+                @JsonProperty("insert") INSERT,
+                @JsonProperty("get") GET,
+                @JsonProperty("remove") REMOVE,
+                @JsonProperty("replace") REPLACE
             }
         }
     }
@@ -130,7 +198,7 @@ interface Op {
     void applyTo(PerfRunHorizontalScaling.Builder builder);
 }
 
-record OpInsert(JsonObject content, int count) implements Op {
+record OpInsert(JsonObject content, int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder) {
         builder.addWorkloads(Workload.newBuilder()
@@ -138,51 +206,39 @@ record OpInsert(JsonObject content, int count) implements Op {
                         .setCommand(SdkCommand.newBuilder()
                                 .setInsert(CommandInsert.newBuilder()
                                         .setContentJson(content.toString())
-                                        .setLocation(DocLocation.newBuilder()
-                                                .setBucket(Defaults.DEFAULT_BUCKET)
-                                                .setScope(CollectionIdentifier.DEFAULT_SCOPE)
-                                                .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
-                                                .build())
+                                        .setLocation(location.convert(variables))
                                         .build()))
                         .setCount(count)));
     }
 }
 
-record OpGet(int count) implements Op {
+record OpGet(int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder) {
         builder.addWorkloads(Workload.newBuilder()
                 .setSdk(SdkWorkload.newBuilder()
                         .setCommand(SdkCommand.newBuilder()
                                 .setGet(CommandGet.newBuilder()
-                                        .setLocation(DocLocation.newBuilder()
-                                                .setBucket(Defaults.DEFAULT_BUCKET)
-                                                .setScope(CollectionIdentifier.DEFAULT_SCOPE)
-                                                .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
-                                                .build())
+                                        .setLocation(location.convert(variables))
                                         .build()))
                         .setCount(count)));
     }
 }
 
-record OpRemove(int count) implements Op {
+record OpRemove(int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder){
         builder.addWorkloads(Workload.newBuilder()
                 .setSdk(SdkWorkload.newBuilder()
                         .setCommand(SdkCommand.newBuilder()
                                 .setRemove(CommandRemove.newBuilder()
-                                        .setLocation(DocLocation.newBuilder()
-                                                .setBucket(Defaults.DEFAULT_BUCKET)
-                                                .setScope(CollectionIdentifier.DEFAULT_SCOPE)
-                                                .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
-                                                .build())
+                                        .setLocation(location.convert(variables))
                                         .build()))
                         .setCount(count)));
     }
 }
 
-record OpReplace(JsonObject content, int count) implements Op {
+record OpReplace(JsonObject content, int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
     @Override
     public void applyTo(PerfRunHorizontalScaling.Builder builder){
         builder.addWorkloads(Workload.newBuilder()
@@ -190,11 +246,7 @@ record OpReplace(JsonObject content, int count) implements Op {
                         .setCommand(SdkCommand.newBuilder()
                                 .setReplace(CommandReplace.newBuilder()
                                         .setContentJson(content.toString())
-                                        .setLocation(DocLocation.newBuilder()
-                                                .setBucket(Defaults.DEFAULT_BUCKET)
-                                                .setScope(CollectionIdentifier.DEFAULT_SCOPE)
-                                                .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
-                                                .build())
+                                        .setLocation(location.convert(variables))
                                         .build()))
                         .setCount(count)));
     }
@@ -208,7 +260,7 @@ public class SdkDriver {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private static final Logger logger = LoggerFactory.getLogger(SdkDriver.class);
 
-    public static void main(String[] args)  throws SQLException, IOException, InterruptedException, Exception {
+    public static void main(String[] args)  throws Exception {
         if (args.length != 1) {
             logger.info("Must provide config.yaml");
             System.exit(-1);
@@ -216,19 +268,19 @@ public class SdkDriver {
         run(args[0]);
     }
 
-    static Op addOp(TestSuite.Run.Operation op, int count) {
+    static Op addOp(TestSuite.Run.Operation op, int count, TestSuite.Variables variables) {
         JsonObject initial = JsonObject.create().put(Strings.CONTENT_NAME, Strings.INITIAL_CONTENT_VALUE);
         JsonObject updated = JsonObject.create().put(Strings.CONTENT_NAME, Strings.UPDATED_CONTENT_VALUE);
 
         switch (op.op()) {
             case INSERT:
-                return new OpInsert(initial, count);
+                return new OpInsert(initial, count, op.docLocation(), variables);
             case GET:
-                return new OpGet(count);
+                return new OpGet(count, op.docLocation(), variables);
             case REMOVE:
-                return new OpRemove(count);
+                return new OpRemove(count, op.docLocation(), variables);
             case REPLACE:
-                return new OpReplace(updated, count);
+                return new OpReplace(updated, count, op.docLocation(), variables);
             default:
                 throw new IllegalArgumentException("Unknown op " + op);
         }
@@ -241,7 +293,7 @@ public class SdkDriver {
 
         run.operations().forEach(op -> {
             int count = evaluateCount(variables, op.count());
-            ops.add(addOp(op, count));
+            ops.add(addOp(op, count, variables));
         });
         return new BuiltSdkCommand(ops, "Test");
     }
@@ -265,23 +317,6 @@ public class SdkDriver {
             e.printStackTrace();
         }
         return null;
-    }
-
-    //Tried to do this functionally and failed...
-    static int docPoolCount(TestSuite.Variables variables, List<TestSuite.Run.Operation> operations){
-        int max = 0;
-        for (TestSuite.Run.Operation op : operations){
-            if (!op.op().equals(TestSuite.Run.Operation.Op.INSERT)){
-                //TODO find a way to save down the evaluated count value as currently we have to evaluate it twice.
-                // (here and in createSdkCommand())
-                int count = evaluateCount(variables, op.count());
-                if (count > max){
-                    max = count;
-                }
-            }
-        }
-        return max;
-
     }
 
     // Credit to https://stackoverflow.com/questions/52580008/how-does-java-application-know-it-is-running-within-a-docker-container
@@ -346,42 +381,23 @@ public class SdkDriver {
 
             for (TestSuite.Run run : testSuite.runs()) {
                 logger.info("Running workload " + run);
-                // docThread creates a pool of new documents for certain operations to use
-                DocCreateThread docThread = new DocCreateThread(
-                        //Don't want to create double the amount of documents when REPLACE and GET can use the same ones
-                        docPoolCount(testSuite.variables(), run.operations()) * testSuite.variables().horizontalScaling(),
-                        cluster,
-                        Defaults.DEFAULT_BUCKET,
-                        CollectionIdentifier.DEFAULT_SCOPE);
-                docThread.start();
 
-                var jsonVars = JsonObject.create();
-                testSuite.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
-                testSuite.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.value()));
+                run.operations().forEach(op -> {
+                    op.docLocation().poolSize(testSuite.variables()).ifPresent(docPoolSize -> {
+                        var docThread = new DocCreateThread(docPoolSize,
+                                cluster.bucket(Defaults.DEFAULT_BUCKET).defaultCollection());
+                        docThread.start();
+                        // wait for all docs to be created
+                        logger.info("Waiting for document pool of size {} to be created", docPoolSize);
+                        try {
+                            docThread.join();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                });
 
-                // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones
-                jsonVars.put("driverVersion", 1);
-                // todo jsonVars.put("performerVersion", performer.response().getPerformerVersion());
 
-                var clusterJson = produceClusterJson(clusterHostname, testSuite.connections().cluster());
-
-                var json = JsonObject.create()
-                        .put("cluster", clusterJson)
-                        .put("impl", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.impl())))
-                        .put("workload", JsonObject.create()
-                                .put("description", run.description()))
-                        .put("vars", jsonVars);
-//                        .put("variables", JsonObject.create()
-//                                .put("this is a variable", "test var"));
-                logger.info(json.toString());
-
-                try (var st = conn.createStatement()) {
-                    String statement = String.format("INSERT INTO runs VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
-                            run.uuid(),
-                            json.toString(),
-                            json.toString());
-                    st.executeUpdate(statement);
-                }
 
                 BuiltSdkCommand command = createSdkCommand(testSuite.variables(), run);
 
@@ -443,13 +459,40 @@ public class SdkDriver {
                     }
                 };
 
-                // wait for all docs to be created
-                logger.info("Waiting for docPool to be created");
-                docThread.join();
-
                 performer.stubBlockFuture().perfRun(perf.build(), responseObserver);
                 logger.info("Waiting for run to finish and data to be written to db");
                 dbWrite.join();
+
+
+                // Only insert into the runs table if everything was successful
+                var jsonVars = JsonObject.create();
+                testSuite.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
+                testSuite.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.value()));
+
+                // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones
+                jsonVars.put("driverVersion", 1);
+                // todo jsonVars.put("performerVersion", performer.response().getPerformerVersion());
+
+                var clusterJson = produceClusterJson(clusterHostname, testSuite.connections().cluster());
+
+                var json = JsonObject.create()
+                        .put("cluster", clusterJson)
+                        .put("impl", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.impl())))
+                        .put("workload", JsonObject.create()
+                                .put("description", run.description()))
+                        .put("vars", jsonVars);
+//                        .put("variables", JsonObject.create()
+//                                .put("this is a variable", "test var"));
+                logger.info(json.toString());
+
+                try (var st = conn.createStatement()) {
+                    String statement = String.format("INSERT INTO runs VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
+                            run.uuid(),
+                            json.toString(),
+                            json.toString());
+                    st.executeUpdate(statement);
+                }
+
 
                 logger.info("Finished!");
             }

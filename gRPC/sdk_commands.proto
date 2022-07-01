@@ -8,13 +8,7 @@ option go_package = "github.com/charlie-hayes/perf-sdk/protocol";
 option java_multiple_files = true;
 
 import "sdk_options.proto";
-
-message DocLocation {
-  string bucket = 1;
-  string scope = 2;
-  string collection = 3;
-  string id = 4;
-}
+import "sdk_doc_location.proto";
 
 message CommandInsert {
   DocLocation location = 1;
@@ -22,24 +16,19 @@ message CommandInsert {
   optional InsertOptions options = 3;
 }
 
-
 message CommandGet {
   DocLocation location = 1;
-  // todo doc location strategy
-  string keyPreface = 2;
-  optional GetOptions options = 3;
+  optional GetOptions options = 2;
 }
 
 message CommandRemove {
   DocLocation location = 1;
-  string keyPreface = 2;
-  optional RemoveOptions options = 3;
+  optional RemoveOptions options = 2;
 }
 
 message CommandReplace {
   DocLocation location = 1;
-  string keyPreface = 2;
-  string contentJson = 4;
+  string contentJson = 2;
   optional ReplaceOptions options = 3;
 }
 

@@ -4,7 +4,7 @@ import com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling;
 import com.couchbase.grpc.sdk.protocol.PerfRunRequest;
 import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
 import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
-import com.couchbase.sdk.SdkOperation;
+import com.couchbase.sdk.SdkOperationExecutor;
 import com.couchbase.sdk.utils.ClusterConnection;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
@@ -33,23 +33,12 @@ public class PerfMarshaller {
                     writeQueue,
                     done);
 
-            // There is a counter for each operation as when a single one was used for all operations,
-            // one thread would finish a part of a workload and set the counter to 0 before the other workload was done
-
-            // todo can probably remove
-            var removeCounter = new AtomicInteger();
-            var replaceCounter = new AtomicInteger();
-            var getCounter = new AtomicInteger();
-
             List<PerfRunnerThread> runners = new ArrayList<>();
             for (int runnerIndex = 0; runnerIndex < perfRun.getHorizontalScalingCount(); runnerIndex ++) {
                 PerfRunHorizontalScaling perThread = perfRun.getHorizontalScaling(runnerIndex);
                 runners.add(new PerfRunnerThread(runnerIndex,
                         connection,
                         perThread,
-                        removeCounter,
-                        replaceCounter,
-                        getCounter,
                         writer));
             }
 
@@ -80,30 +69,21 @@ class PerfRunnerThread extends Thread {
     private final Logger logger;
     private final ClusterConnection connection;
     private final PerfRunHorizontalScaling perThread;
-    private final AtomicInteger removeCounter;
-    private final AtomicInteger replaceCounter;
-    private final AtomicInteger getCounter;
     private final PerfWriteThread writeQueue;
 
     PerfRunnerThread(int runnerIndex,
                      ClusterConnection connection,
                      PerfRunHorizontalScaling perThread,
-                     AtomicInteger removeCounter,
-                     AtomicInteger replaceCounter,
-                     AtomicInteger getCounter,
                      PerfWriteThread writer) {
         logger = LoggerFactory.getLogger("runner-" + runnerIndex);
         this.connection = connection;
         this.perThread = perThread;
-        this.removeCounter = removeCounter;
-        this.replaceCounter = replaceCounter;
-        this.getCounter = getCounter;
         this.writeQueue = writer;
     }
 
     @Override
     public void run() {
-        var operation = new SdkOperation(removeCounter, replaceCounter, getCounter);
+        var operation = new SdkOperationExecutor();
         int operationsSuccessful = 0;
         int operationsFailed = 0;
 
