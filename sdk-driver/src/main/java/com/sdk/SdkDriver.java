@@ -164,11 +164,11 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
                             .setPoolSize(poolSizeFinal);
 
                     switch (poolSelectionStrategy) {
-                        case RANDOM_UNIFORM: builder.setUniform(PoolSelectionStategyRandom.newBuilder()
+                        case RANDOM_UNIFORM -> builder.setUniform(PoolSelectionStategyRandom.newBuilder()
                                 .setDistribution(RandomDistribution.RANDOM_DISTRIBUTION_UNIFORM));
-                        case COUNTER: builder.setCounter(PoolSelectionStrategyCounter.newBuilder());
-                        default:
-                            throw new IllegalArgumentException("Unknown pool selection");
+                        case COUNTER -> builder.setCounter(PoolSelectionStrategyCounter.newBuilder());
+                        default ->
+                                throw new IllegalArgumentException("Unknown pool selection " + poolSelectionStrategy);
                     }
                 }
             }
