@@ -2,24 +2,25 @@ package com.sdk;
 
 import com.couchbase.client.core.error.BucketExistsException;
 import com.couchbase.client.core.error.BucketNotFoundException;
-import com.couchbase.client.core.error.InvalidArgumentException;
-import com.couchbase.client.core.io.CollectionIdentifier;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
-import com.couchbase.grpc.sdk.protocol.Collection;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.sdk.config.BuiltSdkCommand;
+import com.sdk.config.Op;
+import com.sdk.config.OpGet;
+import com.sdk.config.OpInsert;
+import com.sdk.config.OpRemove;
+import com.sdk.config.OpReplace;
+import com.sdk.config.TestSuite;
 import com.sdk.constants.Defaults;
 import com.sdk.constants.Strings;
 import com.couchbase.grpc.sdk.protocol.*;
-import com.couchbase.grpc.sdk.protocol.CommandInsert;
 import com.sdk.sdk.util.DbWriteThread;
 import com.sdk.sdk.util.DocCreateThread;
 import com.sdk.sdk.util.Performer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,234 +33,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-
-record TestSuite(Implementation impl, Variables variables, Connections connections, List<Run> runs) {
-//    Duration runtimeAsDuration() {
-//        var trimmed = runtime.trim();
-//        char suffix = trimmed.charAt(trimmed.length() - 1);
-//        var rawNum = Integer.parseInt(trimmed.substring(0, trimmed.length() - 1));
-//        return switch (suffix) {
-//            case 's' -> Duration.ofSeconds(rawNum);
-//            case 'm' -> Duration.ofMinutes(rawNum);
-//            case 'h' -> Duration.ofHours(rawNum);
-//            default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
-//        };
-//    }
-//
-//    int runtimeAsInt(){
-//        var trimmed = runtime.trim();
-//        char suffix = trimmed.charAt(trimmed.length() - 1);
-//        var rawNum = Integer.parseInt(trimmed.substring(0, trimmed.length() - 1));
-//        return switch (suffix) {
-//            case 's' -> rawNum;
-//            case 'm' -> rawNum * Defaults.secPerMin;
-//            case 'h' -> rawNum * Defaults.secPerHour;
-//            default -> throw new IllegalArgumentException("Could not handle runtime " + runtime);
-//        };
-//    }
-
-    record Implementation(String language, String version){
-    }
-
-    record Variables(List<PredefinedVariable> predefined, List<CustomVariable> custom) {
-        Integer getCustomVarAsInt(String varName) {
-            if (varName.startsWith("$")) {
-                return getCustomVarAsInt(varName.substring(1));
-            }
-
-            return Integer.parseInt(varName);
-        }
-
-        Integer horizontalScaling() {
-            return (Integer) predefinedVar(PredefinedVariable.PredefinedVariableName.HORIZONTAL_SCALING);
-        }
-
-        record PredefinedVariable(PredefinedVariableName name, Object value) {
-            enum PredefinedVariableName {
-                @JsonProperty("horizontal_scaling") HORIZONTAL_SCALING,
-            }
-        }
-
-        private Object predefinedVar(PredefinedVariable.PredefinedVariableName name) {
-            return predefined.stream()
-                    .filter(v -> v.name == name)
-                    .findFirst()
-                    .map(v -> v.value)
-                    .orElseThrow(() -> new IllegalArgumentException("Predefined variable " + name + " not found"));
-        }
-
-        record CustomVariable(String name, Object value) {
-        }
-    }
-
-    record Connections(Cluster cluster, PerformerConn performer, Database database) {
-        record Cluster(String hostname, String hostname_docker, String username, String password, String type) {
-        }
-
-        record PerformerConn(String hostname, String hostname_docker, int port) {
-        }
-
-        record Database(String hostname, String hostname_docker, int port, String username, String password, String database) {
-        }
-    }
-
-    record DocLocation(Method method, String id, String idPreface, String poolSize, PoolSelectionStrategy poolSelectionStrategy) {
-        enum Method {
-            @JsonProperty("specific") SPECIFIC,
-            @JsonProperty("uuid") UUID,
-            @JsonProperty("pool") POOL
-        }
-
-        enum PoolSelectionStrategy {
-            @JsonProperty("random_uniform") RANDOM_UNIFORM,
-            @JsonProperty("counter") COUNTER
-        }
-
-        public Optional<Long> poolSize(TestSuite.Variables variables) {
-            if (method != Method.POOL) {
-                return Optional.empty();
-            }
-
-            return Optional.of((long) variables.getCustomVarAsInt(poolSize));
-        }
-
-        public com.couchbase.grpc.sdk.protocol.DocLocation convert(TestSuite.Variables variables) {
-            var out = com.couchbase.grpc.sdk.protocol.DocLocation.newBuilder();
-            var collection = Collection.newBuilder()
-                    .setBucket(Defaults.DEFAULT_BUCKET)
-                    .setScope(CollectionIdentifier.DEFAULT_SCOPE)
-                    .setCollection(CollectionIdentifier.DEFAULT_SCOPE)
-                    .build();
-
-
-            switch (method) {
-                case SPECIFIC -> {
-                    if (id == null) {
-                        throw new IllegalArgumentException("Expect id to be set on specific doc location");
-                    }
-
-                    out.setSpecific(DocLocationSpecific.newBuilder()
-                            .setCollection(collection)
-                            .setId(id));
-                }
-
-                case UUID -> out.setUuid(DocLocationUuid.newBuilder()
-                        .setCollection(collection)
-                        .build());
-
-                case POOL -> {
-                    var idPrefaceFinal = (idPreface == null) ? Defaults.KEY_PREFACE : idPreface;
-                    long poolSizeFinal = variables.getCustomVarAsInt(poolSize);
-
-                    var builder = DocLocationPool.newBuilder()
-                            .setCollection(collection)
-                            .setIdPreface(idPrefaceFinal)
-                            .setPoolSize(poolSizeFinal);
-
-                    switch (poolSelectionStrategy) {
-                        case RANDOM_UNIFORM -> builder.setUniform(PoolSelectionStategyRandom.newBuilder()
-                                .setDistribution(RandomDistribution.RANDOM_DISTRIBUTION_UNIFORM));
-                        case COUNTER -> builder.setCounter(PoolSelectionStrategyCounter.newBuilder());
-                        default ->
-                                throw new IllegalArgumentException("Unknown pool selection " + poolSelectionStrategy);
-                    }
-
-                    out.setPool(builder);
-                }
-            }
-
-            return out.build();
-        }
-    }
-
-    record Run(String uuid, String description, List<Operation> operations) {
-        record Operation(Op op, String count, DocLocation docLocation) {
-            enum Op {
-                @JsonProperty("insert") INSERT,
-                @JsonProperty("get") GET,
-                @JsonProperty("remove") REMOVE,
-                @JsonProperty("replace") REPLACE
-            }
-        }
-    }
-}
-
-record BuiltSdkCommand(List<Op> sdkCommand, String description) {
-}
-
-interface Op {
-    void applyTo(PerfRunHorizontalScaling.Builder builder);
-}
-
-record OpInsert(JsonObject content, int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
-    @Override
-    public void applyTo(PerfRunHorizontalScaling.Builder builder) {
-        builder.addWorkloads(Workload.newBuilder()
-                .setSdk(SdkWorkload.newBuilder()
-                        .setCommand(SdkCommand.newBuilder()
-                                .setInsert(CommandInsert.newBuilder()
-                                        .setContentJson(content.toString())
-                                        .setLocation(location.convert(variables))
-                                        .build()))
-                        .setCounter(Counter.newBuilder()
-                                .setCounterId("counter1")
-                                .setGlobal(CounterGlobal.newBuilder()
-                                        .setCount(count)))));    }
-}
-
-record OpGet(int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
-    @Override
-    public void applyTo(PerfRunHorizontalScaling.Builder builder) {
-        builder.addWorkloads(Workload.newBuilder()
-                .setSdk(SdkWorkload.newBuilder()
-                        .setCommand(SdkCommand.newBuilder()
-                                .setGet(CommandGet.newBuilder()
-                                        .setLocation(location.convert(variables))
-                                        .build()))
-                        .setCounter(Counter.newBuilder()
-                                .setCounterId("counter1")
-                                .setGlobal(CounterGlobal.newBuilder()
-                                        .setCount(count)))));    }
-}
-
-record OpRemove(int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
-    @Override
-    public void applyTo(PerfRunHorizontalScaling.Builder builder){
-        builder.addWorkloads(Workload.newBuilder()
-                .setSdk(SdkWorkload.newBuilder()
-                        .setCommand(SdkCommand.newBuilder()
-                                .setRemove(CommandRemove.newBuilder()
-                                        .setLocation(location.convert(variables))
-                                        .build()))
-                        .setCounter(Counter.newBuilder()
-                                .setCounterId("counter1")
-                                .setGlobal(CounterGlobal.newBuilder()
-                                        .setCount(count)))));
-    }
-}
-
-record OpReplace(JsonObject content, int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
-    @Override
-    public void applyTo(PerfRunHorizontalScaling.Builder builder){
-        builder.addWorkloads(Workload.newBuilder()
-                .setSdk(SdkWorkload.newBuilder()
-                        .setCommand(SdkCommand.newBuilder()
-                                .setReplace(CommandReplace.newBuilder()
-                                        .setContentJson(content.toString())
-                                        .setLocation(location.convert(variables))
-                                        .build()))
-                        .setCounter(Counter.newBuilder()
-                                .setCounterId("counter1")
-                                .setGlobal(CounterGlobal.newBuilder()
-                                        .setCount(count)))));    }
-}
 
 public class SdkDriver {
 
