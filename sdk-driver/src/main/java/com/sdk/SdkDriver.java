@@ -170,6 +170,8 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
                         default ->
                                 throw new IllegalArgumentException("Unknown pool selection " + poolSelectionStrategy);
                     }
+
+                    out.setPool(builder);
                 }
             }
 
