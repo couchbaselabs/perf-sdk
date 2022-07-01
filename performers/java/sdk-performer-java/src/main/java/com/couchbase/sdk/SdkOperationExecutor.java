@@ -56,7 +56,7 @@ public class SdkOperationExecutor {
             var pool = location.getPool();
 
             return pool.getIdPreface() + (switch (pool.getPoolSelectionStrategy()) {
-                case POOL_SELECTION_COUNTER -> counter.getAndIncrement();
+                case POOL_SELECTION_COUNTER -> counter.getAndIncrement() % pool.getPoolSize();
 
                 case POOL_SELECTION_RANDOM_UNIFORM ->
                         random.nextInt((int) pool.getPoolSize());

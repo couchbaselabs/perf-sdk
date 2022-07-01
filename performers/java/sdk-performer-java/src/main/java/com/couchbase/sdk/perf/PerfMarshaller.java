@@ -22,11 +22,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PerfMarshaller {
     private static final Logger logger = LoggerFactory.getLogger(PerfMarshaller.class);
     private static ConcurrentLinkedQueue<PerfSingleOperationResult> writeQueue = new ConcurrentLinkedQueue<>();
+
     public static void run(ClusterConnection connection,
                            PerfRunRequest perfRun,
                            StreamObserver<PerfSingleResult> responseObserver) throws InterruptedException {
         try{
             var done = new AtomicBoolean();
+            var counters = new Counters();
 
             PerfWriteThread writer = new PerfWriteThread(
                     responseObserver,
@@ -39,7 +41,8 @@ public class PerfMarshaller {
                 runners.add(new PerfRunnerThread(runnerIndex,
                         connection,
                         perThread,
-                        writer));
+                        writer,
+                        counters));
             }
 
             logger.info("Starting writer thread");
@@ -70,15 +73,18 @@ class PerfRunnerThread extends Thread {
     private final ClusterConnection connection;
     private final PerfRunHorizontalScaling perThread;
     private final PerfWriteThread writeQueue;
+    private final Counters counters;
 
     PerfRunnerThread(int runnerIndex,
                      ClusterConnection connection,
                      PerfRunHorizontalScaling perThread,
-                     PerfWriteThread writer) {
+                     PerfWriteThread writer,
+                     Counters counters) {
         logger = LoggerFactory.getLogger("runner-" + runnerIndex);
         this.connection = connection;
         this.perThread = perThread;
         this.writeQueue = writer;
+        this.counters = counters;
     }
 
     @Override
@@ -91,7 +97,16 @@ class PerfRunnerThread extends Thread {
             if (command.hasSdk()) {
                 var sdkWorkload = command.getSdk();
 
-                for (int i = 0; i < sdkWorkload.getCount(); i++) {
+                AtomicInteger counter;
+
+                if (sdkWorkload.getCounter().hasGlobal()) {
+                    counter = counters.getCounter(sdkWorkload.getCounter().getCounterId(), sdkWorkload.getCounter().getGlobal().getCount());
+                }
+                else {
+                    throw new IllegalArgumentException("Unknown counter type");
+                }
+
+                while (counter.decrementAndGet() > 0) {
                     var result = operation.run(connection, sdkWorkload);
                     writeQueue.enqueue(result);
                     if (result.getSdkResult().getSuccess()) {

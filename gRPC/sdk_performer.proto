@@ -75,7 +75,8 @@ message PerformerCapsFetchResponse {
 
     // It's crucial we always compare apples-to-apples in the tests, e.g. if anything changes on the performer side that
     // means we can't compare results from it against previous results.
-    // Bump this whenever that happens.
+    // Bump this whenever that happens.  (Will also need to force a rerun of tests for this language, since jenkins-sdk
+    // won't know it's occurred).
     int32 performerVersion = 5;
 }
 
@@ -116,12 +117,32 @@ message EchoRequest {
 message EchoResponse {
 }
 
+// We may need the flexibility to do various forms of counter, e.g.:
+// 1. Aim to do 1m operations across all threads.
+// 2. Each thread does 1m operations.
+// (1) is the simplest and most useful, so is the only one supported for now.
+message CounterGlobal {
+    // The performer should initialise the counter at this value, and will generally keep going until the counter reaches 0
+    int32 count = 1;
+}
+
+message Counter {
+    // Each counter gets a unique id (unique to the PerfRunRequest, not globally unique).  The performer will create these on-demand.
+    // Each counter is bound to a PerfRunRequest.
+    // E.g. concurrent PerfRunRequests both referencing "counter1" should have separate isolated counters.
+    string counterId = 1;
+
+    oneof counter {
+        CounterGlobal global = 2;
+    }
+}
+
 message SdkWorkload {
     // The command to run
     SdkCommand command = 1;
 
     // The performer should run this many of `command`
-    int32 count = 3;
+    Counter counter = 2;
 }
 
 // Request the performer runs a particular workload
@@ -157,10 +178,9 @@ message SdkOperationResult {
 // For some languages that will be threads.  For some, a larger pool of concurrent Future/Promises.  For some,
 // forking a new process.
 // Whatever is produced (thread, new process), it should run the provided workload in a tight loop.  So essentially
-// PerfRunHorizontalScaling is the number of concurrent sdk operations taking place.
+// PerfRunHorizontalScaling is the number of concurrent operations taking place.
 message PerfRunHorizontalScaling {
     // Performer will run these workloads in this 'thread-like', in the specified order.
-    // todo support running until N total operations complete
     repeated Workload workloads = 1;
 }
 

@@ -24,16 +24,19 @@ message DocLocationUuid {
   Collection collection = 1;
 }
 
-enum PoolSelectionStrategy {
-  // Generate a random id in [0-poolSize) following a uniform distribution.
-  POOL_SELECTION_RANDOM_UNIFORM = 0;
-
-  // Use a counter shared between all threads to monotonically select the next document in the pool, starting at 0.
-  // The performer should create a separate counter for each PerfRunRequest.
-  // The driver should never ask the performer to do more operations than are in poolSize.  If it does, the performer
-  // should error.
-  POOL_SELECTION_COUNTER = 1;
+enum RandomDistribution {
+  RANDOM_DISTRIBUTION_UNIFORM = 0;
 }
+
+// Generate a random id in [0-poolSize).
+message PoolSelectionStategyRandom {
+  RandomDistribution distribution = 1;
+}
+
+// Use a counter shared between all threads to monotonically select the next document in the pool, starting at 0.
+// The performer should create a separate counter for each PerfRunRequest.
+// The performer should modulo `poolSize`.  E.g. `realCounterResult = currentCounterValue % poolSize`.
+message PoolSelectionStrategyCounter {}
 
 // The performer will pick a document from a pool.
 // The performer should generate an integer in [0-poolSize) following selectionStrategy.  Then append that to `idPreface`
@@ -47,7 +50,10 @@ message DocLocationPool {
   // How many documents are in the pool.
   int64 poolSize = 3;
 
-  PoolSelectionStrategy poolSelectionStrategy = 4;
+  oneof poolSelectionStrategy {
+    PoolSelectionStategyRandom uniform = 4;
+    PoolSelectionStrategyCounter counter = 5;
+  }
 }
 
 message DocLocation {

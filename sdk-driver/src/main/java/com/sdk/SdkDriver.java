@@ -77,10 +77,7 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
                 return getCustomVarAsInt(varName.substring(1));
             }
 
-            var match = custom.stream().filter(v -> v.name.equals(varName)).findFirst();
-            return match
-                    .map(v -> (Integer) v.value)
-                    .orElseThrow(() -> new IllegalArgumentException("Custom variable " + varName + " not found"));
+            return Integer.parseInt(varName);
         }
 
         Integer horizontalScaling() {
@@ -208,8 +205,10 @@ record OpInsert(JsonObject content, int count, TestSuite.DocLocation location, T
                                         .setContentJson(content.toString())
                                         .setLocation(location.convert(variables))
                                         .build()))
-                        .setCount(count)));
-    }
+                        .setCounter(Counter.newBuilder()
+                                .setCounterId("counter1")
+                                .setGlobal(CounterGlobal.newBuilder()
+                                        .setCount(count)))));    }
 }
 
 record OpGet(int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
@@ -221,8 +220,10 @@ record OpGet(int count, TestSuite.DocLocation location, TestSuite.Variables vari
                                 .setGet(CommandGet.newBuilder()
                                         .setLocation(location.convert(variables))
                                         .build()))
-                        .setCount(count)));
-    }
+                        .setCounter(Counter.newBuilder()
+                                .setCounterId("counter1")
+                                .setGlobal(CounterGlobal.newBuilder()
+                                        .setCount(count)))));    }
 }
 
 record OpRemove(int count, TestSuite.DocLocation location, TestSuite.Variables variables) implements Op {
@@ -234,7 +235,10 @@ record OpRemove(int count, TestSuite.DocLocation location, TestSuite.Variables v
                                 .setRemove(CommandRemove.newBuilder()
                                         .setLocation(location.convert(variables))
                                         .build()))
-                        .setCount(count)));
+                        .setCounter(Counter.newBuilder()
+                                .setCounterId("counter1")
+                                .setGlobal(CounterGlobal.newBuilder()
+                                        .setCount(count)))));
     }
 }
 
@@ -248,8 +252,10 @@ record OpReplace(JsonObject content, int count, TestSuite.DocLocation location, 
                                         .setContentJson(content.toString())
                                         .setLocation(location.convert(variables))
                                         .build()))
-                        .setCount(count)));
-    }
+                        .setCounter(Counter.newBuilder()
+                                .setCounterId("counter1")
+                                .setGlobal(CounterGlobal.newBuilder()
+                                        .setCount(count)))));    }
 }
 
 public class SdkDriver {
@@ -344,6 +350,7 @@ public class SdkDriver {
 
         logger.info("Is running inside Docker {}", isRunningInsideDocker());
         logger.info("Connecting to database " + dbUrl);
+
         try (var conn = DriverManager.getConnection(dbUrl, props)) {
 
             var clusterHostname = isRunningInsideDocker() ? testSuite.connections().cluster().hostname_docker() : testSuite.connections().cluster().hostname();
@@ -469,7 +476,8 @@ public class SdkDriver {
                 testSuite.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
                 testSuite.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.value()));
 
-                // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones
+                // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
+                // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
                 jsonVars.put("driverVersion", 1);
                 // todo jsonVars.put("performerVersion", performer.response().getPerformerVersion());
 
