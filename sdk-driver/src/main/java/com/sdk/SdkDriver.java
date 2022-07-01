@@ -455,13 +455,13 @@ public class SdkDriver {
 
                     @Override
                     public void onError(Throwable throwable) {
-                        logger.error("Error from performer: ", throwable);
+                        logger.error("Error from performer after receiving {}: {}", received.get(), throwable.toString());
                         done.set(true);
                     }
 
                     @Override
                     public void onCompleted() {
-                        logger.info("Performer has finished");
+                        logger.info("Performer has finished after receiving {}", received.get());
                         done.set(true);
                     }
                 };
