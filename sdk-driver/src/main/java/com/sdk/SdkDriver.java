@@ -39,9 +39,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import static com.couchbase.grpc.sdk.protocol.PoolSelectionStrategy.POOL_SELECTION_COUNTER;
-import static com.couchbase.grpc.sdk.protocol.PoolSelectionStrategy.POOL_SELECTION_RANDOM_UNIFORM;
-
 
 record TestSuite(Implementation impl, Variables variables, Connections connections, List<Run> runs) {
 //    Duration runtimeAsDuration() {
