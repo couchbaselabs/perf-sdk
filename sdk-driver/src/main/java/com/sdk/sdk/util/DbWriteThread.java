@@ -68,17 +68,19 @@ public class DbWriteThread extends Thread {
 
         logger.info("Writing remaining {} results at end", toWrite.size());
 
-        // Write what's left.  This may leave a mid-way bucket, but we don't worry about that since all data consumers
-        // should be stripping the start and end of the data anyway.
-        while (true) {
-            var next = toWrite.poll();
-            if (next == null) {
-                break;
+        if (toWrite.size() > 0) {
+            // Write what's left.  This may leave a mid-way bucket, but we don't worry about that since all data consumers
+            // should be stripping the start and end of the data anyway.
+            while (true) {
+                var next = toWrite.poll();
+                if (next == null) {
+                    break;
+                }
+                handleOneResult(next);
             }
-            handleOneResult(next);
-        }
 
-        writeResultsIfPossible(0);
+            writeResultsIfPossible(0);
+        }
 
         logger.info("Database write thread ended");
     }
