@@ -161,14 +161,18 @@ record TestSuite(Implementation impl, Variables variables, Connections connectio
                     var idPrefaceFinal = (idPreface == null) ? Defaults.KEY_PREFACE : idPreface;
                     long poolSizeFinal = variables.getCustomVarAsInt(poolSize);
 
-                    out.setPool(DocLocationPool.newBuilder()
+                    var builder = DocLocationPool.newBuilder()
                             .setCollection(collection)
                             .setIdPreface(idPrefaceFinal)
-                            .setPoolSize(poolSizeFinal)
-                            .setPoolSelectionStrategy((switch (poolSelectionStrategy) {
-                                case RANDOM_UNIFORM -> POOL_SELECTION_RANDOM_UNIFORM;
-                                case COUNTER -> POOL_SELECTION_COUNTER;
-                            })));
+                            .setPoolSize(poolSizeFinal);
+
+                    switch (poolSelectionStrategy) {
+                        case RANDOM_UNIFORM: builder.setUniform(PoolSelectionStategyRandom.newBuilder()
+                                .setDistribution(RandomDistribution.RANDOM_DISTRIBUTION_UNIFORM));
+                        case COUNTER: builder.setCounter(PoolSelectionStrategyCounter.newBuilder());
+                        default:
+                            throw new IllegalArgumentException("Unknown pool selection");
+                    }
                 }
             }
 
