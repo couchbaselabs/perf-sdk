@@ -55,14 +55,18 @@ public class SdkOperationExecutor {
         else if (location.hasPool()) {
             var pool = location.getPool();
 
-            return pool.getIdPreface() + (switch (pool.getPoolSelectionStrategy()) {
-                case POOL_SELECTION_COUNTER -> counter.getAndIncrement() % pool.getPoolSize();
+            int next;
+            if (pool.hasUniform()) {
+                next = random.nextInt((int) pool.getPoolSize());
+            }
+            else if (pool.hasCounter()) {
+                next = counter.getAndIncrement() % (int) pool.getPoolSize();
+            }
+            else {
+                throw new IllegalArgumentException("Unrecognised pool selection strategy");
+            }
 
-                case POOL_SELECTION_RANDOM_UNIFORM ->
-                        random.nextInt((int) pool.getPoolSize());
-
-                case UNRECOGNIZED -> throw new IllegalArgumentException("Unrecognised pool selection strategy");
-            });
+            return pool.getIdPreface() + next;
         }
         else {
             throw new IllegalArgumentException("Unknown doc location type");
