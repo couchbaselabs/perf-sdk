@@ -208,8 +208,21 @@ message PerfSingleOperationResult {
     oneof result {
         SdkOperationResult sdkResult = 1;
     }
-    google.protobuf.Timestamp initiated = 2;
-    google.protobuf.Timestamp finished = 3;
+
+    // Clocks are hard.  Many OS/platform combinations cannot guarantee nanosecond level precision of a wallclock time,
+    // but can provide such precision for elapsed time.
+    // So:
+    // `elapsedNanos` is intended to be, as precisely as the platform can measure it, the exact time taken by the operation in nanoseconds.
+    // Measured from just before sending the operation into the SDK (e.g. after handling any GRPC work), and just after
+    // the SDK returns.
+    // `initiated` is a wallclock time, used to place this operation into a one second bucket.  This should be as
+    // accurate as the platform can provide (often realistically this is only accurate to 10 millis or so).  Hopefully
+    // a few operations ending up in the wrong bucket each second will not dramatically impact the results.  It is ok
+    // to set `initiated` before the GRPC work, due to the reduced precision.
+    // If the operation fails, the performer does not need to set `elapsedNanos` - it will not be used.  However `initiated`
+    // must always be sent.
+    int64 elapsedNanos = 2;
+    google.protobuf.Timestamp initiated = 3;
 }
 
 message PerfMetricsResult {

@@ -20,22 +20,22 @@ public class SdkOperationExecutor {
     private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
     public com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult run(ClusterConnection connection, SdkWorkload req) {
-        PerfSingleOperationResult.Builder singleResult = PerfSingleOperationResult.newBuilder()
+        var result = PerfSingleOperationResult.newBuilder()
                 .setInitiated(getTimeNow());
 
         try {
-            performOperation(connection, req.getCommand());
-            singleResult.setSdkResult(SdkOperationResult.newBuilder()
+            performOperation(result, connection, req.getCommand());
+            result.setSdkResult(SdkOperationResult.newBuilder()
                     .setSuccess(true));
+            return result.build();
         }
         catch (RuntimeException err) {
-            singleResult.setSdkResult(SdkOperationResult.newBuilder()
+            result.setSdkResult(SdkOperationResult.newBuilder()
                     .setUnknownException(err.getClass().getSimpleName()));
             logger.warn("Operation failed with {}", err.toString());
         }
 
-        singleResult.setFinished(getTimeNow());
-        return singleResult.build();
+        return result.build();
     }
 
     private static Timestamp getTimeNow() {
@@ -74,7 +74,8 @@ public class SdkOperationExecutor {
     }
 
 
-    private void performOperation(ClusterConnection connection,
+    private void performOperation(PerfSingleOperationResult.Builder result,
+                                  ClusterConnection connection,
                                   SdkCommand op) {
         if (op.hasInsert()){
             var request = op.getInsert();
@@ -82,25 +83,37 @@ public class SdkOperationExecutor {
             var content = JsonObject.fromJson(request.getContentJson());
             var docId = getDocId(request.getLocation());
 
+            result.setInitiated(getTimeNow());
+            long start = System.nanoTime();
             collection.insert(docId, content);
+            result.setElapsedNanos(System.nanoTime() - start);
         } else if(op.hasGet()) {
             var request = op.getGet();
             var collection = connection.collection(request.getLocation());
             var docId = getDocId(request.getLocation());
 
+            result.setInitiated(getTimeNow());
+            long start = System.nanoTime();
             collection.get(docId);
+            result.setElapsedNanos(System.nanoTime() - start);
         } else if(op.hasRemove()){
             var request = op.getRemove();
             var collection = connection.collection(request.getLocation());
             var docId = getDocId(request.getLocation());
 
+            result.setInitiated(getTimeNow());
+            long start = System.nanoTime();
             collection.remove(docId);
+            result.setElapsedNanos(System.nanoTime() - start);
         } else if(op.hasReplace()){
             var request = op.getReplace();
             var collection = connection.collection(request.getLocation());
             var docId = getDocId(request.getLocation());
 
+            result.setInitiated(getTimeNow());
+            long start = System.nanoTime();
             collection.replace(docId, request.getContentJson());
+            result.setElapsedNanos(System.nanoTime() - start);
         } else {
             throw new InternalPerformerFailure(new IllegalArgumentException("Unknown operation"));
         }

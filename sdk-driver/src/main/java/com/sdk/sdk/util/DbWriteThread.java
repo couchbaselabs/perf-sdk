@@ -34,7 +34,7 @@ public class DbWriteThread extends Thread {
     // We periodically write to the database throughout, to prevent OOM issues.
     // We only want completed one second buckets.  Data can be out of order, unsorted, etc.  So make sure we're never
     // writing the most X recent seconds of data.
-    private static final int IGNORE_MOST_RECENT_SECS_OF_DATA = 3;
+    private static final int IGNORE_MOST_RECENT_SECS_OF_DATA = 10;
 
     public DbWriteThread(java.sql.Connection conn, String uuid, AtomicBoolean done) {
         this.conn = conn;
@@ -141,12 +141,12 @@ public class DbWriteThread extends Thread {
                             int total,
                             int success,
                             int failed,
-                            int durationMin,
-                            int durationMax,
-                            int durationAverage,
-                            int durationP50,
-                            int durationP95,
-                            int durationP99,
+                            long durationMinMicros,
+                            long durationMaxMicros,
+                            long durationAverageMicros,
+                            long durationP50Micros,
+                            long durationP95Micros,
+                            long durationP99Micros,
                             Map<String, Long> errors) {
     }
 
@@ -158,15 +158,10 @@ public class DbWriteThread extends Thread {
         var errors = new HashMap<String, Long>();
 
         for (PerfSingleOperationResult r : results) {
-            long initiatedMicros = grpcTimestampToMicros(r.getInitiated());
-            long finishedMicros = grpcTimestampToMicros(r.getFinished());
-            if (finishedMicros >= initiatedMicros) {
-                stats.recordLatency(finishedMicros - initiatedMicros);
-            } else {
-                logger.warn("Got bad values from performer {} {}", initiatedMicros, finishedMicros);
-            }
 
             if (r.getSdkResult().getSuccess()) {
+                // We only care about how long successful ops took
+                stats.recordLatency(r.getElapsedNanos());
                 success += 1;
             } else {
                 failure += 1;
@@ -188,17 +183,17 @@ public class DbWriteThread extends Thread {
                 (int) histogram.getTotalCount(),
                 success,
                 failure,
-                (int) histogram.getMinValue(),
-                (int) histogram.getMaxValue(),
-                (int) histogram.getMean(),
-                (int) histogram.getValueAtPercentile(0.5),
-                (int) histogram.getValueAtPercentile(0.95),
-                (int) histogram.getValueAtPercentile(0.99),
+                TimeUnit.NANOSECONDS.toMicros(histogram.getMinValue()),
+                TimeUnit.NANOSECONDS.toMicros(histogram.getMaxValue()),
+                TimeUnit.NANOSECONDS.toMicros((long) histogram.getMean()),
+                TimeUnit.NANOSECONDS.toMicros(histogram.getValueAtPercentile(50)),
+                TimeUnit.NANOSECONDS.toMicros(histogram.getValueAtPercentile(95)),
+                TimeUnit.NANOSECONDS.toMicros(histogram.getValueAtPercentile(99)),
                 errors);
     }
 
     private void write(PerfBucketResult v) {
-        logger.info("Writing bucket for {} success={} failed={} avg duration={}", v.timestamp, v.success, v.failed, v.durationAverage);
+        logger.info("Writing bucket for {} success={} failed={} avg duration={}", v.timestamp, v.success, v.failed, v.durationAverageMicros);
 
         try (var st = conn.createStatement()) {
             JsonObject errors = JsonObject.create();
@@ -212,12 +207,12 @@ public class DbWriteThread extends Thread {
                     v.total,
                     v.success,
                     v.failed,
-                    v.durationMin,
-                    v.durationMax,
-                    v.durationAverage,
-                    v.durationP50,
-                    v.durationP95,
-                    v.durationP99,
+                    v.durationMinMicros,
+                    v.durationMaxMicros,
+                    v.durationAverageMicros,
+                    v.durationP50Micros,
+                    v.durationP95Micros,
+                    v.durationP99Micros,
                     errors.size() == 0 ? null : errors.toString()
             ));
         } catch (SQLException throwables) {
