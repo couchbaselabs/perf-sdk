@@ -172,6 +172,11 @@ public class DbWriteThread extends Thread {
                 if (r.getSdkResult().hasUnknownException()) {
                     var exception = r.getSdkResult().getUnknownException();
                     errors.compute(exception, (k, v) -> v == null ? 1 : v + 1);
+
+                    if (exception.equals("IllegalArgumentException")) {
+                        logger.error("Fast failing as performer has indicated a serious error");
+                        System.exit(-1);
+                    }
                 }
             }
         }
