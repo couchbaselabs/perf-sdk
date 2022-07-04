@@ -35,6 +35,7 @@ public class DbWriteThread extends Thread {
     // We only want completed one second buckets.  Data can be out of order, unsorted, etc.  So make sure we're never
     // writing the most X recent seconds of data.
     private static final int IGNORE_MOST_RECENT_SECS_OF_DATA = 10;
+    private volatile long firstTimestampSecs = Long.MAX_VALUE;
 
     public DbWriteThread(java.sql.Connection conn, String uuid, AtomicBoolean done) {
         this.conn = conn;
@@ -123,7 +124,10 @@ public class DbWriteThread extends Thread {
                     .forEach((bySecond, results) -> {
                         // Remember we're ignoring the most recent few secs of data
                         if (bySecond < (last - ignoreMostRecentSecs)) {
-                            var processed = processResults(bySecond, results);
+                            if (bySecond < firstTimestampSecs) {
+                                firstTimestampSecs = bySecond;
+                            }
+                            var processed = processResults(firstTimestampSecs, bySecond, results);
                             write(processed);
                             wrote.add(bySecond);
                         }
@@ -138,6 +142,7 @@ public class DbWriteThread extends Thread {
     }
 
     record PerfBucketResult(long timestamp,
+                            long timeOffsetSecs,
                             int total,
                             int success,
                             int failed,
@@ -150,7 +155,7 @@ public class DbWriteThread extends Thread {
                             Map<String, Long> errors) {
     }
 
-    private PerfBucketResult processResults(long timestamp, List<PerfSingleOperationResult> results) {
+    private PerfBucketResult processResults(long firstTimestampSecs, long timestampSecs, List<PerfSingleOperationResult> results) {
         var stats = new LatencyStats();
         var success = 0;
         var failure = 0;
@@ -179,7 +184,8 @@ public class DbWriteThread extends Thread {
         }
 
         var histogram = stats.getIntervalHistogram();
-        return new PerfBucketResult(timestamp,
+        return new PerfBucketResult(timestampSecs,
+                timestampSecs - firstTimestampSecs,
                 (int) histogram.getTotalCount(),
                 success,
                 failure,
@@ -201,8 +207,9 @@ public class DbWriteThread extends Thread {
                 v.errors.forEach((errorName, errorCount) -> errors.put(errorName, errorCount));
             }
 
-            st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s')",
+            st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), %d, '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s')",
                     v.timestamp,
+                    v.timeOffsetSecs,
                     uuid,
                     v.total,
                     v.success,
