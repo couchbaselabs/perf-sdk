@@ -102,9 +102,18 @@ public class SdkDriver {
         try {
             return yamlMapper.readValue(new File(configFilename), TestSuite.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null;
+    }
+
+    static JsonObject readTestSuiteAsJson(String configFilename) {
+        try {
+            var object = yamlMapper.readValue(new File(configFilename), Object.class);
+            var bytes = jsonMapper.writeValueAsBytes(object);
+            return JsonObject.fromJson(bytes);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Credit to https://stackoverflow.com/questions/52580008/how-does-java-application-know-it-is-running-within-a-docker-container
@@ -120,6 +129,7 @@ public class SdkDriver {
     static void run(String testSuiteFile) throws Exception {
         logger.info("Reading config file {}", testSuiteFile);
         var testSuite = readTestSuite(testSuiteFile);
+        var testSuiteAsJson = readTestSuiteAsJson(testSuiteFile);
 
         var dbUrl = String.format("jdbc:postgresql://%s:%d/%s",
                 isRunningInsideDocker() ? testSuite.connections().database().hostname_docker() : testSuite.connections().database().hostname(),
@@ -264,14 +274,19 @@ public class SdkDriver {
 
                 var clusterJson = produceClusterJson(clusterHostname, testSuite.connections().cluster());
 
+                var runJson = testSuiteAsJson.getArray("runs")
+                        .toList().stream()
+                        .map(v -> JsonObject.from((HashMap) v))
+                        .filter(v -> v.getString("uuid").equals(run.uuid()))
+                        .findFirst()
+                        .get();
+                runJson.removeKey("uuid");
+
                 var json = JsonObject.create()
                         .put("cluster", clusterJson)
                         .put("impl", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.impl())))
-                        .put("workload", JsonObject.create()
-                                .put("description", run.description()))
+                        .put("workload", runJson)
                         .put("vars", jsonVars);
-//                        .put("variables", JsonObject.create()
-//                                .put("this is a variable", "test var"));
                 logger.info(json.toString());
 
                 try (var st = conn.createStatement()) {
