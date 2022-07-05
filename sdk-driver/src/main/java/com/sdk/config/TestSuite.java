@@ -45,7 +45,16 @@ public record TestSuite(Implementation impl, Variables variables, Connections co
     public record Variables(List<PredefinedVariable> predefined, List<CustomVariable> custom) {
         public Integer getCustomVarAsInt(String varName) {
             if (varName.startsWith("$")) {
-                return getCustomVarAsInt(varName.substring(1));
+                String varNameReal = varName.substring(1); // "pool_size"
+                var customVar = custom.stream()
+                        .filter(v -> v.name.equals(varNameReal))
+                        .findFirst();
+
+                if (customVar.isEmpty()) {
+                    throw new IllegalArgumentException("Cannot find custom variable " + varName);
+                }
+
+                return (Integer) customVar.get().value();
             }
 
             return Integer.parseInt(varName);
