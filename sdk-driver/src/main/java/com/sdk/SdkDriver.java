@@ -218,12 +218,6 @@ public class SdkDriver {
                 dbWrite.start();
                 var received = new AtomicInteger(0);
 
-                // CBD-4926: this isn't the slickest way of doing this (would prefer to write it all to database and
-                // trim at consumption point), but as a quick fix, discard the first set of data.  This takes care of
-                // JVM warmup and other forms of settling.
-                var start = System.nanoTime();
-                var ignoringInitialResults = new AtomicBoolean(true);
-
                 var responseObserver = new StreamObserver<PerfSingleResult>() {
                     @Override
                     public void onNext(PerfSingleResult perfRunResult) {
@@ -232,14 +226,7 @@ public class SdkDriver {
                             logger.info("Received {}", got);
                         }
 
-                        if (ignoringInitialResults.get()) {
-                            if (TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start) >= 15) {
-                                logger.info("Warmup period passed, now writing results to database");
-                                ignoringInitialResults.set(false);
-                            }
-                        }
-
-                        if (perfRunResult.hasOperationResult() && !ignoringInitialResults.get()) {
+                        if (perfRunResult.hasOperationResult()) {
                             dbWrite.addToQ(perfRunResult.getOperationResult());
                         }
                     }
@@ -269,7 +256,7 @@ public class SdkDriver {
 
                 // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
                 // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
-                jsonVars.put("driverVersion", 2);
+                jsonVars.put("driverVersion", 3);
                 // todo jsonVars.put("performerVersion", performer.response().getPerformerVersion());
 
                 var clusterJson = produceClusterJson(clusterHostname, testSuite.connections().cluster());
