@@ -207,9 +207,8 @@ public class DbWriteThread extends Thread {
                 v.errors.forEach((errorName, errorCount) -> errors.put(errorName, errorCount));
             }
 
-            st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), %d, '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s')",
+            st.executeUpdate(String.format("INSERT INTO buckets VALUES (to_timestamp(%d), '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s', %d)",
                     v.timestamp,
-                    v.timeOffsetSecs,
                     uuid,
                     v.total,
                     v.success,
@@ -220,7 +219,8 @@ public class DbWriteThread extends Thread {
                     v.durationP50Micros,
                     v.durationP95Micros,
                     v.durationP99Micros,
-                    errors.size() == 0 ? null : errors.toString()
+                    errors.size() == 0 ? null : errors.toString(),
+                    v.timeOffsetSecs
             ));
         } catch (SQLException throwables) {
             logger.error("Failed to write performance data to database", throwables);
