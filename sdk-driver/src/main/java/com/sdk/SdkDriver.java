@@ -32,12 +32,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
+import static com.sdk.sdk.util.DbWriteThread.grpcTimestampToMicros;
 
 
 public class SdkDriver {
@@ -217,6 +221,7 @@ public class SdkDriver {
                 DbWriteThread dbWrite = new DbWriteThread(conn, run.uuid(), done);
                 dbWrite.start();
                 var received = new AtomicInteger(0);
+                var start = System.nanoTime();
 
                 var responseObserver = new StreamObserver<PerfSingleResult>() {
                     @Override
@@ -228,6 +233,11 @@ public class SdkDriver {
 
                         if (perfRunResult.hasOperationResult()) {
                             dbWrite.addToQ(perfRunResult.getOperationResult());
+                        }
+                        else if (perfRunResult.hasMetricsResult()) {
+                            // If this is a performance problem will need to have a queue.  It's assumed here that the
+                            // performer is sending metrics back relatively infrequently, e.g. every second or more.
+                            writeMetricResult(perfRunResult, conn, start, run);
                         }
                     }
 
@@ -288,6 +298,23 @@ public class SdkDriver {
                 logger.info("Finished!");
             }
 
+        }
+    }
+
+    private static void writeMetricResult(PerfSingleResult perfRunResult, Connection conn, long start, TestSuite.Run run) {
+        var metrics = perfRunResult.getMetricsResult();
+
+        try (var st = conn.createStatement()) {
+            var timeSinceStartSecs = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start);
+
+            var statement = String.format("INSERT INTO metrics VALUES (to_timestamp(%d), '%s', '%s', %d)",
+                    TimeUnit.MICROSECONDS.toSeconds(grpcTimestampToMicros(metrics.getInitiated())),
+                    run.uuid(),
+                    metrics.getMetrics(),
+                    timeSinceStartSecs);
+            st.executeUpdate(statement);
+        } catch (SQLException err) {
+            logger.error("Failed to write metrics data to database", err);
         }
     }
 

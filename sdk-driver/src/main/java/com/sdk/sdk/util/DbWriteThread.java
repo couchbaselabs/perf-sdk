@@ -2,6 +2,7 @@ package com.sdk.sdk.util;
 
 import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
 import com.couchbase.client.java.json.JsonObject;
+import com.couchbase.grpc.sdk.protocol.PerfMetricsResult;
 import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
 import com.google.protobuf.Timestamp;
 import org.slf4j.Logger;
@@ -137,7 +138,7 @@ public class DbWriteThread extends Thread {
         }
     }
 
-    private static long grpcTimestampToMicros(Timestamp ts) {
+    public static long grpcTimestampToMicros(Timestamp ts) {
         return TimeUnit.NANOSECONDS.toMicros(TimeUnit.SECONDS.toNanos(ts.getSeconds()) + ts.getNanos());
     }
 

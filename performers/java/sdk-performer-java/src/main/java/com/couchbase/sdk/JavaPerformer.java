@@ -16,6 +16,7 @@
 package com.couchbase.sdk;
 
 import com.couchbase.grpc.sdk.protocol.*;
+import com.couchbase.sdk.metrics.MetricsReporter;
 import com.couchbase.sdk.perf.PerfMarshaller;
 import com.couchbase.sdk.utils.ClusterConnection;
 import io.grpc.Server;
@@ -71,7 +72,13 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
             ClusterConnection connection = clusterConnections.get(request.getClusterConnectionId());
 
             logger.info("Beginning PerfRun");
+            var metrics = new MetricsReporter(responseObserver);
+            metrics.start();
+
             PerfMarshaller.run(connection, request, responseObserver);
+
+            metrics.interrupt();
+            metrics.join();
 
             responseObserver.onCompleted();
         } catch (RuntimeException | InterruptedException err) {

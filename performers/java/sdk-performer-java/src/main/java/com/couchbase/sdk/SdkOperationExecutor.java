@@ -38,7 +38,7 @@ public class SdkOperationExecutor {
         return result.build();
     }
 
-    private static Timestamp getTimeNow() {
+    public static Timestamp getTimeNow() {
         long millis = System.currentTimeMillis();
 
         return Timestamp.newBuilder().setSeconds(millis / 1000)
