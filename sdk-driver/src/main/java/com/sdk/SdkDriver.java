@@ -1,5 +1,6 @@
 package com.sdk;
 
+import com.couchbase.client.core.deps.io.netty.util.ResourceLeakDetector;
 import com.couchbase.client.core.error.BucketExistsException;
 import com.couchbase.client.core.error.BucketNotFoundException;
 import com.couchbase.client.java.Cluster;
@@ -53,6 +54,8 @@ public class SdkDriver {
     private static final Logger logger = LoggerFactory.getLogger(SdkDriver.class);
 
     public static void main(String[] args)  throws Exception {
+        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
+
         if (args.length != 1) {
             logger.info("Must provide config.yaml");
             System.exit(-1);

@@ -15,6 +15,7 @@
  */
 package com.couchbase.sdk;
 
+import com.couchbase.client.core.deps.io.netty.util.ResourceLeakDetector;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.sdk.metrics.MetricsReporter;
 import com.couchbase.sdk.perf.PerfMarshaller;
@@ -91,6 +92,8 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
 
     public static void main(String[] args) throws IOException, InterruptedException {
         int port = 8060;
+
+        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
 
         for(String parameter : args) {
             switch (parameter.split("=")[0]) {
