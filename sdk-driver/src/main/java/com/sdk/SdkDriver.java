@@ -313,6 +313,7 @@ public class SdkDriver {
                     metrics.getMetrics(),
                     timeSinceStartSecs);
             st.executeUpdate(statement);
+            logger.info("Writing metrics {}", metrics.getMetrics());
         } catch (SQLException err) {
             logger.error("Failed to write metrics data to database", err);
         }

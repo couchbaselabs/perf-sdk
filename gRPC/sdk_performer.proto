@@ -199,7 +199,9 @@ message PerfSingleResult {
         // will take care of that.
         PerfSingleOperationResult operationResult = 1;
 
-        // The performer can send back metrics whenever it wishes.
+        // The performer can send back metrics whenever it wishes.  However, due to the way database results are currently
+        // joined with the bucket results (which are in one second buckets), it's only useful to send back a maximum of
+        // one per second.
         PerfMetricsResult metricsResult = 2;
     }
 }
