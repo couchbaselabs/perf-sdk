@@ -9,6 +9,7 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.management.BufferPoolMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.ThreadInfo;
@@ -19,7 +20,7 @@ import java.lang.management.ThreadInfo;
 public class MetricsReporter extends Thread {
     private final PerfWriteThread writer;
     private final Logger logger = LoggerFactory.getLogger(MetricsReporter.class);
-    private static final int CONVERT = 1073741824;
+    private static final double CONVERT = 1073741824;
 
     public MetricsReporter(PerfWriteThread writer) {
         this.writer = writer;
@@ -122,6 +123,18 @@ public class MetricsReporter extends Thread {
 //                } catch (Throwable err) {
 //                    logger.warn("Metrics failed: {}", err.toString());
 //                }
+
+                try {
+                    var pools = ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class);
+                    for (BufferPoolMXBean pool : pools) {
+                        if (pool.getName().equals("direct")) {
+                            metrics.put("directMemoryUsedGB", pool.getMemoryUsed() / CONVERT);
+                            metrics.put("directMemoryCapacityGB", pool.getTotalCapacity() / CONVERT);
+                        }
+                    }
+                } catch (Throwable err) {
+                    logger.warn("Metrics failed: {}", err.toString());
+                }
 
                 writer.enqueue(PerfSingleResult.newBuilder()
                         .setMetricsResult(PerfMetricsResult.newBuilder()
