@@ -18,6 +18,7 @@ package com.couchbase.sdk;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.couchbase.sdk.metrics.MetricsReporter;
 import com.couchbase.sdk.perf.PerfMarshaller;
+import com.couchbase.sdk.perf.PerfWriteThread;
 import com.couchbase.sdk.utils.ClusterConnection;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -61,7 +62,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
         }
         catch (Exception err) {
             logger.error("Operation failed during clusterConnectionCreate due to {}", err.getMessage());
-            responseObserver.onError(Status.ABORTED.withDescription(err.getMessage()).asException());
+            responseObserver.onError(Status.ABORTED.withDescription(err.toString()).asException());
         }
     }
 
@@ -72,17 +73,19 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
             ClusterConnection connection = clusterConnections.get(request.getClusterConnectionId());
 
             logger.info("Beginning PerfRun");
-            var metrics = new MetricsReporter(responseObserver);
+            var writer = new PerfWriteThread(responseObserver);
+
+            var metrics = new MetricsReporter(writer);
             metrics.start();
 
-            PerfMarshaller.run(connection, request, responseObserver);
+            PerfMarshaller.run(connection, request, writer);
 
             metrics.interrupt();
             metrics.join();
 
             responseObserver.onCompleted();
         } catch (RuntimeException | InterruptedException err) {
-            responseObserver.onError(Status.ABORTED.withDescription(err.getMessage()).asException());
+            responseObserver.onError(Status.ABORTED.withDescription(err.toString()).asException());
         }
     }
 

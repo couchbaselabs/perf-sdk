@@ -245,6 +245,7 @@ public class SdkDriver {
                     public void onError(Throwable throwable) {
                         logger.error("Error from performer after receiving {}: {}", received.get(), throwable.toString());
                         done.set(true);
+                        System.exit(-1);
                     }
 
                     @Override

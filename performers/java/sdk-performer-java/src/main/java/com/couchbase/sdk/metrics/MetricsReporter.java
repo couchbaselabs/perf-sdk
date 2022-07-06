@@ -4,6 +4,7 @@ import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.grpc.sdk.protocol.PerfMetricsResult;
 import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
 import com.couchbase.sdk.SdkOperationExecutor;
+import com.couchbase.sdk.perf.PerfWriteThread;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +17,12 @@ import java.lang.management.ThreadInfo;
  * Periodically sends metrics back to the driver
  */
 public class MetricsReporter extends Thread {
-    private final StreamObserver<PerfSingleResult> responseObserver;
+    private final PerfWriteThread writer;
     private final Logger logger = LoggerFactory.getLogger(MetricsReporter.class);
     private static final int CONVERT = 1073741824;
 
-    public MetricsReporter(StreamObserver<PerfSingleResult> responseObserver) {
-        this.responseObserver = responseObserver;
+    public MetricsReporter(PerfWriteThread writer) {
+        this.writer = writer;
     }
 
     @Override
@@ -122,7 +123,7 @@ public class MetricsReporter extends Thread {
 //                    logger.warn("Metrics failed: {}", err.toString());
 //                }
 
-                responseObserver.onNext(PerfSingleResult.newBuilder()
+                writer.enqueue(PerfSingleResult.newBuilder()
                         .setMetricsResult(PerfMetricsResult.newBuilder()
                                 .setInitiated(SdkOperationExecutor.getTimeNow())
                                 .setMetrics(metrics.toString()))

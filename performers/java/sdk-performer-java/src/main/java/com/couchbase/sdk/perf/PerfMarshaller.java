@@ -21,19 +21,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class PerfMarshaller {
     private static final Logger logger = LoggerFactory.getLogger(PerfMarshaller.class);
-    private static ConcurrentLinkedQueue<PerfSingleOperationResult> writeQueue = new ConcurrentLinkedQueue<>();
 
     public static void run(ClusterConnection connection,
                            PerfRunRequest perfRun,
-                           StreamObserver<PerfSingleResult> responseObserver) throws InterruptedException {
+                           PerfWriteThread writer) throws InterruptedException {
         try{
-            var done = new AtomicBoolean();
             var counters = new Counters();
-
-            PerfWriteThread writer = new PerfWriteThread(
-                    responseObserver,
-                    writeQueue,
-                    done);
 
             List<PerfRunnerThread> runners = new ArrayList<>();
             for (int runnerIndex = 0; runnerIndex < perfRun.getHorizontalScalingCount(); runnerIndex ++) {
@@ -57,8 +50,7 @@ public class PerfMarshaller {
                 runner.join();
             }
             logger.info("All {} threads completed", runners.size());
-            done.set(true);
-
+            writer.interrupt();
             writer.join();
             logger.info("Writer thread completed");
         }catch (Exception e){
@@ -108,7 +100,9 @@ class PerfRunnerThread extends Thread {
 
                 while (counter.decrementAndGet() > 0) {
                     var result = operation.run(connection, sdkWorkload);
-                    writeQueue.enqueue(result);
+                    writeQueue.enqueue(PerfSingleResult.newBuilder()
+                            .setOperationResult(result)
+                            .build());
                     if (result.getSdkResult().getSuccess()) {
                         operationsSuccessful += 1;
                     }
