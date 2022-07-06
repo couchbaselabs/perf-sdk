@@ -270,7 +270,7 @@ public class SdkDriver {
 
                 // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
                 // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
-                jsonVars.put("driverVersion", 3);
+                jsonVars.put("driverVersion", 4);
                 // todo jsonVars.put("performerVersion", performer.response().getPerformerVersion());
 
                 var clusterJson = produceClusterJson(clusterHostname, testSuite.connections().cluster());

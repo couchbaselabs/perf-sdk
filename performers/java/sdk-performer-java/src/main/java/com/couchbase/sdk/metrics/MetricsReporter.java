@@ -43,14 +43,14 @@ public class MetricsReporter extends Thread {
 
                 try {
                     var memory = ManagementFactory.getMemoryMXBean();
-                    // metrics.put("memoryHeapInitialGB", (float) memory.getHeapMemoryUsage().getInit() / CONVERT);
-                    metrics.put("memoryHeapUsedGB", (float) memory.getHeapMemoryUsage().getUsed() / CONVERT);
-                    metrics.put("memoryHeapMaxGB", (float) memory.getHeapMemoryUsage().getMax() / CONVERT);
-                    // metrics.put("memoryHeapCommittedGB", (float) memory.getHeapMemoryUsage().getCommitted() / CONVERT);
-                    // metrics.put("memoryNonHeapInitialGB", (float) memory.getNonHeapMemoryUsage().getInit() / CONVERT);
-                    metrics.put("memoryNonHeapUsedGB", (float) memory.getNonHeapMemoryUsage().getUsed() / CONVERT);
-                    metrics.put("memoryNonHeapMaxGB", (float) memory.getNonHeapMemoryUsage().getMax() / CONVERT);
-                    // metrics.put("memoryNonHeapCommittedGB", (float) memory.getNonHeapMemoryUsage().getCommitted() / CONVERT);
+                    // metrics.put("memHeapInitialGB", (float) memory.getHeapMemoryUsage().getInit() / CONVERT);
+                    metrics.put("memHeapUsedGB", (float) memory.getHeapMemoryUsage().getUsed() / CONVERT);
+                    metrics.put("memHeapMaxGB", (float) memory.getHeapMemoryUsage().getMax() / CONVERT);
+                    // metrics.put("memHeapCommittedGB", (float) memory.getHeapMemoryUsage().getCommitted() / CONVERT);
+                    // metrics.put("memNonHeapInitialGB", (float) memory.getNonHeapMemoryUsage().getInit() / CONVERT);
+                    //metrics.put("memNonHeapUsedGB", (float) memory.getNonHeapMemoryUsage().getUsed() / CONVERT);
+                    //metrics.put("memNonHeapMaxGB", (float) memory.getNonHeapMemoryUsage().getMax() / CONVERT);
+                    // metrics.put("memNonHeapCommittedGB", (float) memory.getNonHeapMemoryUsage().getCommitted() / CONVERT);
                 } catch (Throwable err) {
                     logger.warn("Memory metrics failed: {}", err.toString());
                 }
@@ -80,8 +80,8 @@ public class MetricsReporter extends Thread {
                     for (int i = 0; i < beans.size(); i++) {
                         var bean = beans.get(i);
 
-                        metrics.put("garbageCollector" + i + "AccCollectionTimeMillis", bean.getCollectionTime());
-                        metrics.put("garbageCollector" + i + "AccCollectionCount", bean.getCollectionCount());
+                        metrics.put("gc" + i + "AccCollectionTimeMillis", bean.getCollectionTime());
+                        metrics.put("gc" + i + "AccCollectionCount", bean.getCollectionCount());
                     }
                 } catch (Throwable err) {
                     logger.warn("Metrics failed: {}", err.toString());
@@ -96,13 +96,13 @@ public class MetricsReporter extends Thread {
 
                 try {
                     var bean = ManagementFactory.getPlatformMXBean(com.sun.management.OperatingSystemMXBean.class);
-                    metrics.put("processCpuLoad", bean.getProcessCpuLoad() * 100.0);
-                    metrics.put("systemCpuLoad", bean.getSystemCpuLoad() * 100.0);
+                    metrics.put("processCpu", bean.getProcessCpuLoad() * 100.0);
+                    metrics.put("systemCpu", bean.getSystemCpuLoad() * 100.0);
                     // metrics.put("freeMemorySizeGB", bean.getFreeMemorySize() / CONVERT);
                     // metrics.put("freePhysicalMemorySizeGB", bean.getFreePhysicalMemorySize() / CONVERT);
                     // metrics.put("totalPhysicalMemorySizeGB", bean.getTotalPhysicalMemorySize() / CONVERT);
                     // metrics.put("committedVirtualMemorySizeGB", bean.getCommittedVirtualMemorySize() / CONVERT);
-                    metrics.put("freeSwapSpaceSizeGB", bean.getFreeSwapSpaceSize() / CONVERT);
+                    metrics.put("freeSwapSizeGB", bean.getFreeSwapSpaceSize() / CONVERT);
                     // metrics.put("processCpuTimeNanos", bean.getProcessCpuTime());
                     // metrics.put("totalMemorySizeGB", bean.getTotalMemorySize() / CONVERT);
                     // metrics.put("totalFreeSwapSpaceSizeGB", bean.getFreeSwapSpaceSize() / CONVERT);
@@ -128,8 +128,8 @@ public class MetricsReporter extends Thread {
                     var pools = ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class);
                     for (BufferPoolMXBean pool : pools) {
                         if (pool.getName().equals("direct")) {
-                            metrics.put("directMemoryUsedGB", pool.getMemoryUsed() / CONVERT);
-                            metrics.put("directMemoryCapacityGB", pool.getTotalCapacity() / CONVERT);
+                            metrics.put("memDirectUsedGB", pool.getMemoryUsed() / CONVERT);
+                            metrics.put("memDirectMaxGB", pool.getTotalCapacity() / CONVERT);
                         }
                     }
                 } catch (Throwable err) {
