@@ -10,10 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.sdk.sdk.util.DbWriteThread.grpcTimestampToMicros;
 
-/**
- * DbWriteThread dynamically writes metrics data sent by the performer to the database
- */
-public class MetricsWriteThread extends Thread {
+ public class MetricsWriteThread extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(MetricsWriteThread.class);
     private final ConcurrentLinkedQueue<PerfSingleResult> toWrite = new ConcurrentLinkedQueue<>();
     private final java.sql.Connection conn;

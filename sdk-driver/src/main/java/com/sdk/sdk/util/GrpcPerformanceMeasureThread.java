@@ -32,7 +32,7 @@ public class GrpcPerformanceMeasureThread extends Thread {
                 double totalTimeSecs = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start);
                 var receivedFrozen = received.get();
                 receivedTotal += receivedFrozen;
-                logger.info("Throughput over last {} seconds: {} ops/sec, {} ops: total, overall throughput: {} ops/sec",
+                logger.info("Driver received throughput over last {} seconds: {} ops/sec, {} ops: total, overall throughput: {} ops/sec",
                         CHECK_EVERY_X_SECONDS, received.get() / CHECK_EVERY_X_SECONDS,
                         receivedTotal,
                         receivedTotal / totalTimeSecs);
