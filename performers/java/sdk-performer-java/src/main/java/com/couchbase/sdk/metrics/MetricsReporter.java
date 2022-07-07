@@ -80,8 +80,8 @@ public class MetricsReporter extends Thread {
                     for (int i = 0; i < beans.size(); i++) {
                         var bean = beans.get(i);
 
-                        metrics.put("gc" + i + "AccCollectionTimeMillis", bean.getCollectionTime());
-                        metrics.put("gc" + i + "AccCollectionCount", bean.getCollectionCount());
+                        metrics.put("gc" + i + "AccTimeMs", bean.getCollectionTime());
+                        metrics.put("gc" + i + "Count", bean.getCollectionCount());
                     }
                 } catch (Throwable err) {
                     logger.warn("Metrics failed: {}", err.toString());

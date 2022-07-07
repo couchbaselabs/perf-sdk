@@ -6,6 +6,7 @@ import com.couchbase.client.core.error.BucketNotFoundException;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
+import com.couchbase.client.java.manager.bucket.StorageBackend;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sdk.config.BuiltSdkCommand;
 import com.sdk.config.Op;
@@ -157,7 +158,21 @@ public class SdkDriver {
 
             var cluster = Cluster.connect(clusterHostname, testSuite.connections().cluster().username(), testSuite.connections().cluster().password());
 
-            logger.info("(Re)creating bucket {}", Defaults.DEFAULT_BUCKET);
+            var storageBackend = StorageBackend.COUCHSTORE;
+            var numReplaces = 0;
+
+            var clusterJson = produceClusterJson(clusterHostname, testSuite.connections().cluster())
+                    .put("storage", storageBackend.alias())
+                    .put("replicas", numReplaces);
+
+            // Use all the available memory for the bucket
+            var memoryMb = clusterJson.getInt("memory");
+
+            logger.info("(Re)creating bucket {} with memoryMB {} and backend {}", Defaults.DEFAULT_BUCKET, memoryMb, storageBackend);
+            var bucketSettings = BucketSettings.create(Defaults.DEFAULT_BUCKET)
+                    .ramQuotaMB(memoryMb)
+                    .numReplicas(numReplaces)
+                    .storageBackend(storageBackend);
 
             try {
                 cluster.buckets().dropBucket(Defaults.DEFAULT_BUCKET);
@@ -165,7 +180,7 @@ public class SdkDriver {
             catch (BucketNotFoundException ignored) {}
 
             try {
-                cluster.buckets().createBucket(BucketSettings.create(Defaults.DEFAULT_BUCKET));
+                cluster.buckets().createBucket(bucketSettings);
             }
             catch (BucketExistsException ignored) {}
 
@@ -270,10 +285,8 @@ public class SdkDriver {
 
                 // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
                 // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
-                jsonVars.put("driverVersion", 4);
+                jsonVars.put("driverVersion", 5);
                 // todo jsonVars.put("performerVersion", performer.response().getPerformerVersion());
-
-                var clusterJson = produceClusterJson(clusterHostname, testSuite.connections().cluster());
 
                 var runJson = testSuiteAsJson.getArray("runs")
                         .toList().stream()
