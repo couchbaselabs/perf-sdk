@@ -10,6 +10,8 @@ option java_multiple_files = true;
 import "sdk_options.proto";
 import "sdk_doc_location.proto";
 
+
+// todo SdkCommand naming
 message CommandInsert {
   DocLocation location = 1;
   string contentJson = 2;
@@ -30,6 +32,10 @@ message CommandReplace {
   DocLocation location = 1;
   string contentJson = 2;
   optional ReplaceOptions options = 3;
+}
+
+// todo add
+message CommandWait {
 }
 
 message SdkCommand {

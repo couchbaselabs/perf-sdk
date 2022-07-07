@@ -1,6 +1,5 @@
 package com.sdk;
 
-import com.couchbase.client.core.deps.io.netty.util.ResourceLeakDetector;
 import com.couchbase.client.core.error.BucketExistsException;
 import com.couchbase.client.core.error.BucketNotFoundException;
 import com.couchbase.client.java.Cluster;
@@ -11,6 +10,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sdk.config.BuiltSdkCommand;
 import com.sdk.config.Op;
 import com.sdk.config.OpGet;
+import com.sdk.config.OpGrpcPing;
 import com.sdk.config.OpInsert;
 import com.sdk.config.OpRemove;
 import com.sdk.config.OpReplace;
@@ -20,6 +20,7 @@ import com.sdk.constants.Strings;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.sdk.sdk.util.DbWriteThread;
 import com.sdk.sdk.util.DocCreateThread;
+import com.sdk.sdk.util.GrpcPerformanceMeasureThread;
 import com.sdk.sdk.util.MetricsWriteThread;
 import com.sdk.sdk.util.Performer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -35,16 +36,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-
-import static com.sdk.sdk.util.DbWriteThread.grpcTimestampToMicros;
 
 
 public class SdkDriver {
@@ -78,19 +75,21 @@ public class SdkDriver {
                 return new OpRemove(count, op.docLocation(), variables);
             case REPLACE:
                 return new OpReplace(updated, count, op.docLocation(), variables);
+            case PING:
+                return new OpGrpcPing(count);
             default:
                 throw new IllegalArgumentException("Unknown op " + op);
         }
     }
 
-    static BuiltSdkCommand createSdkCommand(TestSuite.Variables variables, TestSuite.Run run) {
+    static BuiltSdkCommand createSdkCommand(TestSuite.Run run) {
         //TODO Make sure any REPLACE operations are in the YAML before REMOVES
         //StringBuilder sb = new StringBuilder();
         var ops = new ArrayList<Op>();
 
         run.operations().forEach(op -> {
-            int count = evaluateCount(variables, op.count());
-            ops.add(addOp(op, count, variables));
+            int count = evaluateCount(run.variables(), op.count());
+            ops.add(addOp(op, count, run.variables()));
         });
         return new BuiltSdkCommand(ops, "Test");
     }
@@ -193,35 +192,41 @@ public class SdkDriver {
                             .setClusterConnectionId(UUID.randomUUID().toString())
                             .build();
 
-            var performerHostname = isRunningInsideDocker() ? testSuite.connections().performer().hostname_docker() : testSuite.connections().performer().hostname();
-            logger.info("Connecting to performer on {}:{}", performerHostname, testSuite.connections().performer().port());
-
-            Performer performer = new Performer(
-                    performerHostname,
-                    testSuite.connections().performer().port(),
-                    createConnection);
-
             for (TestSuite.Run run : testSuite.runs()) {
                 logger.info("Running workload " + run);
 
+                // Connect to the performer for each run, as the GRPC variables may be different
+                var performerHostname = isRunningInsideDocker() ? testSuite.connections().performer().hostname_docker() : testSuite.connections().performer().hostname();
+                Optional<Boolean> grpcCompression = (run.variables().grpc() == null) ? Optional.empty() : Optional.ofNullable(run.variables().grpc().compression());
+                logger.info("Connecting to performer on {}:{} compression={}", performerHostname, testSuite.connections().performer().port(), grpcCompression);
+
+                var performer = new Performer(
+                        performerHostname,
+                        testSuite.connections().performer().port(),
+                        createConnection,
+                        grpcCompression);
+
+
                 run.operations().forEach(op -> {
-                    op.docLocation().poolSize(testSuite.variables()).ifPresent(docPoolSize -> {
-                        var docThread = new DocCreateThread(docPoolSize,
-                                cluster.bucket(Defaults.DEFAULT_BUCKET).defaultCollection());
-                        docThread.start();
-                        // wait for all docs to be created
-                        logger.info("Waiting for document pool of size {} to be created", docPoolSize);
-                        try {
-                            docThread.join();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+                    if (op.docLocation() != null) {
+                        op.docLocation().poolSize(run.variables()).ifPresent(docPoolSize -> {
+                            var docThread = new DocCreateThread(docPoolSize,
+                                    cluster.bucket(Defaults.DEFAULT_BUCKET).defaultCollection());
+                            docThread.start();
+                            // wait for all docs to be created
+                            logger.info("Waiting for document pool of size {} to be created", docPoolSize);
+                            try {
+                                docThread.join();
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }
                 });
 
 
 
-                BuiltSdkCommand command = createSdkCommand(testSuite.variables(), run);
+                BuiltSdkCommand command = createSdkCommand(run);
 
                 PerfRunHorizontalScaling.Builder horizontalScalingBuilt = PerfRunHorizontalScaling.newBuilder();
 
@@ -229,34 +234,43 @@ public class SdkDriver {
                     op.applyTo(horizontalScalingBuilt);
                 });
 
+                run.variables().predefined().forEach(p -> {
+                            if (p.values() != null && p.values().length > 1) {
+                                // Reminder: want to be able to have multiple values for say horizontal_scaling, and for this to generate
+                                // multiple runs.
+                                throw new UnsupportedOperationException();
+                            }
+                        });
+
                 PerfRunRequest.Builder perf = PerfRunRequest.newBuilder()
                         .setClusterConnectionId(createConnection.getClusterConnectionId());
+                var perfConfigBuilder = PerfRunConfig.newBuilder();
+                if (run.variables().grpc().batch() != null) {
+                    perfConfigBuilder.setBatchSize(run.variables().grpc().batch());
+                }
+                if (run.variables().grpc().flowControl() != null) {
+                    perfConfigBuilder.setFlowControl(run.variables().grpc().flowControl());
+                }
+                perf.setConfig(perfConfigBuilder.build());
 
-                for (int i=0; i< testSuite.variables().horizontalScaling(); i++){
+                for (int i=0; i< run.variables().horizontalScaling(); i++){
                     perf.addHorizontalScaling(horizontalScalingBuilt);
                 }
 
                 var done = new AtomicBoolean(false);
                 var dbWrite = new DbWriteThread(conn, run.uuid(), done);
                 var metricsWrite = new MetricsWriteThread(conn, run.uuid());
+                var performanceMonitor = new GrpcPerformanceMeasureThread();
                 dbWrite.start();
                 metricsWrite.start();
+                performanceMonitor.start();
                 var received = new AtomicInteger(0);
+                var start = System.nanoTime();
 
                 var responseObserver = new StreamObserver<PerfSingleResult>() {
                     @Override
                     public void onNext(PerfSingleResult perfRunResult) {
-                        var got = received.incrementAndGet();
-                        if (got % 1000 == 0 || got == 1) {
-                            logger.info("Received {}", got);
-                        }
-
-                        if (perfRunResult.hasOperationResult()) {
-                            dbWrite.addToQ(perfRunResult.getOperationResult());
-                        }
-                        else if (perfRunResult.hasMetricsResult()) {
-                            metricsWrite.enqueue(perfRunResult);
-                        }
+                        handleResult(perfRunResult, received, dbWrite, metricsWrite, performanceMonitor);
                     }
 
                     @Override
@@ -268,7 +282,8 @@ public class SdkDriver {
 
                     @Override
                     public void onCompleted() {
-                        logger.info("Performer has finished after receiving {}", received.get());
+                        logger.info("Performer has finished after receiving {} in {} secs",
+                                received.get(), TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start));
                         done.set(true);
                     }
                 };
@@ -278,11 +293,13 @@ public class SdkDriver {
                 dbWrite.join();
                 metricsWrite.interrupt();
                 metricsWrite.join();
+                performanceMonitor.interrupt();
+                performanceMonitor.join();
 
                 // Only insert into the runs table if everything was successful
                 var jsonVars = JsonObject.create();
-                testSuite.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
-                testSuite.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.value()));
+                run.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
+                run.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.values()[0]));
 
                 // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
                 // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
@@ -317,6 +334,29 @@ public class SdkDriver {
             }
 
         }
+    }
+
+    private static void handleResult(PerfSingleResult perfRunResult, AtomicInteger received, DbWriteThread dbWrite, MetricsWriteThread metricsWrite, GrpcPerformanceMeasureThread performanceMonitor) {
+        received.incrementAndGet();
+
+        if (perfRunResult.hasOperationResult()) {
+            performanceMonitor.register(perfRunResult);
+            dbWrite.enqueue(perfRunResult.getOperationResult());
+        }
+        else if (perfRunResult.hasMetricsResult()) {
+            performanceMonitor.register(perfRunResult);
+            metricsWrite.enqueue(perfRunResult);
+        }
+        else if (perfRunResult.hasGrpcResult()) {
+            performanceMonitor.register(perfRunResult);
+        }
+        else if (perfRunResult.hasBatchedResult()) {
+            var batched = perfRunResult.getBatchedResult();
+            for (int i = 0; i < batched.getResultCount(); i ++) {
+                handleResult(batched.getResult(i), received, dbWrite, metricsWrite, performanceMonitor);
+            }
+        }
+
     }
 
     private static JsonObject produceClusterJson(String hostname, TestSuite.Connections.Cluster cluster) {

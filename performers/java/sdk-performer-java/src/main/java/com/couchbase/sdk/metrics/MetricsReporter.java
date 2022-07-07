@@ -96,6 +96,7 @@ public class MetricsReporter extends Thread {
 //                }
 
                 try {
+                    // todo universal metric names
                     var bean = ManagementFactory.getPlatformMXBean(com.sun.management.OperatingSystemMXBean.class);
                     metrics.put("processCpu", bean.getProcessCpuLoad() * 100.0);
                     metrics.put("systemCpu", bean.getSystemCpuLoad() * 100.0);

@@ -11,10 +11,11 @@ import com.couchbase.grpc.sdk.protocol.RandomDistribution;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sdk.constants.Defaults;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public record TestSuite(Implementation impl, Variables variables, Connections connections, List<Run> runs) {
+public record TestSuite(Implementation impl, Connections connections, List<Run> runs) {
 //    Duration runtimeAsDuration() {
 //        var trimmed = runtime.trim();
 //        char suffix = trimmed.charAt(trimmed.length() - 1);
@@ -42,7 +43,7 @@ public record TestSuite(Implementation impl, Variables variables, Connections co
     record Implementation(String language, String version) {
     }
 
-    public record Variables(List<PredefinedVariable> predefined, List<CustomVariable> custom) {
+    public record Variables(List<PredefinedVariable> predefined, List<CustomVariable> custom, @Nullable GrpcSettings grpc) {
         public Integer getCustomVarAsInt(String varName) {
             if (varName.startsWith("$")) {
                 String varNameReal = varName.substring(1); // "pool_size"
@@ -64,7 +65,7 @@ public record TestSuite(Implementation impl, Variables variables, Connections co
             return (Integer) predefinedVar(PredefinedVariable.PredefinedVariableName.HORIZONTAL_SCALING);
         }
 
-        public record PredefinedVariable(PredefinedVariableName name, Object value) {
+        public record PredefinedVariable(PredefinedVariableName name, Object[] values) {
             public enum PredefinedVariableName {
                 @JsonProperty("horizontal_scaling") HORIZONTAL_SCALING,
             }
@@ -74,7 +75,7 @@ public record TestSuite(Implementation impl, Variables variables, Connections co
             return predefined.stream()
                     .filter(v -> v.name == name)
                     .findFirst()
-                    .map(v -> v.value)
+                    .map(v -> v.values[0])
                     .orElseThrow(() -> new IllegalArgumentException("Predefined variable " + name + " not found"));
         }
 
@@ -92,6 +93,9 @@ public record TestSuite(Implementation impl, Variables variables, Connections co
         public record Database(String hostname, String hostname_docker, int port, String username, String password,
                         String database) {
         }
+    }
+
+    public record GrpcSettings(@Nullable Boolean flowControl, @Nullable Integer batch, @Nullable boolean compression) {
     }
 
     public record DocLocation(Method method, String id, String idPreface, String poolSize,
@@ -164,13 +168,15 @@ public record TestSuite(Implementation impl, Variables variables, Connections co
         }
     }
 
-    public record Run(String uuid, String description, List<Operation> operations) {
-        public record Operation(Op op, String count, DocLocation docLocation) {
+    public record Run(String uuid, String description, List<Operation> operations, Variables variables) {
+        public record Operation(Op op, String count, @Nullable DocLocation docLocation) {
             public enum Op {
                 @JsonProperty("insert") INSERT,
                 @JsonProperty("get") GET,
                 @JsonProperty("remove") REMOVE,
-                @JsonProperty("replace") REPLACE
+                @JsonProperty("replace") REPLACE,
+
+                @JsonProperty("ping") PING,
             }
         }
     }

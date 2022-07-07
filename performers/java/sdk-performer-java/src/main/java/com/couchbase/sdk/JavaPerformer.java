@@ -75,7 +75,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
             ClusterConnection connection = clusterConnections.get(request.getClusterConnectionId());
 
             logger.info("Beginning PerfRun");
-            var writer = new PerfWriteThread(responseObserver);
+            var writer = new PerfWriteThread(responseObserver, request.getConfig());
 
             var metrics = new MetricsReporter(writer);
             metrics.start();

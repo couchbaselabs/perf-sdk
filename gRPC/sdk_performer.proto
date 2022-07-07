@@ -8,6 +8,7 @@ option java_multiple_files = true;
 option go_package = "github.com/charlie-hayes/perf-sdk/protocol";
 
 import "sdk_commands.proto";
+import "grpc_commands.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
@@ -51,8 +52,8 @@ enum ImplementationCaps {
 }
 
 enum PerformerCaps {
-    // Empty enum not allowed
-    PERFORMER_DUMMY = 0;
+    // Support GRPC workload.  It's optional.
+    GRPC_TESTING = 0;
 }
 
 message PerformerCapsFetchRequest {
@@ -84,6 +85,7 @@ message ClusterConfig {
     // Used for TLS enabled clusters such as Capella clusters
     bool useTls = 3;
     optional string certPath = 4;
+    // todo fill out
 }
 
 // Creates a cluster connection, with an optional cluster & transactions configuration.
@@ -139,7 +141,18 @@ message Counter {
 
 message SdkWorkload {
     // The command to run
+    // todo make this repeated?
     SdkCommand command = 1;
+
+    // The performer should run this many of `command`
+    // todo add performer throughput bounding - aim for 100 ops/sec and see latency
+    Counter counter = 2;
+}
+
+// Used for meta purposes such as testing GRPC workflow.  Only sent if performer declares support for GRPC_TESTING.
+message GrpcWorkload {
+    // The command to run
+    GrpcCommand command = 1;
 
     // The performer should run this many of `command`
     Counter counter = 2;
@@ -149,6 +162,7 @@ message SdkWorkload {
 message Workload {
     oneof workload {
         SdkWorkload sdk = 1;
+        GrpcWorkload grpc = 2;
     }
 }
 
@@ -157,7 +171,9 @@ enum SdkException {
     SDK_EXCEPTION_DUMMY = 0;
 }
 
+// todo make SdkCommand naming consistent
 message SdkOperationResult {
+    // todo rename this result
     oneof exception {
         // If the small overhead of creating a full InsertResult is not required (e.g. for performance testing), can
         // return this generic success instead.
@@ -179,6 +195,7 @@ message SdkOperationResult {
 // forking a new process.
 // Whatever is produced (thread, new process), it should run the provided workload in a tight loop.  So essentially
 // PerfRunHorizontalScaling is the number of concurrent operations taking place.
+// todo rename this to HorizontalScaling
 message PerfRunHorizontalScaling {
     // Performer will run these workloads in this 'thread-like', in the specified order.
     repeated Workload workloads = 1;
@@ -191,11 +208,27 @@ message PerfRunRequest {
     // See PerfRunHorizontalScaling for a discussion of this.  Broadly, it's the number of concurrent operations
     // required.
     repeated PerfRunHorizontalScaling horizontalScaling = 2;
+
+    optional PerfRunConfig config = 3;
 }
 
+message PerfRunConfig {
+    // If present, it is hinted that the performer should stream back PerfBatchedResult containing this number of results.
+    optional int32 batchSize = 1;
+
+    // This hints whether the performer should enable flow control.  This will mean different things to different
+    // GRPC implementations, but boils down to only sending responses when the stream is ready.
+    bool flowControl = 2;
+}
+
+message PerfBatchedResult {
+    repeated PerfSingleResult result = 1;
+}
+
+// todo rename result
 message PerfSingleResult {
     oneof result {
-        // Each operation should return back a result.  There is no requirement for these to be in sorted order - the driver
+        // Each SdkCommand should return back one of these results.  There is no requirement for these to be in sorted order - the driver
         // will take care of that.
         PerfSingleOperationResult operationResult = 1;
 
@@ -203,9 +236,16 @@ message PerfSingleResult {
         // joined with the bucket results (which are in one second buckets), it's only useful to send back a maximum of
         // one per second.
         PerfMetricsResult metricsResult = 2;
+
+        // Each GrpcCommand should return back one of these results.  There is no requirement for these to be in sorted order - the driver
+        // will take care of that.
+        PerfGrpcResult grpcResult = 3;
+
+        PerfBatchedResult batchedResult = 4;
     }
 }
 
+// todo PerfSdkCommandResult?
 message PerfSingleOperationResult {
     oneof result {
         SdkOperationResult sdkResult = 1;
@@ -232,6 +272,16 @@ message PerfMetricsResult {
     // directly into the database.
     string metrics = 1;
     google.protobuf.Timestamp initiated = 2;
+}
+
+message PerfGrpcPingResult {
+}
+
+// todo move perf stuff into separate file
+message PerfGrpcResult {
+    oneof result {
+        PerfGrpcPingResult pingResult = 1;
+    }
 }
 
 message ExitRequest {

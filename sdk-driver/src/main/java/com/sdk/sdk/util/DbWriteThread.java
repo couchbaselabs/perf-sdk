@@ -2,7 +2,6 @@ package com.sdk.sdk.util;
 
 import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
 import com.couchbase.client.java.json.JsonObject;
-import com.couchbase.grpc.sdk.protocol.PerfMetricsResult;
 import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
 import com.google.protobuf.Timestamp;
 import org.slf4j.Logger;
@@ -229,7 +228,7 @@ public class DbWriteThread extends Thread {
         }
     }
 
-    public void addToQ(PerfSingleOperationResult res){
+    public void enqueue(PerfSingleOperationResult res){
         toWrite.add(res);
     }
 }

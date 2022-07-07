@@ -9,6 +9,8 @@ import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 /**
  * Stores data and connections for each performer connected to.
  */
@@ -18,8 +20,14 @@ public class Performer {
     private final PerformerSdkServiceGrpc.PerformerSdkServiceBlockingStub stubBlock;
     private final PerformerCapsFetchResponse response;
 
-    public Performer(String hostname, int port, ClusterConnectionCreateRequest createConnection) {
-        ManagedChannel channelBlocking = ManagedChannelBuilder.forAddress(hostname, port).usePlaintext().build();
+    public Performer(String hostname, int port, ClusterConnectionCreateRequest createConnection, Optional<Boolean> compression) {
+        var builder = ManagedChannelBuilder.forAddress(hostname, port)
+                // Using non-TLS channel because presumably will be more performant
+                .usePlaintext();
+        if (compression.isPresent() && compression.get()) {
+            builder.enableFullStreamDecompression();
+        }
+        var channelBlocking = builder.build();
         stubBlockFuture = PerformerSdkServiceGrpc.newStub(channelBlocking);
         stubBlock = PerformerSdkServiceGrpc.newBlockingStub(channelBlocking);
 

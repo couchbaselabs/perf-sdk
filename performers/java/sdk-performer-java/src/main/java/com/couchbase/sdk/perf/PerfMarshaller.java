@@ -1,5 +1,6 @@
 package com.couchbase.sdk.perf;
 
+import com.couchbase.grpc.sdk.protocol.PerfGrpcResult;
 import com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling;
 import com.couchbase.grpc.sdk.protocol.PerfRunRequest;
 import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
@@ -81,7 +82,7 @@ class PerfRunnerThread extends Thread {
 
     @Override
     public void run() {
-        var operation = new SdkOperationExecutor();
+        var sdkExecutor = new SdkOperationExecutor();
         int operationsSuccessful = 0;
         int operationsFailed = 0;
 
@@ -90,7 +91,6 @@ class PerfRunnerThread extends Thread {
                 var sdkWorkload = command.getSdk();
 
                 AtomicInteger counter;
-
                 if (sdkWorkload.getCounter().hasGlobal()) {
                     counter = counters.getCounter(sdkWorkload.getCounter().getCounterId(), sdkWorkload.getCounter().getGlobal().getCount());
                 }
@@ -99,7 +99,7 @@ class PerfRunnerThread extends Thread {
                 }
 
                 while (counter.decrementAndGet() > 0) {
-                    var result = operation.run(connection, sdkWorkload);
+                    var result = sdkExecutor.run(connection, sdkWorkload);
                     writeQueue.enqueue(PerfSingleResult.newBuilder()
                             .setOperationResult(result)
                             .build());
@@ -109,6 +109,28 @@ class PerfRunnerThread extends Thread {
                     else {
                         operationsFailed += 1;
                     }
+                }
+            }
+            else if (command.hasGrpc()) {
+                var grpcWorkload = command.getGrpc();
+
+                AtomicInteger counter;
+                if (grpcWorkload.getCounter().hasGlobal()) {
+                    counter = counters.getCounter(grpcWorkload.getCounter().getCounterId(), grpcWorkload.getCounter().getGlobal().getCount());
+                } else {
+                    throw new IllegalArgumentException("Unknown counter type");
+                }
+
+                while (counter.decrementAndGet() > 0) {
+                    if (!grpcWorkload.getCommand().hasPing()) {
+                        throw new IllegalArgumentException("Unknown GRPC command type");
+                    }
+
+
+                    writeQueue.enqueue(PerfSingleResult.newBuilder()
+                            .setGrpcResult(PerfGrpcResult.getDefaultInstance())
+                            .build());
+                    operationsSuccessful += 1;
                 }
             }
         }
