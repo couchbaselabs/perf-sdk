@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
                 sentSingleTotal += sentSingleFrozen;
                 sentBatchTotal += sentBatchTotal;
+                enqueuedTotal += enqueuedFrozen;
 
                 logger.info("Performer sent in last {} seconds: {} batches ({} complete + {} incomplete), throughput {} ops/sec.  And enqueued {} ops/sec{}.  In total it has sent {} ops, with overall throughput: {} ops/sec, and enqueued {}",
                         CHECK_EVERY_X_SECONDS,
