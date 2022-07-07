@@ -94,7 +94,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
     public static void main(String[] args) throws IOException, InterruptedException {
         int port = 8060;
 
-        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
+        // ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
 
         for(String parameter : args) {
             switch (parameter.split("=")[0]) {

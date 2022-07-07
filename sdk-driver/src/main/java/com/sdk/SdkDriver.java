@@ -55,7 +55,7 @@ public class SdkDriver {
     private static final Logger logger = LoggerFactory.getLogger(SdkDriver.class);
 
     public static void main(String[] args)  throws Exception {
-        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
+        // ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
 
         if (args.length != 1) {
             logger.info("Must provide config.yaml");
