@@ -33,7 +33,7 @@ public class GrpcPerformanceMeasureThread extends Thread {
                 var receivedFrozen = received.get();
                 receivedTotal += receivedFrozen;
                 logger.info("Driver received throughput over last {} seconds: {} ops/sec, {} ops: total, overall throughput: {} ops/sec",
-                        CHECK_EVERY_X_SECONDS, received.get() / CHECK_EVERY_X_SECONDS,
+                        (int) (CHECK_EVERY_X_SECONDS, received.get() / CHECK_EVERY_X_SECONDS),
                         receivedTotal,
                         receivedTotal / totalTimeSecs);
                 // Technically we lose a few operations here
