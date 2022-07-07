@@ -46,6 +46,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
                 .addSupportedApis(API.DEFAULT)
                 .setPerformerVersion(0)
                 .build());
+        responseObserver.onCompleted();
     }
 
     @Override
