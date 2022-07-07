@@ -3,6 +3,7 @@ package com.couchbase.sdk.perf;
 import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
 import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
 import io.grpc.Status;
+import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,11 +18,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class PerfWriteThread extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(PerfWriteThread.class);
-    private final StreamObserver<PerfSingleResult> responseObserver;
+    private final ServerCallStreamObserver<PerfSingleResult> responseObserver;
     private final ConcurrentLinkedQueue<PerfSingleResult> writeQueue = new ConcurrentLinkedQueue<>();
+    private int totalFlushed = 0;
 
     public PerfWriteThread(StreamObserver<PerfSingleResult> responseObserver) {
-        this.responseObserver = responseObserver;
+        this.responseObserver = (ServerCallStreamObserver<PerfSingleResult>) responseObserver;
+        this.responseObserver.setOnReadyHandler(() -> {
+            logger.info("Response stream has reported it's ready");
+        });
     }
 
     public void enqueue(PerfSingleResult result) {
@@ -75,7 +80,8 @@ public class PerfWriteThread extends Thread {
                 logger.warn("Got null element from queue");
             }
         }
+        totalFlushed += count;
 
-        logger.info("Flushed {} results", count);
+        logger.info("Flushed {} results, {} total, response stream readiness = {}", count, totalFlushed, responseObserver.isReady());
     }
 }

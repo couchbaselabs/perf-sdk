@@ -20,6 +20,7 @@ import com.sdk.constants.Strings;
 import com.couchbase.grpc.sdk.protocol.*;
 import com.sdk.sdk.util.DbWriteThread;
 import com.sdk.sdk.util.DocCreateThread;
+import com.sdk.sdk.util.MetricsWriteThread;
 import com.sdk.sdk.util.Performer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -236,10 +237,11 @@ public class SdkDriver {
                 }
 
                 var done = new AtomicBoolean(false);
-                DbWriteThread dbWrite = new DbWriteThread(conn, run.uuid(), done);
+                var dbWrite = new DbWriteThread(conn, run.uuid(), done);
+                var metricsWrite = new MetricsWriteThread(conn, run.uuid());
                 dbWrite.start();
+                metricsWrite.start();
                 var received = new AtomicInteger(0);
-                var start = System.nanoTime();
 
                 var responseObserver = new StreamObserver<PerfSingleResult>() {
                     @Override
@@ -253,9 +255,7 @@ public class SdkDriver {
                             dbWrite.addToQ(perfRunResult.getOperationResult());
                         }
                         else if (perfRunResult.hasMetricsResult()) {
-                            // If this is a performance problem will need to have a queue.  It's assumed here that the
-                            // performer is sending metrics back relatively infrequently, e.g. every second or more.
-                            writeMetricResult(perfRunResult, conn, start, run);
+                            metricsWrite.enqueue(perfRunResult);
                         }
                     }
 
@@ -276,7 +276,8 @@ public class SdkDriver {
                 performer.stubBlockFuture().perfRun(perf.build(), responseObserver);
                 logger.info("Waiting for run to finish and data to be written to db");
                 dbWrite.join();
-
+                metricsWrite.interrupt();
+                metricsWrite.join();
 
                 // Only insert into the runs table if everything was successful
                 var jsonVars = JsonObject.create();
@@ -315,24 +316,6 @@ public class SdkDriver {
                 logger.info("Finished!");
             }
 
-        }
-    }
-
-    private static void writeMetricResult(PerfSingleResult perfRunResult, Connection conn, long start, TestSuite.Run run) {
-        var metrics = perfRunResult.getMetricsResult();
-
-        try (var st = conn.createStatement()) {
-            var timeSinceStartSecs = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start);
-
-            var statement = String.format("INSERT INTO metrics VALUES (to_timestamp(%d), '%s', '%s', %d)",
-                    TimeUnit.MICROSECONDS.toSeconds(grpcTimestampToMicros(metrics.getInitiated())),
-                    run.uuid(),
-                    metrics.getMetrics(),
-                    timeSinceStartSecs);
-            st.executeUpdate(statement);
-            logger.info("Writing metrics {}", metrics.getMetrics());
-        } catch (SQLException err) {
-            logger.error("Failed to write metrics data to database", err);
         }
     }
 
