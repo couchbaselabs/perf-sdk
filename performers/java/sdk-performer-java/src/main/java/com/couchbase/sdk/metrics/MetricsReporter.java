@@ -77,7 +77,8 @@ public class MetricsReporter extends Thread {
 
                 try {
                     var beans = ManagementFactory.getGarbageCollectorMXBeans();
-                    for (int i = 0; i < beans.size(); i++) {
+                    // It seems that though multiple GC can be reported, only the first appears to used
+                    for (int i = 0; i < 1; i++) {
                         var bean = beans.get(i);
 
                         metrics.put("gc" + i + "AccTimeMs", bean.getCollectionTime());
