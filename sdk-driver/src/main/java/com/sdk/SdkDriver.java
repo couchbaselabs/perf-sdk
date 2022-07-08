@@ -251,7 +251,7 @@ public class SdkDriver {
                 var perfConfigBuilder = PerfRunConfig.newBuilder();
                 PerfRunConfigStreaming.Builder streamingConfig = null;
                 if (merged.grpc() != null) {
-                    if (merged.grpc().batch() != null) {
+                    if (merged.grpc().batch() != null && merged.grpc().batch() != 0) {
                         if (streamingConfig == null) streamingConfig = PerfRunConfigStreaming.newBuilder();
                         streamingConfig.setBatchSize(merged.grpc().batch());
                     }
@@ -268,8 +268,6 @@ public class SdkDriver {
                 for (int i=0; i< merged.horizontalScaling(); i++){
                     perf.addHorizontalScaling(horizontalScalingBuilt);
                 }
-
-                // todo make unsupported ops in performer consisntely reported GRPC UNSUPPORTED
 
                 var done = new AtomicBoolean(false);
                 var dbWrite = new DbWriteThread(conn, run.uuid(), done);
