@@ -63,13 +63,13 @@ public class SdkOperationExecutor {
                 next = counter.getAndIncrement() % (int) pool.getPoolSize();
             }
             else {
-                throw new IllegalArgumentException("Unrecognised pool selection strategy");
+                throw new UnsupportedOperationException("Unrecognised pool selection strategy");
             }
 
             return pool.getIdPreface() + next;
         }
         else {
-            throw new IllegalArgumentException("Unknown doc location type");
+            throw new UnsupportedOperationException("Unknown doc location type");
         }
     }
 
@@ -115,7 +115,7 @@ public class SdkOperationExecutor {
             collection.replace(docId, request.getContentJson());
             result.setElapsedNanos(System.nanoTime() - start);
         } else {
-            throw new InternalPerformerFailure(new IllegalArgumentException("Unknown operation"));
+            throw new UnsupportedOperationException(new IllegalArgumentException("Unknown operation"));
         }
     }
 }

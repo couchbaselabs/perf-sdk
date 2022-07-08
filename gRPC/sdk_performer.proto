@@ -22,6 +22,10 @@ service PerformerSdkService {
     // Close a particular cluster connection.
     rpc clusterConnectionClose (ClusterConnectionCloseRequest) returns (ClusterConnectionCloseResponse);
 
+    // Execute a performance run and stream back responses.
+    // If the performer encounters anything in the requested workloads that it cannot process, then it should return
+    // an error with a standard GRPC Status.INVALID_ARGUMENT code (https://grpc.github.io/grpc/core/md_doc_statuscodes.html)
+    // so the driver can cleanly handle this.
     rpc perfRun (PerfRunRequest) returns (stream PerfSingleResult);
 
     // Request that the performer Echo a string to the performer logs.
@@ -216,9 +220,10 @@ message PerfRunRequest {
 // The performer is largely free to do this as it sees fit, though this config message contains some optional hints
 // that may help it do so.
 // Note that there is no provision for dropping packets currently.  It is expected that the performer (and driver, and
-// network) can keep up streaming back results from any workload.
+// network) can keep up streaming back results from any workload.  Workloads could potentially last multiple hours, even
+// days, and most workloads will generate continuous traffic.
 // From testing with the Java implementation:
-// - Batching results in PerfBatchedResults increased flowrate by nearly 2 orders of magnitude.
+// - Batching results in PerfBatchedResults increased flow-rate by nearly 2 orders of magnitude.
 // - Flow control (waiting until the GRPC stream is ready), is possibly essential.  This implies the performer maintain
 //   an unbounded write queue.
 message PerfRunConfigStreaming {
@@ -236,7 +241,8 @@ message PerfRunConfigStreaming {
     // Whether the performer should enable flow control.  This will mean different things to different
     // GRPC implementations, but the concept is to only send responses when the GRPC response stream reports itself ready.
     // If the performer is unable to keep up with the flow rate then this effectively just moves the filling queue from
-    // GRPC's to one owned by the performer, but this can be beneficial as the performer can keep metrics on its own queue.
+    // GRPC's to one owned by the performer, but this can still be beneficial as the performer can keep better metrics
+    // on its own queue.
     bool flowControl = 2;
 }
 

@@ -48,7 +48,7 @@ public class PerfRunnerThread extends Thread {
                         logger.info("Runner thread will SDK commands until counter {} is 0, currently {}",
                                 sdkWorkload.getCounter().getCounterId(), counter.get());
                     } else {
-                        throw new IllegalArgumentException("Unknown counter type");
+                        throw new UnsupportedOperationException("Unknown counter type");
                     }
 
                     while (counter.decrementAndGet() > 0) {
@@ -71,12 +71,12 @@ public class PerfRunnerThread extends Thread {
                         logger.info("Runner thread will GRPC commands until counter {} is 0, currently {}",
                                 grpcWorkload.getCounter().getCounterId(), counter.get());
                     } else {
-                        throw new IllegalArgumentException("Unknown counter type");
+                        throw new UnsupportedOperationException("Unknown counter type");
                     }
 
                     while (counter.decrementAndGet() > 0) {
                         if (!grpcWorkload.getCommand().hasPing()) {
-                            throw new IllegalArgumentException("Unknown GRPC command type");
+                            throw new UnsupportedOperationException("Unknown GRPC command type");
                         }
 
                         writeQueue.enqueue(PerfSingleResult.newBuilder()

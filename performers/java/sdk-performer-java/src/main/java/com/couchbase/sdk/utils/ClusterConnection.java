@@ -39,7 +39,7 @@ public class ClusterConnection {
             coll = loc.getUuid().getCollection();
         }
         else {
-            throw new IllegalArgumentException("Unknown DocLocation type");
+            throw new UnsupportedOperationException("Unknown DocLocation type");
         }
 
         var bucket = cluster.bucket(coll.getBucket());

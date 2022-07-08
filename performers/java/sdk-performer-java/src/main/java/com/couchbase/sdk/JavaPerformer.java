@@ -71,7 +71,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
     @Override
     public void perfRun(PerfRunRequest request,
                         StreamObserver<PerfSingleResult> responseObserver) {
-        try{
+        try {
             ClusterConnection connection = clusterConnections.get(request.getClusterConnectionId());
 
             logger.info("Beginning PerfRun");
@@ -86,6 +86,9 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
             metrics.join();
 
             responseObserver.onCompleted();
+        }
+        catch (UnsupportedOperationException err) {
+            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(err.toString()).asException());
         } catch (RuntimeException | InterruptedException err) {
             responseObserver.onError(Status.ABORTED.withDescription(err.toString()).asException());
         }
