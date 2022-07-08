@@ -44,7 +44,12 @@ public class PerfWriteThread extends Thread {
         try {
             while (!isInterrupted()) {
                 flush();
-                // No sleep as extremely unlikely we will be busy-waiting.  Should be continuous traffic.
+                try {
+                    Thread.sleep(10);
+                }
+                catch (InterruptedException ignored) {
+                    break;
+                }
             }
         } catch (Exception e) {
             logger.error("Error sending performance data to driver", e);
