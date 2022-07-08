@@ -36,6 +36,8 @@ public class PerfRunnerThread extends Thread {
         int operationsFailed = 0;
 
         try {
+            logger.info("Runner thread has started, will run {} workloads", perThread.getWorkloadsCount());
+
             for (var command : perThread.getWorkloadsList()) {
                 if (command.hasSdk()) {
                     var sdkWorkload = command.getSdk();
@@ -43,6 +45,8 @@ public class PerfRunnerThread extends Thread {
                     AtomicInteger counter;
                     if (sdkWorkload.getCounter().hasGlobal()) {
                         counter = counters.getCounter(sdkWorkload.getCounter().getCounterId(), sdkWorkload.getCounter().getGlobal().getCount());
+                        logger.info("Runner thread will SDK commands until counter {} is 0, currently {}",
+                                sdkWorkload.getCounter().getCounterId(), counter.get());
                     } else {
                         throw new IllegalArgumentException("Unknown counter type");
                     }
@@ -64,6 +68,8 @@ public class PerfRunnerThread extends Thread {
                     AtomicInteger counter;
                     if (grpcWorkload.getCounter().hasGlobal()) {
                         counter = counters.getCounter(grpcWorkload.getCounter().getCounterId(), grpcWorkload.getCounter().getGlobal().getCount());
+                        logger.info("Runner thread will GRPC commands until counter {} is 0, currently {}",
+                                grpcWorkload.getCounter().getCounterId(), counter.get());
                     } else {
                         throw new IllegalArgumentException("Unknown counter type");
                     }
