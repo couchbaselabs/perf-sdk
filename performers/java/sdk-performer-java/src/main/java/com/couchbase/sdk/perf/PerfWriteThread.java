@@ -60,11 +60,16 @@ public class PerfWriteThread extends Thread {
     }
 
     private void flush() {
-        if (perfRunConfig.hasBatchSize()) {
-            flushBatch(perfRunConfig.getBatchSize());
+        if (perfRunConfig.hasStreamingConfig()) {
+            var sc = perfRunConfig.getStreamingConfig();
+            if (sc.hasBatchSize()) {
+                flushBatch(sc.getBatchSize());
+            } else {
+                flushIndividual(!sc.getFlowControl());
+            }
         }
         else {
-            flushIndividual(!perfRunConfig.getFlowControl());
+            flushIndividual(true);
         }
     }
 

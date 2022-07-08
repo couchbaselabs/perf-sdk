@@ -248,17 +248,25 @@ public class SdkDriver {
                 PerfRunRequest.Builder perf = PerfRunRequest.newBuilder()
                         .setClusterConnectionId(createConnection.getClusterConnectionId());
                 var perfConfigBuilder = PerfRunConfig.newBuilder();
+                PerfRunConfigStreaming.Builder streamingConfig = null;
                 if (run.variables().grpc().batch() != null) {
-                    perfConfigBuilder.setBatchSize(run.variables().grpc().batch());
+                    if (streamingConfig == null) streamingConfig = PerfRunConfigStreaming.newBuilder();
+                    streamingConfig.setBatchSize(run.variables().grpc().batch());
                 }
                 if (run.variables().grpc().flowControl() != null) {
-                    perfConfigBuilder.setFlowControl(run.variables().grpc().flowControl());
+                    if (streamingConfig == null) streamingConfig = PerfRunConfigStreaming.newBuilder();
+                    streamingConfig.setFlowControl(run.variables().grpc().flowControl());
+                }
+                if (streamingConfig != null) {
+                    perfConfigBuilder.setStreamingConfig(streamingConfig);
                 }
                 perf.setConfig(perfConfigBuilder.build());
 
                 for (int i=0; i< run.variables().horizontalScaling(); i++){
                     perf.addHorizontalScaling(horizontalScalingBuilt);
                 }
+
+                // todo make unsupported ops in performer consisntely reported GRPC UNSUPPORTED
 
                 var done = new AtomicBoolean(false);
                 var dbWrite = new DbWriteThread(conn, run.uuid(), done);
