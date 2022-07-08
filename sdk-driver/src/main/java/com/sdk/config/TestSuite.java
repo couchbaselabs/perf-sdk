@@ -169,6 +169,11 @@ public record TestSuite(Implementation impl, Connections connections, List<Run> 
     }
 
     public record Run(String uuid, String description, List<Operation> operations, Variables variables) {
+        public boolean shouldWrite() {
+            // Don't write GRPC tests to the database, we're only interested in stdout output
+            return operations.stream().noneMatch(v -> v.op() == Operation.Op.PING);
+        }
+
         public record Operation(Op op, String count, @Nullable DocLocation docLocation) {
             public enum Op {
                 @JsonProperty("insert") INSERT,

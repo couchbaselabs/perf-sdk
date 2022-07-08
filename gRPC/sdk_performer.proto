@@ -212,13 +212,34 @@ message PerfRunRequest {
     optional PerfRunConfig config = 3;
 }
 
-message PerfRunConfig {
-    // If present, it is hinted that the performer should stream back PerfBatchedResult containing this number of results.
+// Controls how the performer streams back results.
+// The performer is largely free to do this as it sees fit, though this config message contains some optional hints
+// that may help it do so.
+// Note that there is no provision for dropping packets currently.  It is expected that the performer (and driver, and
+// network) can keep up streaming back results from any workload.
+// From testing with the Java implementation:
+// - Batching results in PerfBatchedResults increased flowrate by nearly 2 orders of magnitude.
+// - Flow control (waiting until the GRPC stream is ready), is possibly essential.  This implies the performer maintain
+//   an unbounded write queue.
+message PerfRunConfigStreaming {
+    // The next two parameters are only mandatory on GrpcWorkloads.  Otherwise they should be regarded as optional
+    // hints.  If the performer follows them then it will automatically get what has been tested to most reliably
+    // return results.  But it can override them if it has done its own testing and found its own best path to
+    // streaming back results.  If going this path, remember to increase the performerVersion field whenever substantially
+    // changing how the results are being streamed back, for apples-to-apples comparisons.
+
+    // If present, the performer should stream back PerfBatchedResults, aiming to contain this number of results.
+    // The performer can return less elements than this in a batch (so it does not have to wait for a write queue to
+    // fill first), but should not return more.
     optional int32 batchSize = 1;
 
-    // This hints whether the performer should enable flow control.  This will mean different things to different
-    // GRPC implementations, but boils down to only sending responses when the stream is ready.
+    // Whether the performer should enable flow control.  This will mean different things to different
+    // GRPC implementations, but the concept is to only send responses when the GRPC response stream reports itself ready.
     bool flowControl = 2;
+}
+
+message PerfRunConfig {
+    optional PerfRunConfigStreaming streamingConfig = 1;
 }
 
 message PerfBatchedResult {

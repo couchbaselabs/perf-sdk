@@ -15,6 +15,8 @@ public class GrpcPerformanceMeasureThread extends Thread {
     private final AtomicInteger received = new AtomicInteger();
     private int receivedTotal = 0;
     private static final double CHECK_EVERY_X_SECONDS = 5.0;
+    private static final int SAFETY_GUARD = 50;
+    private int receivedZeroInRow = 0;
 
     @Override
     public void run() {
@@ -32,13 +34,26 @@ public class GrpcPerformanceMeasureThread extends Thread {
                 double totalTimeSecs = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start);
                 var receivedFrozen = received.get();
                 receivedTotal += receivedFrozen;
-                logger.info("Driver received throughput over last {} seconds: {} ops/sec, {} ops: total, overall throughput: {} ops/sec",
+                if (receivedFrozen == 0) {
+                    receivedZeroInRow ++;
+                }
+                else {
+                    receivedZeroInRow = 0;
+                }
+
+                logger.info("Driver received throughput over last {} seconds: {} ops/sec, {} ops total, overall throughput: {} ops/sec",
                          CHECK_EVERY_X_SECONDS,
                         (int) (received.get() / CHECK_EVERY_X_SECONDS),
                         receivedTotal,
-                        receivedTotal / totalTimeSecs);
+                        (int) (receivedTotal / totalTimeSecs));
+
                 // Technically we lose a few operations here
                 received.set(0);
+
+                if (receivedZeroInRow > SAFETY_GUARD) {
+                    logger.error("Received nothing from the performer to often, something must be wrong, bailing");
+                    System.exit(-1);
+                }
             }
         } finally {
             logger.info("GRPC performance monitoring thread stopped");

@@ -21,7 +21,6 @@ public class PerfWriteThread extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(PerfWriteThread.class);
     private final ServerCallStreamObserver<PerfSingleResult> responseObserver;
     private final ConcurrentLinkedQueue<PerfSingleResult> writeQueue = new ConcurrentLinkedQueue<>();
-    private volatile int enqueued = 0;
     private final PerfRunConfig perfRunConfig;
     private final GrpcPerformanceMeasureThread grpcPerformance = new GrpcPerformanceMeasureThread();
 

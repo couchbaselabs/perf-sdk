@@ -6,6 +6,7 @@ import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.couchbase.client.java.manager.bucket.StorageBackend;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sdk.config.BuiltSdkCommand;
 import com.sdk.config.Op;
@@ -36,7 +37,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -296,43 +299,48 @@ public class SdkDriver {
                 performanceMonitor.interrupt();
                 performanceMonitor.join();
 
-                // Only insert into the runs table if everything was successful
-                var jsonVars = JsonObject.create();
-                run.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
-                run.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.values()[0]));
-
-                // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
-                // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
-                jsonVars.put("driverVersion", 6);
-                jsonVars.put("performerVersion", performer.response().getPerformerVersion());
-
-                var runJson = testSuiteAsJson.getArray("runs")
-                        .toList().stream()
-                        .map(v -> JsonObject.from((HashMap) v))
-                        .filter(v -> v.getString("uuid").equals(run.uuid()))
-                        .findFirst()
-                        .get();
-                runJson.removeKey("uuid");
-
-                var json = JsonObject.create()
-                        .put("cluster", clusterJson)
-                        .put("impl", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.impl())))
-                        .put("workload", runJson)
-                        .put("vars", jsonVars);
-                logger.info(json.toString());
-
-                try (var st = conn.createStatement()) {
-                    String statement = String.format("INSERT INTO runs VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
-                            run.uuid(),
-                            json.toString(),
-                            json.toString());
-                    st.executeUpdate(statement);
+                if (run.shouldWrite()) {
+                    writeRun(testSuite, testSuiteAsJson, conn, clusterJson, run, performer);
                 }
-
 
                 logger.info("Finished!");
             }
 
+        }
+    }
+
+    private static void writeRun(TestSuite testSuite, JsonObject testSuiteAsJson, Connection conn, JsonObject clusterJson, TestSuite.Run run, Performer performer) throws JsonProcessingException, SQLException {
+        // Only insert into the runs table if everything was successful
+        var jsonVars = JsonObject.create();
+        run.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
+        run.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.values()[0]));
+
+        // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
+        // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
+        jsonVars.put("driverVersion", 6);
+        jsonVars.put("performerVersion", performer.response().getPerformerVersion());
+
+        var runJson = testSuiteAsJson.getArray("runs")
+                .toList().stream()
+                .map(v -> JsonObject.from((HashMap) v))
+                .filter(v -> v.getString("uuid").equals(run.uuid()))
+                .findFirst()
+                .get();
+        runJson.removeKey("uuid");
+
+        var json = JsonObject.create()
+                .put("cluster", clusterJson)
+                .put("impl", JsonObject.fromJson(jsonMapper.writeValueAsString(testSuite.impl())))
+                .put("workload", runJson)
+                .put("vars", jsonVars);
+        logger.info(json.toString());
+
+        try (var st = conn.createStatement()) {
+            String statement = String.format("INSERT INTO runs VALUES ('%s', NOW(), '%s') ON CONFLICT (id) DO UPDATE SET datetime = NOW(), params = '%s'",
+                    run.uuid(),
+                    json.toString(),
+                    json.toString());
+            st.executeUpdate(statement);
         }
     }
 

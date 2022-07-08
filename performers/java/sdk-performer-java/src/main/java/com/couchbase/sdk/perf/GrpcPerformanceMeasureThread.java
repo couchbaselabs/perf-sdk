@@ -47,7 +47,9 @@ import java.util.concurrent.atomic.AtomicInteger;
                 sentBatchTotal += sentBatchTotal;
                 enqueuedTotal += enqueuedFrozen;
 
-                logger.info("Performer sent in last {} seconds: {} batches ({} complete + {} incomplete), throughput {} ops/sec.  And enqueued {} ops/sec{}.  In total it has sent {} ops, with overall throughput: {} ops/sec, and enqueued {}",
+                // "~" since we do lose a few operations here and there, due to not wanting to make this class totally
+                // atomic and hence possibly impact performance
+                logger.info("Performer sent in last {} seconds: ~{} batches ({} complete + {} incomplete), throughput ~{} ops/sec.  And enqueued ~{} ops/sec{}.  In total it has sent ~{} ops, with overall throughput: ~{} ops/sec, and enqueued ~{}, leaving an estimated ~{} items on write queue",
                         CHECK_EVERY_X_SECONDS,
                         sentBatchCompleteFrozen + sentBatchIncompleteFrozen,
                         sentBatchCompleteFrozen,
@@ -57,7 +59,8 @@ import java.util.concurrent.atomic.AtomicInteger;
                         ignoredFrozen == 0 ? "" : " and ignored " + ignoredFrozen,
                         sentSingleTotal,
                         sentSingleTotal / totalTimeSecs,
-                        enqueuedTotal);
+                        enqueuedTotal,
+                        enqueuedTotal - sentSingleTotal);
 
                 // Technically we lose a few operations here
                 sentSingle.set(0);
