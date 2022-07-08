@@ -15,8 +15,15 @@
  */
 package com.couchbase.sdk;
 
-import com.couchbase.client.core.deps.io.netty.util.ResourceLeakDetector;
-import com.couchbase.grpc.sdk.protocol.*;
+import com.couchbase.grpc.sdk.protocol.API;
+import com.couchbase.grpc.sdk.protocol.ClusterConnectionCreateRequest;
+import com.couchbase.grpc.sdk.protocol.ClusterConnectionCreateResponse;
+import com.couchbase.grpc.sdk.protocol.PerfRunRequest;
+import com.couchbase.grpc.sdk.protocol.PerfRunResult;
+import com.couchbase.grpc.sdk.protocol.PerformerCaps;
+import com.couchbase.grpc.sdk.protocol.PerformerCapsFetchRequest;
+import com.couchbase.grpc.sdk.protocol.PerformerCapsFetchResponse;
+import com.couchbase.grpc.sdk.protocol.PerformerSdkServiceGrpc;
 import com.couchbase.sdk.metrics.MetricsReporter;
 import com.couchbase.sdk.perf.PerfMarshaller;
 import com.couchbase.sdk.perf.PerfWriteThread;
@@ -28,9 +35,7 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceImplBase {
@@ -44,6 +49,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
                 .setPerformerUserAgent("java")
                 .addSupportedApis(API.ASYNC)
                 .addSupportedApis(API.DEFAULT)
+                .addPerformerCaps(PerformerCaps.GRPC_TESTING)
                 .setPerformerVersion(0)
                 .build());
         responseObserver.onCompleted();
@@ -70,7 +76,7 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
 
     @Override
     public void perfRun(PerfRunRequest request,
-                        StreamObserver<PerfSingleResult> responseObserver) {
+                        StreamObserver<PerfRunResult> responseObserver) {
         try {
             ClusterConnection connection = clusterConnections.get(request.getClusterConnectionId());
 
@@ -116,11 +122,4 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
         logger.info("Server Started at {}", server.getPort());
         server.awaitTermination();
     }
-
-    public void exit(com.couchbase.grpc.sdk.protocol.ExitRequest request,
-                     io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
-        logger.info("Been told to exit for reason '{}' with code {}", request.getReason(), request.getExitCode());
-        System.exit(request.getExitCode());
-    }
-
 }

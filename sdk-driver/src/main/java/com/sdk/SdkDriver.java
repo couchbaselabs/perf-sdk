@@ -232,7 +232,7 @@ public class SdkDriver {
 
                 BuiltSdkCommand command = createSdkCommand(run, merged);
 
-                PerfRunHorizontalScaling.Builder horizontalScalingBuilt = PerfRunHorizontalScaling.newBuilder();
+                var horizontalScalingBuilt = HorizontalScaling.newBuilder();
 
                 command.sdkCommand().forEach(op -> {
                     op.applyTo(horizontalScalingBuilt);
@@ -279,9 +279,9 @@ public class SdkDriver {
                 var received = new AtomicInteger(0);
                 var start = System.nanoTime();
 
-                var responseObserver = new StreamObserver<PerfSingleResult>() {
+                var responseObserver = new StreamObserver<PerfRunResult>() {
                     @Override
-                    public void onNext(PerfSingleResult perfRunResult) {
+                    public void onNext(PerfRunResult perfRunResult) {
                         handleResult(perfRunResult, received, dbWrite, metricsWrite, performanceMonitor);
                     }
 
@@ -338,10 +338,6 @@ public class SdkDriver {
         jsonVars.put("driverVersion", 6);
         jsonVars.put("performerVersion", performer.response().getPerformerVersion());
 
-        // GRPC changes intentionally don't get written into the database, as it's likely that such configuration options
-        // will very rarely change, and will make the JSON messy.  Instead, model any changes in the default as a bump
-        // in driverVersion.
-
         var runJson = testSuiteAsJson.getArray("runs")
                 .toList().stream()
                 .map(v -> JsonObject.from((HashMap) v))
@@ -366,7 +362,7 @@ public class SdkDriver {
         }
     }
 
-    private static void handleResult(PerfSingleResult perfRunResult, AtomicInteger received, DbWriteThread dbWrite, MetricsWriteThread metricsWrite, GrpcPerformanceMeasureThread performanceMonitor) {
+    private static void handleResult(PerfRunResult perfRunResult, AtomicInteger received, DbWriteThread dbWrite, MetricsWriteThread metricsWrite, GrpcPerformanceMeasureThread performanceMonitor) {
         received.incrementAndGet();
 
         if (perfRunResult.hasOperationResult()) {

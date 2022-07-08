@@ -1,7 +1,7 @@
 package com.sdk.config;
 
-import com.couchbase.grpc.sdk.protocol.PerfRunHorizontalScaling;
+import com.couchbase.grpc.sdk.protocol.HorizontalScaling;
 
 public interface Op {
-    void applyTo(PerfRunHorizontalScaling.Builder builder);
+    void applyTo(HorizontalScaling.Builder builder);
 }

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package protocol;
+option csharp_namespace = "Couchbase.Grpc.Protocol";
+option java_package = "com.couchbase.grpc.sdk.protocol";
+option java_multiple_files = true;
+option go_package = "github.com/charlie-hayes/perf-sdk/protocol";
+
+import "basics.proto";
+import "performance.proto";
+
+service PerformerSdkService {
+    // Requests the performer's capabilities.
+    rpc performerCapsFetch (PerformerCapsFetchRequest) returns (PerformerCapsFetchResponse);
+
+    // Creates a connection from the performer to a cluster.
+    rpc clusterConnectionCreate (ClusterConnectionCreateRequest) returns (ClusterConnectionCreateResponse);
+
+    // Close a particular cluster connection.
+    rpc clusterConnectionClose (ClusterConnectionCloseRequest) returns (ClusterConnectionCloseResponse);
+
+    // Execute a performance run and stream back responses.
+    // If the performer encounters anything in the requested workloads that it cannot process, then it should return
+    // an error with a standard GRPC Status.INVALID_ARGUMENT code (https://grpc.github.io/grpc/core/md_doc_statuscodes.html)
+    // so the driver can cleanly handle this.
+    rpc perfRun (PerfRunRequest) returns (stream PerfRunResult);
+
+    // Request that the performer Echo a string to the performer logs.
+    rpc echo (EchoRequest) returns (EchoResponse);
+}

@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+// See README.md in this directory for a description of these.
+package protocol;
+option csharp_namespace = "Couchbase.Grpc.Protocol";
+option java_package = "com.couchbase.grpc.sdk.protocol";
+option java_multiple_files = true;
+option go_package = "github.com/charlie-hayes/perf-sdk/protocol";
+
+import "sdk_commands.proto";
+import "workloads.proto";
+import "google/protobuf/timestamp.proto";
+
+message PerfRunRequest {
+  // The previously established cluster connection to use
+  string clusterConnectionId = 1;
+
+  // See HorizontalScaling for a discussion of this.  Broadly, it's the number of concurrent operations
+  // required.
+  repeated HorizontalScaling horizontalScaling = 2;
+
+  // Controls some meta aspects of how the performer should execute the run.
+  optional PerfRunConfig config = 3;
+}
+
+// Controls how the performer streams back results.
+// The performer is largely free to do this as it sees fit, though this config message contains some optional hints
+// that may help it do so.
+// Note that there is no provision for dropping packets currently.  It is expected that the performer (and driver, and
+// network) can keep up streaming back results from any workload.  Workloads could potentially last multiple hours, even
+// days, and most workloads will generate continuous traffic.
+// From testing with the Java implementation:
+// - Batching results in PerfBatchedResults increased flow-rate by nearly 2 orders of magnitude.
+// - Flow control (waiting until the GRPC stream is ready), is possibly essential.  This implies the performer maintain
+//   an unbounded write queue.
+message PerfRunConfigStreaming {
+  // The next two parameters are only mandatory on GrpcWorkloads, which are explicitly testing various streaming
+  // approaches.  Otherwise they should be regarded as optional
+  // hints.  If the performer follows them then it will automatically get what has been tested to most reliably
+  // return results.  But it can override them if it has done its own testing and found its own best path for that
+  // language.
+
+  // If present, the performer should stream back PerfBatchedResults, aiming to contain this number of results.
+  // The performer can return less elements than this in a batch (so it does not have to wait for a write queue to
+  // fill first), but should not return more.
+  optional int32 batchSize = 1;
+
+  // Whether the performer should enable flow control.  This will mean different things to different
+  // GRPC implementations, but the concept is to only send responses when the GRPC response stream reports itself ready.
+  // If the performer is unable to keep up with the flow rate then this effectively just moves the filling queue from
+  // GRPC's to one owned by the performer, but this can still be beneficial as the performer can keep better metrics
+  // on its own queue.
+  bool flowControl = 2;
+}
+
+message PerfRunConfig {
+  optional PerfRunConfigStreaming streamingConfig = 1;
+}
+
+message PerfBatchedResult {
+  repeated PerfRunResult result = 1;
+}
+
+// A PerfRunRequest results in a stream of PerfRunResult.  Will generally be one per *Command (SdkCommand, GrpcCommand etc.)
+// requested, unless batching is being used.
+message PerfRunResult {
+  oneof result {
+    // Each SdkCommand should return back one of these results.  There is no requirement for these to be in sorted order - the driver
+    // will take care of that.
+    PerfSdkCommandResult operationResult = 1;
+
+    // The performer can send back metrics whenever it wishes.  However, due to the way database results are currently
+    // joined with the bucket results (which are in one second buckets), it's only useful to send back a maximum of
+    // one per second.
+    PerfMetricsResult metricsResult = 2;
+
+    // Each GrpcCommand should return back one of these results.  There is no requirement for these to be in sorted order - the driver
+    // will take care of that.
+    PerfGrpcResult grpcResult = 3;
+
+    // For optimal streaming performance, batches of PerfRunRequest can be returned.
+    PerfBatchedResult batchedResult = 4;
+  }
+}
+
+// One of these should be returned for each SdkCommand executed.
+message PerfSdkCommandResult {
+  oneof result {
+    SdkCommandResult sdkResult = 1;
+  }
+
+  // Clocks are hard.  Many OS/platform combinations cannot guarantee nanosecond level precision of a wallclock time,
+  // but can provide such precision for elapsed time.
+  // So:
+  // `elapsedNanos` is intended to be, as precisely as the platform can measure it, the exact time taken by the operation in nanoseconds.
+  // Measured from just before sending the operation into the SDK (e.g. after handling any GRPC work), and just after
+  // the SDK returns.
+  // `initiated` is a wallclock time, used to place this operation into a one second bucket.  This should be as
+  // accurate as the platform can provide (often realistically this is only accurate to 10 millis or so).  Hopefully
+  // a few operations ending up in the wrong bucket each second will not dramatically impact the results.  It is ok
+  // to set `initiated` before the GRPC work, due to the reduced precision.
+  // If the operation fails, the performer does not need to set `elapsedNanos` - it will not be used.  However `initiated`
+  // must always be sent.
+  int64 elapsedNanos = 2;
+  google.protobuf.Timestamp initiated = 3;
+}
+
+message PerfMetricsResult {
+  // A JSON blob that can contain any information the performer likes.  '{"cpu":83}' for example.  It will be written
+  // directly into the database.
+  string metrics = 1;
+  google.protobuf.Timestamp initiated = 2;
+}
+
+message PerfGrpcPingResult {
+}
+
+// todo move perf stuff into separate file
+message PerfGrpcResult {
+  oneof result {
+    PerfGrpcPingResult pingResult = 1;
+  }
+}
+

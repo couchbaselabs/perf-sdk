@@ -166,4 +166,5 @@ Please also note that only one instance of each command is permitted per mixed w
 ```
 select * from runs where params::json->'impl'->>'language' = 'java';
 delete from runs where params::json->'impl'->>'language' = 'python' and cast(params::json->'workload'->>'description' as text) not like '%inserting%';
+delete from runs where cast(params::json->'workload'->'variables'->>'grpc' as text) is not null;
 ```

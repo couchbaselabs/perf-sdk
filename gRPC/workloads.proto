@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package protocol;
+option csharp_namespace = "Couchbase.Grpc.Protocol";
+option java_package = "com.couchbase.grpc.sdk.protocol";
+option java_multiple_files = true;
+option go_package = "github.com/charlie-hayes/perf-sdk/protocol";
+
+import "sdk_commands.proto";
+import "grpc_commands.proto";
+
+// A workload is generally a bunch of commands to run.
+message Workload {
+  oneof workload {
+    SdkWorkload sdk = 1;
+    GrpcWorkload grpc = 2;
+  }
+}
+
+// "HorizontalScaling" is an abstraction over there being many forms of concurrency.  The core idea is that the driver
+// is trying to increase the parallelism, and it's up to the performer to choose a suitable platform-dependent way to
+// do this.
+// For some languages that will be threads.  For some, a larger pool of concurrent Future/Promises.  For some,
+// forking a new process.
+// Whatever is produced (thread, new process), it should run the provided workload in a tight loop.  So essentially
+// HorizontalScaling is the number of concurrent operations taking place.
+message HorizontalScaling {
+  // Performer will run these workloads in this 'thread-like', in the specified order.
+  repeated Workload workloads = 1;
+}

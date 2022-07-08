@@ -58,7 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
                         (int) (enqueuedFrozen / CHECK_EVERY_X_SECONDS),
                         ignoredFrozen == 0 ? "" : " and ignored " + ignoredFrozen,
                         sentSingleTotal,
-                        sentSingleTotal / totalTimeSecs,
+                        (int) (sentSingleTotal / totalTimeSecs),
                         enqueuedTotal,
                         enqueuedTotal - sentSingleTotal);
 

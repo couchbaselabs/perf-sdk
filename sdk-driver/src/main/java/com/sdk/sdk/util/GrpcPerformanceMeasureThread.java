@@ -1,6 +1,6 @@
 package com.sdk.sdk.util;
 
-import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
+import com.couchbase.grpc.sdk.protocol.PerfRunResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,7 @@ public class GrpcPerformanceMeasureThread extends Thread {
         }
     }
 
-    public void register(PerfSingleResult res) {
+    public void register(PerfRunResult res) {
         received.incrementAndGet();
     }
 }

@@ -1,11 +1,12 @@
 syntax = "proto3";
 
-// See README.md in this directory for a description of these.
 package protocol;
 option csharp_namespace = "Couchbase.Grpc.Protocol";
 option java_package = "com.couchbase.grpc.sdk.protocol";
 option go_package = "github.com/charlie-hayes/perf-sdk/protocol";
 option java_multiple_files = true;
+
+import "basics.proto";
 
 message CommandGrpcPing {
 }
@@ -14,4 +15,13 @@ message GrpcCommand {
   oneof command {
     CommandGrpcPing ping = 1;
   }
+}
+
+// Used for meta purposes such as testing GRPC workflow.  Only sent if performer declares support for PerformerCaps.GRPC_TESTING.
+message GrpcWorkload {
+  // The command to run.  The performer should execute this in a loop until `bounds` is completed.
+  GrpcCommand command = 1;
+
+  // Controls how the commands should be run.
+  Bounds bounds = 2;
 }

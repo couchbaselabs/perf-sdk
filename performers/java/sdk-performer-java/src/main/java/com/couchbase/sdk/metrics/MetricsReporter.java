@@ -2,7 +2,7 @@ package com.couchbase.sdk.metrics;
 
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.grpc.sdk.protocol.PerfMetricsResult;
-import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
+import com.couchbase.grpc.sdk.protocol.PerfRunResult;
 import com.couchbase.sdk.SdkOperationExecutor;
 import com.couchbase.sdk.perf.PerfWriteThread;
 import io.grpc.stub.StreamObserver;
@@ -138,7 +138,7 @@ public class MetricsReporter extends Thread {
                     logger.warn("Metrics failed: {}", err.toString());
                 }
 
-                writer.enqueue(PerfSingleResult.newBuilder()
+                writer.enqueue(PerfRunResult.newBuilder()
                         .setMetricsResult(PerfMetricsResult.newBuilder()
                                 .setInitiated(SdkOperationExecutor.getTimeNow())
                                 .setMetrics(metrics.toString()))

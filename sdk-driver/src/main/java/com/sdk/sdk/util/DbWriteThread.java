@@ -2,7 +2,8 @@ package com.sdk.sdk.util;
 
 import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
 import com.couchbase.client.java.json.JsonObject;
-import com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult;
+import com.couchbase.grpc.sdk.protocol.PerfRunResult;
+import com.couchbase.grpc.sdk.protocol.PerfSdkCommandResult;
 import com.google.protobuf.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +25,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class DbWriteThread extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(DbWriteThread.class);
-    private final ConcurrentLinkedQueue<PerfSingleOperationResult> toWrite = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<PerfSdkCommandResult> toWrite = new ConcurrentLinkedQueue<>();
     // This is maintained in time-sorted order
-    private final SortedMap<Long, List<PerfSingleOperationResult>> bucketisedResults = new TreeMap<>();
+    private final SortedMap<Long, List<PerfSdkCommandResult>> bucketisedResults = new TreeMap<>();
     private final AtomicBoolean done;
     private final String uuid;
     private final java.sql.Connection conn;
@@ -86,12 +87,12 @@ public class DbWriteThread extends Thread {
         logger.info("Database write thread ended");
     }
 
-    private void handleOneResult(PerfSingleOperationResult next) {
+    private void handleOneResult(PerfSdkCommandResult next) {
         long bucket = TimeUnit.MICROSECONDS.toSeconds(grpcTimestampToMicros(next.getInitiated()));
 
         bucketisedResults.compute(bucket, (k, v) -> {
             if (v == null) {
-                var ret = new ArrayList<PerfSingleOperationResult>();
+                var ret = new ArrayList<PerfSdkCommandResult>();
                 ret.add(next);
                 return ret;
             } else {
@@ -155,14 +156,14 @@ public class DbWriteThread extends Thread {
                             Map<String, Long> errors) {
     }
 
-    private PerfBucketResult processResults(long firstTimestampSecs, long timestampSecs, List<PerfSingleOperationResult> results) {
+    private PerfBucketResult processResults(long firstTimestampSecs, long timestampSecs, List<PerfSdkCommandResult> results) {
         var stats = new LatencyStats();
         var success = 0;
         var failure = 0;
 
         var errors = new HashMap<String, Long>();
 
-        for (PerfSingleOperationResult r : results) {
+        for (PerfSdkCommandResult r : results) {
 
             if (r.getSdkResult().getSuccess()) {
                 // We only care about how long successful ops took
@@ -228,7 +229,7 @@ public class DbWriteThread extends Thread {
         }
     }
 
-    public void enqueue(PerfSingleOperationResult res){
+    public void enqueue(PerfSdkCommandResult res){
         toWrite.add(res);
     }
 }

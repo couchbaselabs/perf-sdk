@@ -1,6 +1,6 @@
 package com.sdk.sdk.util;
 
-import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
+import com.couchbase.grpc.sdk.protocol.PerfRunResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +12,7 @@ import static com.sdk.sdk.util.DbWriteThread.grpcTimestampToMicros;
 
  public class MetricsWriteThread extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(MetricsWriteThread.class);
-    private final ConcurrentLinkedQueue<PerfSingleResult> toWrite = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<PerfRunResult> toWrite = new ConcurrentLinkedQueue<>();
     private final java.sql.Connection conn;
     private final String runUuid;
 
@@ -49,6 +49,8 @@ import static com.sdk.sdk.util.DbWriteThread.grpcTimestampToMicros;
                                 metrics.getMetrics(),
                                 timeSinceStartSecs);
                         st.executeUpdate(statement);
+
+                        // Log metrics to stdout as it helps diagnosis random issues like performer OOM-ing
                         logger.info("Writing metrics {}", metrics.getMetrics());
                     } catch (SQLException err) {
                         logger.error("Failed to write metrics data to database", err);
@@ -61,7 +63,7 @@ import static com.sdk.sdk.util.DbWriteThread.grpcTimestampToMicros;
         }
     }
 
-    public void enqueue(PerfSingleResult res){
+    public void enqueue(PerfRunResult res){
         toWrite.add(res);
     }
 }

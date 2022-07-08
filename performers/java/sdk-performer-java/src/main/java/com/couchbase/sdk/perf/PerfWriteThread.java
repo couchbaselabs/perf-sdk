@@ -2,7 +2,8 @@ package com.couchbase.sdk.perf;
 
 import com.couchbase.grpc.sdk.protocol.PerfBatchedResult;
 import com.couchbase.grpc.sdk.protocol.PerfRunConfig;
-import com.couchbase.grpc.sdk.protocol.PerfSingleResult;
+import com.couchbase.grpc.sdk.protocol.PerfRunResult;
+import com.couchbase.grpc.sdk.protocol.PerfRunResult;
 import io.grpc.Status;
 import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
@@ -19,18 +20,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class PerfWriteThread extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(PerfWriteThread.class);
-    private final ServerCallStreamObserver<PerfSingleResult> responseObserver;
-    private final ConcurrentLinkedQueue<PerfSingleResult> writeQueue = new ConcurrentLinkedQueue<>();
+    private final ServerCallStreamObserver<PerfRunResult> responseObserver;
+    private final ConcurrentLinkedQueue<PerfRunResult> writeQueue = new ConcurrentLinkedQueue<>();
     private final PerfRunConfig perfRunConfig;
     private final GrpcPerformanceMeasureThread grpcPerformance = new GrpcPerformanceMeasureThread();
 
-    public PerfWriteThread(StreamObserver<PerfSingleResult> responseObserver, PerfRunConfig perfRunConfig) {
-        this.responseObserver = (ServerCallStreamObserver<PerfSingleResult>) responseObserver;
+    public PerfWriteThread(StreamObserver<PerfRunResult> responseObserver, PerfRunConfig perfRunConfig) {
+        this.responseObserver = (ServerCallStreamObserver<PerfRunResult>) responseObserver;
         this.perfRunConfig = perfRunConfig;
         this.grpcPerformance.start();
     }
 
-    public void enqueue(PerfSingleResult result) {
+    public void enqueue(PerfRunResult result) {
         if (isInterrupted()) {
             grpcPerformance.ignored();
             return;
@@ -104,7 +105,7 @@ public class PerfWriteThread extends Thread {
     private void flushBatch(int opsInBatch) {
         while (!writeQueue.isEmpty()) {
             if (responseObserver.isReady()) {
-                var batch = new ArrayList<PerfSingleResult>(opsInBatch);
+                var batch = new ArrayList<PerfRunResult>(opsInBatch);
 
                 for (int i = 0; i < opsInBatch; i++) {
                     var next = writeQueue.poll();
@@ -116,7 +117,7 @@ public class PerfWriteThread extends Thread {
                 }
 
                 try {
-                    responseObserver.onNext(PerfSingleResult.newBuilder()
+                    responseObserver.onNext(PerfRunResult.newBuilder()
                             .setBatchedResult(PerfBatchedResult.newBuilder()
                                     .addAllResult(batch))
                             .build());

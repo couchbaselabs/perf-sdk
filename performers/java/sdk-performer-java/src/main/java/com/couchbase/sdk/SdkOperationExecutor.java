@@ -19,18 +19,18 @@ public class SdkOperationExecutor {
     private final AtomicInteger counter = new AtomicInteger(0);
     private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
-    public com.couchbase.grpc.sdk.protocol.PerfSingleOperationResult run(ClusterConnection connection, SdkWorkload req) {
-        var result = PerfSingleOperationResult.newBuilder()
+    public com.couchbase.grpc.sdk.protocol.PerfSdkCommandResult run(ClusterConnection connection, SdkCommand command) {
+        var result = PerfSdkCommandResult.newBuilder()
                 .setInitiated(getTimeNow());
 
         try {
-            performOperation(result, connection, req.getCommand());
-            result.setSdkResult(SdkOperationResult.newBuilder()
+            performOperation(result, connection, command);
+            result.setSdkResult(SdkCommandResult.newBuilder()
                     .setSuccess(true));
             return result.build();
         }
         catch (RuntimeException err) {
-            result.setSdkResult(SdkOperationResult.newBuilder()
+            result.setSdkResult(SdkCommandResult.newBuilder()
                     .setUnknownException(err.getClass().getSimpleName()));
             logger.warn("Operation failed with {}", err.toString());
         }
@@ -74,7 +74,7 @@ public class SdkOperationExecutor {
     }
 
 
-    private void performOperation(PerfSingleOperationResult.Builder result,
+    private void performOperation(PerfSdkCommandResult.Builder result,
                                   ClusterConnection connection,
                                   SdkCommand op) {
         if (op.hasInsert()){
