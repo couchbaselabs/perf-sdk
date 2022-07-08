@@ -85,14 +85,13 @@ public class SdkDriver {
         }
     }
 
-    static BuiltSdkCommand createSdkCommand(TestSuite.Run run) {
+    static BuiltSdkCommand createSdkCommand(TestSuite.Run run, TestSuite.Variables merged) {
         //TODO Make sure any REPLACE operations are in the YAML before REMOVES
-        //StringBuilder sb = new StringBuilder();
         var ops = new ArrayList<Op>();
 
         run.operations().forEach(op -> {
-            int count = evaluateCount(run.variables(), op.count());
-            ops.add(addOp(op, count, run.variables()));
+            int count = evaluateCount(merged, op.count());
+            ops.add(addOp(op, count, merged));
         });
         return new BuiltSdkCommand(ops, "Test");
     }
@@ -198,9 +197,14 @@ public class SdkDriver {
             for (TestSuite.Run run : testSuite.runs()) {
                 logger.info("Running workload " + run);
 
+                // Merge the per-run variables with the top-level variables.  Per-run overrides.
+                var merged = testSuite.variables() == null
+                        ? run.variables()
+                        : run.variables().mergeWithTopLevel(testSuite.variables());
+
                 // Connect to the performer for each run, as the GRPC variables may be different
                 var performerHostname = isRunningInsideDocker() ? testSuite.connections().performer().hostname_docker() : testSuite.connections().performer().hostname();
-                Optional<Boolean> grpcCompression = (run.variables().grpc() == null) ? Optional.empty() : Optional.ofNullable(run.variables().grpc().compression());
+                Optional<Boolean> grpcCompression = (merged.grpc() == null) ? Optional.empty() : Optional.ofNullable(merged.grpc().compression());
                 logger.info("Connecting to performer on {}:{} compression={}", performerHostname, testSuite.connections().performer().port(), grpcCompression);
 
                 var performer = new Performer(
@@ -209,10 +213,9 @@ public class SdkDriver {
                         createConnection,
                         grpcCompression);
 
-
                 run.operations().forEach(op -> {
                     if (op.docLocation() != null) {
-                        op.docLocation().poolSize(run.variables()).ifPresent(docPoolSize -> {
+                        op.docLocation().poolSize(merged).ifPresent(docPoolSize -> {
                             var docThread = new DocCreateThread(docPoolSize,
                                     cluster.bucket(Defaults.DEFAULT_BUCKET).defaultCollection());
                             docThread.start();
@@ -227,9 +230,7 @@ public class SdkDriver {
                     }
                 });
 
-
-
-                BuiltSdkCommand command = createSdkCommand(run);
+                BuiltSdkCommand command = createSdkCommand(run, merged);
 
                 PerfRunHorizontalScaling.Builder horizontalScalingBuilt = PerfRunHorizontalScaling.newBuilder();
 
@@ -237,7 +238,7 @@ public class SdkDriver {
                     op.applyTo(horizontalScalingBuilt);
                 });
 
-                run.variables().predefined().forEach(p -> {
+                merged.predefined().forEach(p -> {
                             if (p.values() != null && p.values().length > 1) {
                                 // Reminder: want to be able to have multiple values for say horizontal_scaling, and for this to generate
                                 // multiple runs.
@@ -249,20 +250,22 @@ public class SdkDriver {
                         .setClusterConnectionId(createConnection.getClusterConnectionId());
                 var perfConfigBuilder = PerfRunConfig.newBuilder();
                 PerfRunConfigStreaming.Builder streamingConfig = null;
-                if (run.variables().grpc().batch() != null) {
-                    if (streamingConfig == null) streamingConfig = PerfRunConfigStreaming.newBuilder();
-                    streamingConfig.setBatchSize(run.variables().grpc().batch());
-                }
-                if (run.variables().grpc().flowControl() != null) {
-                    if (streamingConfig == null) streamingConfig = PerfRunConfigStreaming.newBuilder();
-                    streamingConfig.setFlowControl(run.variables().grpc().flowControl());
+                if (merged.grpc() != null) {
+                    if (merged.grpc().batch() != null) {
+                        if (streamingConfig == null) streamingConfig = PerfRunConfigStreaming.newBuilder();
+                        streamingConfig.setBatchSize(merged.grpc().batch());
+                    }
+                    if (merged.grpc().flowControl() != null) {
+                        if (streamingConfig == null) streamingConfig = PerfRunConfigStreaming.newBuilder();
+                        streamingConfig.setFlowControl(merged.grpc().flowControl());
+                    }
                 }
                 if (streamingConfig != null) {
                     perfConfigBuilder.setStreamingConfig(streamingConfig);
                 }
                 perf.setConfig(perfConfigBuilder.build());
 
-                for (int i=0; i< run.variables().horizontalScaling(); i++){
+                for (int i=0; i< merged.horizontalScaling(); i++){
                     perf.addHorizontalScaling(horizontalScalingBuilt);
                 }
 
@@ -308,7 +311,7 @@ public class SdkDriver {
                 performanceMonitor.join();
 
                 if (run.shouldWrite()) {
-                    writeRun(testSuite, testSuiteAsJson, conn, clusterJson, run, performer);
+                    writeRun(testSuite, testSuiteAsJson, conn, clusterJson, run, performer, merged);
                 }
 
                 logger.info("Finished!");
@@ -317,16 +320,26 @@ public class SdkDriver {
         }
     }
 
-    private static void writeRun(TestSuite testSuite, JsonObject testSuiteAsJson, Connection conn, JsonObject clusterJson, TestSuite.Run run, Performer performer) throws JsonProcessingException, SQLException {
+    private static void writeRun(TestSuite testSuite,
+                                 JsonObject testSuiteAsJson,
+                                 Connection conn,
+                                 JsonObject clusterJson,
+                                 TestSuite.Run run,
+                                 Performer performer,
+                                 TestSuite.Variables merged) throws JsonProcessingException, SQLException {
         // Only insert into the runs table if everything was successful
         var jsonVars = JsonObject.create();
-        run.variables().custom().forEach(v -> jsonVars.put(v.name(), v.value()));
-        run.variables().predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.values()[0]));
+        merged.custom().forEach(v -> jsonVars.put(v.name(), v.value()));
+        merged.predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.values()[0]));
 
         // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
         // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
         jsonVars.put("driverVersion", 6);
         jsonVars.put("performerVersion", performer.response().getPerformerVersion());
+
+        // GRPC changes intentionally don't get written into the database, as it's likely that such configuration options
+        // will very rarely change, and will make the JSON messy.  Instead, model any changes in the default as a bump
+        // in driverVersion.
 
         var runJson = testSuiteAsJson.getArray("runs")
                 .toList().stream()

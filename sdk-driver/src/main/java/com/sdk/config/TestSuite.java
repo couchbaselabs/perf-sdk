@@ -12,10 +12,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sdk.constants.Defaults;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public record TestSuite(Implementation impl, Connections connections, List<Run> runs) {
+public record TestSuite(Implementation impl, Connections connections, List<Run> runs, @Nullable Variables variables) {
 //    Duration runtimeAsDuration() {
 //        var trimmed = runtime.trim();
 //        char suffix = trimmed.charAt(trimmed.length() - 1);
@@ -65,6 +66,39 @@ public record TestSuite(Implementation impl, Connections connections, List<Run> 
             return (Integer) predefinedVar(PredefinedVariable.PredefinedVariableName.HORIZONTAL_SCALING);
         }
 
+        public Variables mergeWithTopLevel(Variables topLevelVars) {
+            var mergedCustom = mergeCustomWithTopLevel(topLevelVars.custom);
+            var mergedPredefined = mergePredefinedWithTopLevel(topLevelVars.predefined);
+            var mergedGrpc = grpc.mergeWithTopLevel(topLevelVars.grpc);
+            return new Variables(mergedPredefined, mergedCustom, mergedGrpc);
+        }
+
+        private List<CustomVariable> mergeCustomWithTopLevel(@Nullable List<CustomVariable> topLevel) {
+            if (topLevel == null) {
+                return custom;
+            }
+
+            var out = new ArrayList<>(topLevel);
+            custom.forEach(v -> {
+                out.removeIf(x -> x.name.equals(v.name));
+                out.add(v);
+            });
+            return out;
+        }
+
+        private List<PredefinedVariable> mergePredefinedWithTopLevel(@Nullable List<PredefinedVariable> topLevel) {
+            if (topLevel == null) {
+                return predefined;
+            }
+
+            var out = new ArrayList<>(topLevel);
+            predefined.forEach(v -> {
+                out.removeIf(x -> x.name.equals(v.name));
+                out.add(v);
+            });
+            return out;
+        }
+
         public record PredefinedVariable(PredefinedVariableName name, Object[] values) {
             public enum PredefinedVariableName {
                 @JsonProperty("horizontal_scaling") HORIZONTAL_SCALING,
@@ -94,8 +128,13 @@ public record TestSuite(Implementation impl, Connections connections, List<Run> 
                         String database) {
         }
     }
-
-    public record GrpcSettings(@Nullable Boolean flowControl, @Nullable Integer batch, @Nullable boolean compression) {
+    
+    public record GrpcSettings(@Nullable Boolean flowControl, @Nullable Integer batch, @Nullable Boolean compression) {
+        public GrpcSettings mergeWithTopLevel(GrpcSettings topLevel) {
+            return new GrpcSettings(flowControl == null ? topLevel.flowControl : flowControl,
+                    batch == null ? topLevel.batch : batch,
+                    compression == null ? topLevel.compression : compression);
+        }
     }
 
     public record DocLocation(Method method, String id, String idPreface, String poolSize,

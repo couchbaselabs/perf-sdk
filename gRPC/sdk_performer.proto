@@ -235,6 +235,8 @@ message PerfRunConfigStreaming {
 
     // Whether the performer should enable flow control.  This will mean different things to different
     // GRPC implementations, but the concept is to only send responses when the GRPC response stream reports itself ready.
+    // If the performer is unable to keep up with the flow rate then this effectively just moves the filling queue from
+    // GRPC's to one owned by the performer, but this can be beneficial as the performer can keep metrics on its own queue.
     bool flowControl = 2;
 }
 
