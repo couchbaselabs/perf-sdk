@@ -69,7 +69,9 @@ public record TestSuite(Implementation impl, Connections connections, List<Run> 
         public Variables mergeWithTopLevel(Variables topLevelVars) {
             var mergedCustom = mergeCustomWithTopLevel(topLevelVars.custom);
             var mergedPredefined = mergePredefinedWithTopLevel(topLevelVars.predefined);
-            var mergedGrpc = grpc.mergeWithTopLevel(topLevelVars.grpc);
+            var mergedGrpc = grpc == null
+                    ? topLevelVars.grpc
+                    : grpc.mergeWithTopLevel(topLevelVars.grpc);
             return new Variables(mergedPredefined, mergedCustom, mergedGrpc);
         }
 

@@ -311,6 +311,9 @@ public class SdkDriver {
                 if (run.shouldWrite()) {
                     writeRun(testSuite, testSuiteAsJson, conn, clusterJson, run, performer, merged);
                 }
+                else {
+                    logger.info("Not writing this run to database");
+                }
 
                 logger.info("Finished!");
             }
