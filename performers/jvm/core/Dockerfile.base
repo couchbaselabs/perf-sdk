@@ -1,0 +1,13 @@
+FROM maven:3.8.1-openjdk-17
+WORKDIR /app
+
+# Could improve this a lot, only need the GRPC and performers/jvm folders
+COPY . .
+
+WORKDIR /app/performers/jvm
+RUN mvn package
+
+# Multistage build to keep things small
+FROM maven:3.8.1-openjdk-17
+
+WORKDIR /app

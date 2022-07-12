@@ -2,24 +2,9 @@ syntax = "proto3";
 
 package protocol;
 option csharp_namespace = "Couchbase.Grpc.Protocol";
-option java_package = "com.couchbase.grpc.sdk.protocol";
+option java_package = "com.couchbase.client.performer.grpc";
 option java_multiple_files = true;
-option go_package = "github.com/charlie-hayes/perf-sdk/protocol";
-
-// When an implementation supports multiple APIs, this enum allows sending which is preferred to be used for a given test.
-// This is an abstraction that allows us to test e.g. Java's blocking vs reactive APIs.
-//
-// Declaration in supportedApis:
-//  For implementations with just one API: Only declare DEFAULT.
-//  For implementations with separate blocking & async APIs: declare both.
-//
-// When the performer receives a preferred API:
-//  For implementations with just one API: ignore it.
-//  For implementations with separate blocking & async APIs: use the appropriate one.
-enum API {
-  DEFAULT = 0;
-  ASYNC = 1;
-}
+option go_package = "github.com/couchbaselabs/perf-sdk/protocol";
 
 enum ImplementationCaps {
   // Empty enum not allowed
@@ -45,10 +30,11 @@ message PerformerCapsFetchResponse {
   // Human-readable string identifying the performer.  For example, "java".
   string performerUserAgent = 3;
 
-  // The APIs this implementation supports.  This is primarily used to run tests on multiple APIs, so if an implementation
-  // only supports one, it should just return one - see comments for `API` for details.
-  // If the performer does not return anything, it will be assumed to support just API.DEFAULT.
-  repeated API supportedApis = 4;
+  // The number of APIs this implementation supports.  This is primarily used to run tests on multiple APIs, so if an implementation
+  // only supports one, it should just return one.
+  // What an API is, is open to interpretation to the performer.  The driver will simply call some tests multiple times
+  // specifying a different API index for each.  A concrete example - Java supports 3 APIs: blocking, async and reactive.
+  int32 apiCount = 4;
 
   // It's crucial we always compare apples-to-apples in the tests, e.g. if anything changes on the performer side that
   // means we can't compare results from it against previous results.

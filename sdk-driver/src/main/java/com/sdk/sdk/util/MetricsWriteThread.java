@@ -1,6 +1,6 @@
 package com.sdk.sdk.util;
 
-import com.couchbase.grpc.sdk.protocol.PerfRunResult;
+import com.couchbase.client.performer.grpc.PerfRunResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,9 +1,9 @@
 package com.sdk.sdk.util;
 
-import com.couchbase.grpc.sdk.protocol.ClusterConnectionCreateRequest;
-import com.couchbase.grpc.sdk.protocol.PerformerCapsFetchRequest;
-import com.couchbase.grpc.sdk.protocol.PerformerCapsFetchResponse;
-import com.couchbase.grpc.sdk.protocol.PerformerSdkServiceGrpc;
+import com.couchbase.client.performer.grpc.ClusterConnectionCreateRequest;
+import com.couchbase.client.performer.grpc.PerformerCapsFetchRequest;
+import com.couchbase.client.performer.grpc.PerformerCapsFetchResponse;
+import com.couchbase.client.performer.grpc.PerformerSdkServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;

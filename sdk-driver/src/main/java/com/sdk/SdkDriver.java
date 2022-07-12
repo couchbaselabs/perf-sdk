@@ -18,7 +18,7 @@ import com.sdk.config.OpReplace;
 import com.sdk.config.TestSuite;
 import com.sdk.constants.Defaults;
 import com.sdk.constants.Strings;
-import com.couchbase.grpc.sdk.protocol.*;
+import com.couchbase.client.performer.grpc.*;
 import com.sdk.sdk.util.DbWriteThread;
 import com.sdk.sdk.util.DocCreateThread;
 import com.sdk.sdk.util.GrpcPerformanceMeasureThread;
@@ -417,7 +417,8 @@ public class SdkDriver {
             out.put("cpuCount", node1.getInt("cpuCount"));
             out.put("version", raw2.getString("implementationVersion"));
         } catch (IOException e) {
-            logger.warn("Failed to get cluster info {}", e.getMessage());
+            // We depend on the memory info above now, so if we can't connect to the cluster, fail
+            throw new RuntimeException(e);
         }
 
         return out;

@@ -1,13 +1,13 @@
 package com.sdk.config;
 
-import com.couchbase.grpc.sdk.protocol.Bounds;
-import com.couchbase.grpc.sdk.protocol.CommandGrpcPing;
-import com.couchbase.grpc.sdk.protocol.Counter;
-import com.couchbase.grpc.sdk.protocol.CounterGlobal;
-import com.couchbase.grpc.sdk.protocol.GrpcCommand;
-import com.couchbase.grpc.sdk.protocol.GrpcWorkload;
-import com.couchbase.grpc.sdk.protocol.HorizontalScaling;
-import com.couchbase.grpc.sdk.protocol.Workload;
+import com.couchbase.client.performer.grpc.Bounds;
+import com.couchbase.client.performer.grpc.CommandGrpcPing;
+import com.couchbase.client.performer.grpc.Counter;
+import com.couchbase.client.performer.grpc.CounterGlobal;
+import com.couchbase.client.performer.grpc.GrpcCommand;
+import com.couchbase.client.performer.grpc.GrpcWorkload;
+import com.couchbase.client.performer.grpc.HorizontalScaling;
+import com.couchbase.client.performer.grpc.Workload;
 
 public record OpGrpcPing(int count) implements Op {
     @Override

@@ -4,24 +4,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.sdk.sdk-driver</groupId>
-    <artifactId>sdk-driver</artifactId>
+    <groupId>com.couchbase.client</groupId>
+    <artifactId>performer-driver</artifactId>
     <version>${revision}</version>
     <packaging>jar</packaging>
 
     <properties>
         <revision>1.0-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.15</maven.compiler.source>
-        <maven.compiler.target>1.15</maven.compiler.target>
+        <maven.compiler.source>1.17</maven.compiler.source>
+        <maven.compiler.target>1.17</maven.compiler.target>
         <junit.version>5.7.0</junit.version>
     </properties>
 
     <dependencies>
 
         <dependency>
-            <groupId>com.sdk.gRPC</groupId>
-            <artifactId>gRPC</artifactId>
+            <groupId>com.couchbase.client</groupId>
+            <artifactId>performer-grpc</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
@@ -114,12 +114,6 @@
             <version>4.0.2</version>
         </dependency>
 
-        <!--    <dependency>-->
-        <!--      <groupId>org.latencyutils</groupId>-->
-        <!--      <artifactId>LatencyUtils</artifactId>-->
-        <!--      <version>2.0.3</version>-->
-        <!--    </dependency>-->
-
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
@@ -136,12 +130,6 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.3.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sdk.gRPC</groupId>
-            <artifactId>gRPC</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -164,23 +152,10 @@
 
     </dependencies>
 
-    <reporting>
-        <!-- Makes Javadoc -->
-        <!-- plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
-                <configuration>
-                    <show>private</show>
-                    <stylesheet>maven</stylesheet>
-                </configuration>
-            </plugin>
-        </plugins -->
-    </reporting>
-
     <build>
-        <defaultGoal>clean generate-sources compile install</defaultGoal>
+<!--        <defaultGoal>clean generate-sources compile install</defaultGoal>-->
+
+        <!-- Makes fatjar -->
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -207,25 +182,25 @@
             </plugin>
 
             <!-- Places our dependencies in 'lib' !-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.8</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <includeScope>compile</includeScope>
-                    <includeScope>runtime</includeScope>
-                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-dependency-plugin</artifactId>-->
+<!--                <version>2.8</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>copy-dependencies</id>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>copy-dependencies</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <includeScope>compile</includeScope>-->
+<!--                    <includeScope>runtime</includeScope>-->
+<!--                    <outputDirectory>${project.build.directory}/lib</outputDirectory>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
 
             <!-- Compiler !-->
             <plugin>
@@ -238,71 +213,70 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
-                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
 
             <!-- Needed for our Junit Tests to fire and result reporting especially jenkins !-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>1.3.2</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <argLine>--enable-preview</argLine>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-surefire-plugin</artifactId>-->
+<!--                <version>2.22.0</version>-->
+<!--                <dependencies>-->
+<!--                    <dependency>-->
+<!--                        <groupId>org.junit.platform</groupId>-->
+<!--                        <artifactId>junit-platform-surefire-provider</artifactId>-->
+<!--                        <version>1.3.2</version>-->
+<!--                    </dependency>-->
+<!--                </dependencies>-->
+<!--                <configuration>-->
+<!--                    <argLine>&#45;&#45;enable-preview</argLine>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
 
 
             <!-- Produce a fat jar, for Docker -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.1</version>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-assembly-plugin</artifactId>-->
+<!--                <version>3.1.1</version>-->
 
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
+<!--                <configuration>-->
+<!--                    <descriptorRefs>-->
+<!--                        <descriptorRef>jar-with-dependencies</descriptorRef>-->
+<!--                    </descriptorRefs>-->
+<!--                </configuration>-->
 
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>make-assembly</id>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>single</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
 
-            </plugin>
+<!--            </plugin>-->
 
             <!-- Creates our JAR !-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib</classpathPrefix>
-                            <mainClass>com.sdk.SdkDriver</mainClass>
-                            <packageName>com.couchbase</packageName>
-                        </manifest>
-                        <manifestEntries>
-                            <Class-Path>etc/</Class-Path>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-jar-plugin</artifactId>-->
+<!--                <version>2.4</version>-->
+<!--                <configuration>-->
+<!--                    <archive>-->
+<!--                        <manifest>-->
+<!--                            <addClasspath>true</addClasspath>-->
+<!--                            <classpathPrefix>lib</classpathPrefix>-->
+<!--                            <mainClass>com.sdk.SdkDriver</mainClass>-->
+<!--                            <packageName>com.couchbase</packageName>-->
+<!--                        </manifest>-->
+<!--                        <manifestEntries>-->
+<!--                            <Class-Path>etc/</Class-Path>-->
+<!--                        </manifestEntries>-->
+<!--                    </archive>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
 
         </plugins>
     </build>

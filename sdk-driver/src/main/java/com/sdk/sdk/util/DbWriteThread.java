@@ -2,8 +2,8 @@ package com.sdk.sdk.util;
 
 import com.couchbase.client.core.deps.org.LatencyUtils.LatencyStats;
 import com.couchbase.client.java.json.JsonObject;
-import com.couchbase.grpc.sdk.protocol.PerfRunResult;
-import com.couchbase.grpc.sdk.protocol.PerfSdkCommandResult;
+import com.couchbase.client.performer.grpc.PerfRunResult;
+import com.couchbase.client.performer.grpc.PerfSdkCommandResult;
 import com.google.protobuf.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

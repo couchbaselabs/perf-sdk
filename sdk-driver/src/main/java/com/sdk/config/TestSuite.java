@@ -1,13 +1,13 @@
 package com.sdk.config;
 
 import com.couchbase.client.core.io.CollectionIdentifier;
-import com.couchbase.grpc.sdk.protocol.Collection;
-import com.couchbase.grpc.sdk.protocol.DocLocationPool;
-import com.couchbase.grpc.sdk.protocol.DocLocationSpecific;
-import com.couchbase.grpc.sdk.protocol.DocLocationUuid;
-import com.couchbase.grpc.sdk.protocol.PoolSelectionStategyRandom;
-import com.couchbase.grpc.sdk.protocol.PoolSelectionStrategyCounter;
-import com.couchbase.grpc.sdk.protocol.RandomDistribution;
+import com.couchbase.client.performer.grpc.Collection;
+import com.couchbase.client.performer.grpc.DocLocationPool;
+import com.couchbase.client.performer.grpc.DocLocationSpecific;
+import com.couchbase.client.performer.grpc.DocLocationUuid;
+import com.couchbase.client.performer.grpc.PoolSelectionStategyRandom;
+import com.couchbase.client.performer.grpc.PoolSelectionStrategyCounter;
+import com.couchbase.client.performer.grpc.RandomDistribution;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sdk.constants.Defaults;
 
@@ -160,8 +160,8 @@ public record TestSuite(Implementation impl, Connections connections, List<Run> 
             return Optional.of((long) variables.getCustomVarAsInt(poolSize));
         }
 
-        public com.couchbase.grpc.sdk.protocol.DocLocation convert(Variables variables) {
-            var out = com.couchbase.grpc.sdk.protocol.DocLocation.newBuilder();
+        public com.couchbase.client.performer.grpc.DocLocation convert(Variables variables) {
+            var out = com.couchbase.client.performer.grpc.DocLocation.newBuilder();
             var collection = Collection.newBuilder()
                     .setBucket(Defaults.DEFAULT_BUCKET)
                     .setScope(CollectionIdentifier.DEFAULT_SCOPE)

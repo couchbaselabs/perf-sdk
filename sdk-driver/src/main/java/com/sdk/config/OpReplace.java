@@ -1,14 +1,14 @@
 package com.sdk.config;
 
 import com.couchbase.client.java.json.JsonObject;
-import com.couchbase.grpc.sdk.protocol.Bounds;
-import com.couchbase.grpc.sdk.protocol.Counter;
-import com.couchbase.grpc.sdk.protocol.CounterGlobal;
-import com.couchbase.grpc.sdk.protocol.HorizontalScaling;
-import com.couchbase.grpc.sdk.protocol.SdkCommand;
-import com.couchbase.grpc.sdk.protocol.SdkCommandReplace;
-import com.couchbase.grpc.sdk.protocol.SdkWorkload;
-import com.couchbase.grpc.sdk.protocol.Workload;
+import com.couchbase.client.performer.grpc.Bounds;
+import com.couchbase.client.performer.grpc.Counter;
+import com.couchbase.client.performer.grpc.CounterGlobal;
+import com.couchbase.client.performer.grpc.HorizontalScaling;
+import com.couchbase.client.performer.grpc.SdkCommand;
+import com.couchbase.client.performer.grpc.SdkCommandReplace;
+import com.couchbase.client.performer.grpc.SdkWorkload;
+import com.couchbase.client.performer.grpc.Workload;
 
 public record OpReplace(JsonObject content, int count, TestSuite.DocLocation location,
                         TestSuite.Variables variables) implements Op {
