@@ -1,7 +1,7 @@
 package com.couchbase.client.performer.scala.util
 
 import com.couchbase.client.performer.grpc.{ClusterConnectionCreateRequest, DocLocation}
-import com.couchbase.client.scala.{Cluster, Collection}
+import com.couchbase.client.scala.{Bucket, Cluster, Collection}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
@@ -12,6 +12,7 @@ class ClusterConnection(req: ClusterConnectionCreateRequest) {
   logger.info("Attempting connection to cluster " + hostname)
 
   private val cluster = Cluster.connect(hostname, req.getClusterUsername, req.getClusterPassword).get
+  private val bucketCache = scala.collection.mutable.Map.empty[String, Bucket].withDefault(bucketName => cluster.bucket(bucketName))
 
   cluster.waitUntilReady(30.seconds)
 
@@ -23,7 +24,7 @@ class ClusterConnection(req: ClusterConnectionCreateRequest) {
       else throw new UnsupportedOperationException("Unknown DocLocation type")
     }
 
-    val bucket = cluster.bucket(coll.getBucket)
+    val bucket = bucketCache(coll.getBucket)
     bucket.scope(coll.getScope).collection(coll.getCollection)
   }
 }

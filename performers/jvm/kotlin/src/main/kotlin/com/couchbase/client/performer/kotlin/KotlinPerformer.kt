@@ -14,7 +14,7 @@ import io.grpc.stub.StreamObserver
 import org.slf4j.LoggerFactory
 
 class KotlinPerformer : PerformerSdkServiceImplBase() {
-    private val clusterConnections = LinkedHashMap<String, ClusterConnection>()
+    private val clusterConnections: MutableMap<String, ClusterConnection> = mutableMapOf()
     private val logger = LoggerFactory.getLogger(KotlinPerformer::class.java)
 
     override fun performerCapsFetch(request: PerformerCapsFetchRequest, responseObserver: StreamObserver<PerformerCapsFetchResponse>) {
