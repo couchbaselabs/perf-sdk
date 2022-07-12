@@ -345,6 +345,8 @@ public class SdkDriver {
                 .findFirst()
                 .get();
         runJson.removeKey("uuid");
+        // Don't write this as we currently split it out into a separate "vars" field.  Some discussion on CBD-4979.
+        runJson.removeKey("variables");
 
         var json = JsonObject.create()
                 .put("cluster", clusterJson)

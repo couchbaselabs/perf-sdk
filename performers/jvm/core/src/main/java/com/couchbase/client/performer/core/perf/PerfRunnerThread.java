@@ -36,7 +36,7 @@ public class PerfRunnerThread extends Thread {
 
         if (bounds.getCounter().hasGlobal()) {
             var counter = counters.getCounter(bounds.getCounter().getCounterId(), bounds.getCounter().getGlobal().getCount());
-            logger.info("Runner thread will commands until counter {} is 0, currently {}",
+            logger.info("Runner thread will run commands until counter {} is 0, currently {}",
                     bounds.getCounter().getCounterId(), counter.get());
             return counter;
         } else {
