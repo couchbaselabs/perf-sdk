@@ -19,7 +19,6 @@ import com.couchbase.client.performer.core.metrics.MetricsReporter;
 import com.couchbase.client.performer.core.perf.PerfMarshaller;
 import com.couchbase.client.performer.core.perf.PerfRunnerThread;
 import com.couchbase.client.performer.core.perf.PerfWriteThread;
-import com.couchbase.client.performer.grpc.API;
 import com.couchbase.client.performer.grpc.ClusterConnectionCreateRequest;
 import com.couchbase.client.performer.grpc.ClusterConnectionCreateResponse;
 import com.couchbase.client.performer.grpc.PerfRunRequest;
