@@ -12,7 +12,7 @@ class ClusterConnection(req: ClusterConnectionCreateRequest) {
   logger.info("Attempting connection to cluster " + hostname)
 
   private val cluster = Cluster.connect(hostname, req.getClusterUsername, req.getClusterPassword).get
-  private val bucketCache = scala.collection.mutable.Map.empty[String, Bucket].withDefault(bucketName => cluster.bucket(bucketName))
+  private val bucketCache = scala.collection.mutable.Map.empty[String, Bucket]
 
   cluster.waitUntilReady(30.seconds)
 
@@ -24,7 +24,10 @@ class ClusterConnection(req: ClusterConnectionCreateRequest) {
       else throw new UnsupportedOperationException("Unknown DocLocation type")
     }
 
-    val bucket = bucketCache(coll.getBucket)
+    val bucket = bucketCache.getOrElseUpdate(coll.getBucket, {
+      logger.info(s"Opening new bucket ${coll.getBucket}")
+      cluster.bucket(coll.getBucket)
+    })
     bucket.scope(coll.getScope).collection(coll.getCollection)
   }
 }
