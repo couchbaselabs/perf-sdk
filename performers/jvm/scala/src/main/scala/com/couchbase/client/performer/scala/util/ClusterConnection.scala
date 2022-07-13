@@ -14,6 +14,10 @@ class ClusterConnection(req: ClusterConnectionCreateRequest) {
   private val cluster = Cluster.connect(hostname, req.getClusterUsername, req.getClusterPassword).get
   private val bucketCache = scala.collection.mutable.Map.empty[String, Bucket]
 
+  // SCBC-365: hit performance problems when repeatedly opening a scope or collection.  99% of the time we'll be
+  // using the same collection every time, so for performance don't use a map here
+  private var lastCollection: Collection = _
+
   cluster.waitUntilReady(30.seconds)
 
   def collection(loc: DocLocation): Collection = {
@@ -24,10 +28,20 @@ class ClusterConnection(req: ClusterConnectionCreateRequest) {
       else throw new UnsupportedOperationException("Unknown DocLocation type")
     }
 
-    val bucket = bucketCache.getOrElseUpdate(coll.getBucket, {
-      logger.info(s"Opening new bucket ${coll.getBucket}")
-      cluster.bucket(coll.getBucket)
-    })
-    bucket.scope(coll.getScope).collection(coll.getCollection)
+    if (lastCollection != null
+      && lastCollection.bucketName == coll.getBucket
+      && lastCollection.scopeName == coll.getScope
+      && lastCollection.name == coll.getCollection) {
+      lastCollection
+    }
+    else {
+      val bucket = bucketCache.getOrElseUpdate(coll.getBucket, {
+        logger.info(s"Opening new bucket ${coll.getBucket}")
+        cluster.bucket(coll.getBucket)
+      })
+      val out = bucket.scope(coll.getScope).collection(coll.getCollection)
+      lastCollection = out
+      out
+    }
   }
 }
