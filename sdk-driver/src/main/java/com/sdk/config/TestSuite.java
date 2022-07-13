@@ -120,7 +120,16 @@ public record TestSuite(Implementation impl, Connections connections, List<Run> 
     }
 
     public record Connections(Cluster cluster, PerformerConn performer, Database database) {
-        public record Cluster(String hostname, String hostname_docker, String username, String password, String type) {
+        public record Cluster(
+                String hostname,
+                String hostname_docker,
+                String type,
+                String version,
+                Integer nodeCount,
+                Integer cpuCount,
+                String storage,
+                Integer replicas,
+                Integer memory) {
         }
 
         public record PerformerConn(String hostname, String hostname_docker, int port) {

@@ -158,22 +158,21 @@ public class SdkDriver {
             var clusterHostname = isRunningInsideDocker() ? testSuite.connections().cluster().hostname_docker() : testSuite.connections().cluster().hostname();
             logger.info("Connecting to cluster {}", clusterHostname);
 
-            var cluster = Cluster.connect(clusterHostname, testSuite.connections().cluster().username(), testSuite.connections().cluster().password());
+            var cluster = Cluster.connect(clusterHostname, "Administrator", "password");
 
-            var storageBackend = StorageBackend.COUCHSTORE;
-            var numReplaces = 0;
-
-            var clusterJson = produceClusterJson(clusterHostname, testSuite.connections().cluster())
-                    .put("storage", storageBackend.alias())
-                    .put("replicas", numReplaces);
+            var storageBackend = switch (testSuite.connections().cluster().storage()) {
+                case "magma" -> StorageBackend.MAGMA;
+                default -> StorageBackend.COUCHSTORE;
+            };
+            var replicas = testSuite.connections().cluster().replicas();
 
             // Use all the available memory for the bucket
-            var memoryMb = clusterJson.getInt("memory");
+            var memoryMb = testSuite.connections().cluster().memory();
 
             logger.info("(Re)creating bucket {} with memoryMB {} and backend {}", Defaults.DEFAULT_BUCKET, memoryMb, storageBackend);
             var bucketSettings = BucketSettings.create(Defaults.DEFAULT_BUCKET)
                     .ramQuotaMB(memoryMb)
-                    .numReplicas(numReplaces)
+                    .numReplicas(replicas)
                     .storageBackend(storageBackend);
 
             try {
@@ -189,8 +188,8 @@ public class SdkDriver {
             var createConnection =
                     ClusterConnectionCreateRequest.newBuilder()
                             .setClusterHostname(clusterHostname)
-                            .setClusterUsername(testSuite.connections().cluster().username())
-                            .setClusterPassword(testSuite.connections().cluster().password())
+                            .setClusterUsername("Administrator")
+                            .setClusterPassword("password")
                             .setClusterConnectionId(UUID.randomUUID().toString())
                             .build();
 
@@ -309,7 +308,7 @@ public class SdkDriver {
                 performanceMonitor.join();
 
                 if (run.shouldWrite()) {
-                    writeRun(testSuite, testSuiteAsJson, conn, clusterJson, run, performer, merged);
+                    writeRun(testSuite, testSuiteAsJson, conn, run, performer, merged);
                 }
                 else {
                     logger.info("Not writing this run to database");
@@ -324,7 +323,6 @@ public class SdkDriver {
     private static void writeRun(TestSuite testSuite,
                                  JsonObject testSuiteAsJson,
                                  Connection conn,
-                                 JsonObject clusterJson,
                                  TestSuite.Run run,
                                  Performer performer,
                                  TestSuite.Variables merged) throws JsonProcessingException, SQLException {
@@ -347,6 +345,12 @@ public class SdkDriver {
         runJson.removeKey("uuid");
         // Don't write this as we currently split it out into a separate "vars" field.  Some discussion on CBD-4979.
         runJson.removeKey("variables");
+
+        var om = new ObjectMapper();
+        var clusterMap = om.convertValue(testSuite.connections().cluster(), Map.class);
+        var clusterJson = JsonObject.from(clusterMap);
+        clusterJson.removeKey("hostname");
+        clusterJson.removeKey("hostname_docker");
 
         var json = JsonObject.create()
                 .put("cluster", clusterJson)
@@ -386,44 +390,4 @@ public class SdkDriver {
         }
 
     }
-
-    private static JsonObject produceClusterJson(String hostname, TestSuite.Connections.Cluster cluster) {
-        var out = JsonObject.create();
-        out.put("type", cluster.type());
-
-        try {
-            var httpClient = new OkHttpClient().newBuilder().build();
-
-            var adminUsername = cluster.username();
-            var adminPassword = cluster.password();
-
-            var resp1 = httpClient.newCall(new Request.Builder()
-                            .header("Authorization", Credentials.basic(adminUsername, adminPassword))
-                            .url("http://" + hostname + ":8091/pools/default")
-                            .build())
-                    .execute();
-
-            var resp2 = httpClient.newCall(new Request.Builder()
-                            .header("Authorization", Credentials.basic(adminUsername, adminPassword))
-                            .url("http://" + hostname + ":8091/pools")
-                            .build())
-                    .execute();
-
-            var raw1 = JsonObject.fromJson(resp1.body().bytes());
-            var raw2 = JsonObject.fromJson(resp2.body().bytes());
-
-            var node1 = ((JsonObject) raw1.getArray("nodes").get(0));
-
-            out.put("nodeCount", raw1.getArray("nodes").size());
-            out.put("memory", raw1.getInt("memoryQuota"));
-            out.put("cpuCount", node1.getInt("cpuCount"));
-            out.put("version", raw2.getString("implementationVersion"));
-        } catch (IOException e) {
-            // We depend on the memory info above now, so if we can't connect to the cluster, fail
-            throw new RuntimeException(e);
-        }
-
-        return out;
-    }
-
 }
