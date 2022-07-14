@@ -12,7 +12,7 @@ class ClusterConnection(req: ClusterConnectionCreateRequest) {
     private val bucketCache: MutableMap<String, com.couchbase.client.kotlin.Bucket> = mutableMapOf()
 
     fun collection(loc: DocLocation): com.couchbase.client.kotlin.Collection {
-        var coll: com.couchbase.client.performer.grpc.Collection? = null
+        var coll: com.couchbase.client.performer.grpc.Collection?
         if (loc.hasPool()) coll = loc.pool.collection
         else if (loc.hasSpecific()) coll = loc.specific.collection
         else if (loc.hasUuid()) coll = loc.uuid.collection

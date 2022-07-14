@@ -42,7 +42,6 @@ class ScalaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceImplBase
       .setPerformerUserAgent("scala")
       .setApiCount(1) // blocking only for now
       .addPerformerCaps(PerformerCaps.GRPC_TESTING)
-      .setPerformerVersion(0)
       .build)
     responseObserver.onCompleted()
   }

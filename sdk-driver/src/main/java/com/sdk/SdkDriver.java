@@ -6,6 +6,7 @@ import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.couchbase.client.java.manager.bucket.StorageBackend;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sdk.config.BuiltSdkCommand;
@@ -348,12 +349,8 @@ public class SdkDriver {
         var jsonVars = JsonObject.create();
         merged.custom().forEach(v -> jsonVars.put(v.name(), v.value()));
         merged.predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.values()[0]));
-
-        // todo move into config file
-        // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
-        // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
-        jsonVars.put("driverVersion", 6);
-        jsonVars.put("performerVersion", performer.response().getPerformerVersion());
+        if (merged.driverVer() != null) jsonVars.put("driverVer", merged.driverVer());
+        if (merged.performerVer() != null) jsonVars.put("performerVer", merged.performerVer());
 
         var runJson = testSuiteAsJson.getArray("runs")
                 .toList().stream()
@@ -366,10 +363,12 @@ public class SdkDriver {
         runJson.removeKey("variables");
 
         var om = new ObjectMapper();
+        om.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         var clusterMap = om.convertValue(testSuite.connections().cluster(), Map.class);
         var clusterJson = JsonObject.from(clusterMap);
         clusterJson.removeKey("hostname");
         clusterJson.removeKey("hostname_docker");
+
 
         var json = JsonObject.create()
                 .put("cluster", clusterJson)

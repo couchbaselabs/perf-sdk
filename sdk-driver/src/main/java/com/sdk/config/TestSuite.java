@@ -44,7 +44,13 @@ public record TestSuite(Implementation impl, Connections connections, List<Run> 
     record Implementation(String language, String version) {
     }
 
-    public record Variables(List<PredefinedVariable> predefined, List<CustomVariable> custom, @Nullable GrpcSettings grpc) {
+    public record Variables(
+            List<PredefinedVariable> predefined,
+            List<CustomVariable> custom,
+            @Nullable GrpcSettings grpc,
+            @Nullable String driverVer,
+            @Nullable String performerVer
+    ) {
         public Integer getCustomVarAsInt(String varName) {
             if (varName.startsWith("$")) {
                 String varNameReal = varName.substring(1); // "pool_size"
@@ -72,7 +78,9 @@ public record TestSuite(Implementation impl, Connections connections, List<Run> 
             var mergedGrpc = grpc == null
                     ? topLevelVars.grpc
                     : grpc.mergeWithTopLevel(topLevelVars.grpc);
-            return new Variables(mergedPredefined, mergedCustom, mergedGrpc);
+            var mergedDriverVer = driverVer == null ? topLevelVars.driverVer : driverVer;
+            var mergedPerformerVer = performerVer == null ? topLevelVars.performerVer : performerVer;
+            return new Variables(mergedPredefined, mergedCustom, mergedGrpc, mergedDriverVer, mergedPerformerVer);
         }
 
         private List<CustomVariable> mergeCustomWithTopLevel(@Nullable List<CustomVariable> topLevel) {
@@ -129,7 +137,11 @@ public record TestSuite(Implementation impl, Connections connections, List<Run> 
                 Integer cpuCount,
                 String storage,
                 Integer replicas,
-                Integer memory) {
+                Integer memory,
+                @Nullable String instance,
+                @Nullable String compaction,
+                @Nullable String topology,
+                @Nullable String region) {
         }
 
         public record PerformerConn(String hostname, String hostname_docker, int port) {

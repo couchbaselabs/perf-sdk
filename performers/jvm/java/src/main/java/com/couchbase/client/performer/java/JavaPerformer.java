@@ -49,7 +49,6 @@ public class JavaPerformer extends PerformerSdkServiceGrpc.PerformerSdkServiceIm
                 .setPerformerUserAgent("java")
                 .setApiCount(1) // blocking only for now
                 .addPerformerCaps(PerformerCaps.GRPC_TESTING)
-                .setPerformerVersion(0)
                 .build());
         responseObserver.onCompleted();
     }

@@ -22,7 +22,6 @@ class KotlinPerformer : PerformerSdkServiceImplBase() {
                 .setPerformerUserAgent("kotlin")
                 .setApiCount(1)
                 .addPerformerCaps(PerformerCaps.GRPC_TESTING)
-                .setPerformerVersion(0)
                 .build())
         responseObserver.onCompleted()
     }

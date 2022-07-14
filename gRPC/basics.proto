@@ -38,13 +38,6 @@ message PerformerCapsFetchResponse {
   // What an API is, is open to interpretation to the performer.  The driver will simply call some tests multiple times
   // specifying a different API index for each.  A concrete example - Java supports 3 APIs: blocking, async and reactive.
   int32 apiCount = 4;
-
-  // It's crucial we always compare apples-to-apples in the tests, e.g. if anything changes on the performer side that
-  // means we can't compare results from it against previous results.
-  // Bump this whenever that happens.  (Will also need to force a rerun of tests for this language, since jenkins-sdk
-  // won't know it's occurred).
-  // todo move to jenkins-sdk
-  int32 performerVersion = 5;
 }
 
 message ClusterConfig {
