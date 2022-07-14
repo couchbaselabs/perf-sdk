@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.shaded.okhttp3.Credentials;
 import org.testcontainers.shaded.okhttp3.OkHttpClient;
 import org.testcontainers.shaded.okhttp3.Request;
+import org.testcontainers.shaded.okhttp3.RequestBody;
 
 import java.io.File;
 import java.io.IOException;
@@ -185,6 +186,10 @@ public class SdkDriver {
             }
             catch (BucketExistsException ignored) {}
 
+            // CBD-5001: auto-compaction is disabled for performance.  To prevent disk space growing indefinitely,
+            // do a compaction after destroying the bucket.
+            forceCompaction(clusterHostname);
+
             var createConnection =
                     ClusterConnectionCreateRequest.newBuilder()
                             .setClusterHostname(clusterHostname)
@@ -320,6 +325,19 @@ public class SdkDriver {
         }
     }
 
+    private static void forceCompaction(String clusterHostname) throws IOException {
+        var httpClient = new OkHttpClient().newBuilder().build();
+
+        var resp = httpClient.newCall(new Request.Builder()
+                        .method("POST", RequestBody.create(null, new byte[]{}))
+                        .header("Authorization", Credentials.basic("Administrator", "password"))
+                        .url("http://" + clusterHostname + ":8091/pools/default/buckets/" + Defaults.DEFAULT_BUCKET + "/controller/compactBucket")
+                        .build())
+                .execute();
+        logger.info("Result of forcing compaction: " + resp.message());
+        resp.close();
+    }
+
     private static void writeRun(TestSuite testSuite,
                                  JsonObject testSuiteAsJson,
                                  Connection conn,
@@ -331,6 +349,7 @@ public class SdkDriver {
         merged.custom().forEach(v -> jsonVars.put(v.name(), v.value()));
         merged.predefined().forEach(v -> jsonVars.put(v.name().name().toLowerCase(), v.values()[0]));
 
+        // todo move into config file
         // Bump this whenever anything changes on the driver side that means we can't compare results against previous ones.
         // (Will also need to force a rerun of tests for this language, since jenkins-sdk won't know it's occurred).
         jsonVars.put("driverVersion", 6);
