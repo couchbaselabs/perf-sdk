@@ -15,6 +15,9 @@ enum PerformerCaps {
   // The performer supports GRPC workloads.  It's optional, but allows various GRPC streaming approaches to be tested
   // with the performer, which can help find one that reliably lets results be streamed back.
   GRPC_TESTING = 0;
+
+  // Level 1 KV support: the initial KV commands (get, insert, replace, remove, upsert) together with options.
+  KV_SUPPORT_1 = 1;
 }
 
 message PerformerCapsFetchRequest {
@@ -40,6 +43,7 @@ message PerformerCapsFetchResponse {
   // means we can't compare results from it against previous results.
   // Bump this whenever that happens.  (Will also need to force a rerun of tests for this language, since jenkins-sdk
   // won't know it's occurred).
+  // todo move to jenkins-sdk
   int32 performerVersion = 5;
 }
 

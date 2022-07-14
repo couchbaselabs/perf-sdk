@@ -32,35 +32,50 @@ enum DurabilityLevel {
 
 message Expiry {
   oneof expiryType {
-    int32 relative = 1;
-    int32 absolute = 2;
+    // The document will expire after the given duration.
+    int64 relativeSecs = 1;
+    // The document will expire at a specific time.  Given in epoch time.
+    int64 absoluteEpochSecs = 2;
+  }
+}
+
+message ObserveBased {
+  PersistTo persistTo = 1;
+  ReplicateTo replicateTo = 2;
+}
+
+message Durability {
+  oneof durability {
+    DurabilityLevel durabilityLevel = 1;
+    ObserveBased observe = 2;
   }
 }
 
 message InsertOptions {
   optional int32 timeoutMsecs = 1;
-  optional PersistTo persistTo = 2;
-  optional ReplicateTo replicateTo = 3;
-  optional DurabilityLevel durabilityLevel = 4;
-  optional Expiry expiry = 5;
+  optional Durability durability = 2;
+  optional Expiry expiry = 3;
 }
 
 message ReplaceOptions {
   optional int32 timeoutMsecs = 1;
-  optional PersistTo persistTo = 2;
-  optional ReplicateTo replicateTo = 3;
-  optional DurabilityLevel durabilityLevel = 4;
-  optional Expiry expiry = 5;
-  optional bool preserveExpiry = 6;
-  optional int64 cas = 7;
+  optional Durability durability = 2;
+  optional Expiry expiry = 3;
+  optional bool preserveExpiry = 4;
+  optional int64 cas = 5;
+}
+
+message UpsertOptions {
+  optional int32 timeoutMsecs = 1;
+  optional Durability durability = 2;
+  optional Expiry expiry = 3;
+  optional bool preserveExpiry = 4;
 }
 
 message RemoveOptions {
   optional int32 timeoutMsecs = 1;
-  optional PersistTo persistTo = 2;
-  optional ReplicateTo replicateTo = 3;
-  optional DurabilityLevel durabilityLevel = 4;
-  optional int64 cas = 5;
+  optional Durability durability = 2;
+  optional int64 cas = 3;
 }
 
 message GetOptions {

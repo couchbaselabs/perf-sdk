@@ -33,12 +33,19 @@ message SdkCommandReplace {
   optional ReplaceOptions options = 3;
 }
 
+message SdkCommandUpsert {
+  DocLocation location = 1;
+  string contentJson = 2;
+  optional UpsertOptions options = 3;
+}
+
 message SdkCommand {
   oneof command {
     SdkCommandInsert insert = 1;
     SdkCommandGet get = 2;
     SdkCommandRemove remove = 3;
     SdkCommandReplace replace = 4;
+    SdkCommandUpsert upsert = 5;
   }
 }
 
